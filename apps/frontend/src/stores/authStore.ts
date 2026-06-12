@@ -1,0 +1,76 @@
+import { create } from 'zustand'
+
+interface AuthState {
+  isAuthenticated: boolean
+  isLoading: boolean
+  error: string | null
+  user: { id: string; email: string; username: string; role: string } | null
+  login: (email: string, password: string) => Promise<boolean>
+  logout: () => void
+  clearError: () => void
+}
+
+const storedToken = localStorage.getItem('token')
+const storedUser = localStorage.getItem('user')
+
+function safeParseUser(raw: string | null): AuthState['user'] | null {
+  if (!raw) return null
+  try {
+    const parsed = JSON.parse(raw) as AuthState['user']
+    // 兼容旧数据：无 id 字段时清除，需重新登录
+    if (!parsed?.id) {
+      localStorage.removeItem('user')
+      return null
+    }
+    return parsed
+  } catch {
+    localStorage.removeItem('user')
+    return null
+  }
+}
+
+export const useAuthStore = create<AuthState>((set) => ({
+  isAuthenticated: !!storedToken,
+  isLoading: false,
+  error: null,
+  user: safeParseUser(storedUser),
+
+  login: async (email: string, password: string) => {
+    set({ isLoading: true, error: null })
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      })
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}))
+        throw new Error(data.detail || '邮箱或密码错误')
+      }
+      const data = await response.json()
+      localStorage.setItem('token', data.access_token)
+      localStorage.setItem('user', JSON.stringify(data.user))
+      set({
+        isAuthenticated: true,
+        isLoading: false,
+        user: data.user,
+        error: null,
+      })
+      return true
+    } catch (err) {
+      set({
+        isLoading: false,
+        error: err instanceof Error ? err.message : '登录失败',
+      })
+      return false
+    }
+  },
+
+  logout: () => {
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+    set({ isAuthenticated: false, user: null, error: null })
+  },
+
+  clearError: () => set({ error: null }),
+}))

@@ -1,0 +1,48 @@
+# Git
+.git
+.gitignore
+
+# Documentation
+docs/
+*.md
+
+# Vendor (local copies of open source projects)
+# NOTE: vendor/docker-build/ is needed for offline Docker builds
+vendor/*/
+!vendor/docker-build/
+
+# Demo app (independent, not needed for main build)
+demo/
+
+# Node modules (frontend deps installed inside container)
+apps/frontend/node_modules/
+apps/frontend/dist/
+apps/frontend/.vite/
+apps/frontend/coverage/
+
+# Python cache
+apps/backend/.venv/
+apps/backend/__pycache__/
+apps/backend/**/*.pyc
+apps/backend/**/*.pyo
+apps/backend/.pytest_cache/
+apps/backend/.mypy_cache/
+apps/backend/htmlcov/
+apps/backend/.coverage
+
+# IDE
+.vscode/
+.idea/
+
+# Docker files themselves (not needed in context)
+docker/*
+!docker/nginx.conf
+!docker/Dockerfile.*
+.dockerignore
+
+# CI/CD
+.github/
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,0 +1,12 @@
+WARNING: Ignoring invalid distribution ~ebble-assistant (C:\Users\bourn\AppData\Local\Programs\Python\Python314\Lib\site-packages)
+Collecting pgvector
+  Downloading pgvector-0.4.2-py3-none-any.whl.metadata (19 kB)
+Requirement already satisfied: numpy in C:\Users\bourn\AppData\Local\Programs\Python\Python314\Lib\site-packages (from pgvector) (2.4.2)
+Downloading pgvector-0.4.2-py3-none-any.whl (27 kB)
+WARNING: Ignoring invalid distribution ~ebble-assistant (C:\Users\bourn\AppData\Local\Programs\Python\Python314\Lib\site-packages)
+Installing collected packages: pgvector
+WARNING: Ignoring invalid distribution ~ebble-assistant (C:\Users\bourn\AppData\Local\Programs\Python\Python314\Lib\site-packages)
+Successfully installed pgvector-0.4.2
+
+[notice] A new release of pip is available: 26.0.1 -> 26.1.1
+[notice] To update, run: python.exe -m pip install --upgrade pip

@@ -1,0 +1,65 @@
+platform: xiaohongshu
+name: 小红书社区规范
+rules:
+  - layer: l1
+    name: 处方药绝对禁止
+    condition_json:
+      type: keyword
+      pattern: "处方药|必须遵医嘱|凭处方购买|医院开具|医生处方"
+    action: block
+    priority: 100
+    enabled: true
+    description: 宠物处方药不得在任何内容中直接推荐或暗示购买
+
+  - layer: l1
+    name: 治愈率/有效率绝对化承诺
+    condition_json:
+      type: keyword
+      pattern: "100%有效|彻底治愈|根治|永不复发|绝对安全|无副作用"
+    action: block
+    priority: 100
+    enabled: true
+    description: 禁止对兽药效果做出绝对化承诺
+
+  - layer: l2
+    name: 平台营销极限词
+    condition_json:
+      type: keyword
+      pattern: "最|第一|顶级|极品|首选|独家|全网"
+    action: warn
+    priority: 50
+    enabled: true
+    description: 平台广告法合规：禁用极限用语
+
+  - layer: l2
+    name: 医疗诊断冒充
+    condition_json:
+      type: keyword
+      pattern: "确诊|诊断为|治疗方案|开药方|你的猫得了"
+    action: warn
+    priority: 60
+    enabled: true
+    description: 非执业兽医不得进行医疗诊断或开药方建议
+
+  - layer: l3
+    name: 新号日发频率限制
+    condition_json:
+      type: account_age
+      max_days: 30
+      max_daily_posts: 2
+    action: flag
+    priority: 30
+    enabled: true
+    description: 注册30天内新号每日最多发布2篇
+
+  - layer: l4
+    name: 节日促销临时风控
+    condition_json:
+      type: date_range
+      start: "2026-06-01"
+      end: "2026-06-20"
+      restriction: "减少营销内容比例"
+    action: adapt
+    priority: 20
+    enabled: true
+    description: 618期间降低营销内容推送频率

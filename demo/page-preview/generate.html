@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EcoDream Omni v4.0 — 内容生产 /generate HTML 预览</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../../apps/frontend/src/index.css">
+  <style>
+    :root {
+      --bg-base: #ffffff;
+      --bg-surface: #F7F7F8;
+      --bg-tertiary: #F3F4F6;
+      --text-primary: #1F1F1F;
+      --text-secondary: #6B7280;
+      --text-tertiary: #9CA3AF;
+      --accent-ai: #7C3AED;
+      --accent-ai-hover: #6D28D9;
+      --accent-success: #16A34A;
+      --accent-warning: #D97706;
+      --accent-danger: #DC2626;
+      --border-default: #E5E7EB;
+      --border-hover: #D1D5DB;
+    }
+    body { background: var(--bg-base); color: var(--text-primary); font-family: 'Inter','Noto Sans SC',-apple-system,sans-serif; }
+
+    .icon-nav { width:52px; height:100vh; background:var(--bg-surface); border-right:1px solid var(--border-default); display:flex; flex-direction:column; align-items:center; padding:12px 0; flex-shrink:0; transition:width .2s ease-out; overflow:hidden; }
+    .icon-nav:hover { width:180px; }
+    .nav-item { position:relative; width:100%; display:flex; align-items:center; gap:12px; padding:10px 14px; transition:all .15s ease-out; cursor:pointer; color:var(--text-secondary); }
+    .nav-item:hover { color:var(--accent-ai); background:rgba(124,58,237,0.06); }
+    .nav-item.active { color:var(--accent-ai); }
+    .nav-item.active::before { content:''; position:absolute; left:0; top:50%; transform:translateY(-50%); width:3px; height:20px; background:var(--accent-ai); border-radius:0 4px 4px 0; }
+    .nav-label { font-size:12px; font-weight:500; white-space:nowrap; opacity:0; transition:opacity .2s ease-out; }
+    .icon-nav:hover .nav-label { opacity:1; }
+
+    .copilot-panel { width:320px; background:var(--bg-base); border-left:1px solid var(--border-default); display:flex; flex-direction:column; }
+    .context-bar { background:rgba(124,58,237,0.06); border-bottom:1px solid rgba(124,58,237,0.12); }
+
+    @media (max-width: 1279px) { .copilot-panel { display:none; } .copilot-fab { display:flex; } }
+    @media (min-width: 1280px) { .copilot-panel { display:flex; } .copilot-fab { display:none; } }
+    @media (max-width: 767px) { .icon-nav { display:none; } .bottom-nav { display:flex; } }
+
+    .card-hover { transition:all .2s ease-out; cursor:pointer; }
+    .card-hover:hover { box-shadow:0 4px 12px rgba(0,0,0,0.06); transform:translateY(-2px); border-color:var(--border-hover); }
+    .ai-glow { box-shadow:0 0 20px rgba(124,58,237,0.15); }
+    .glass-panel { background:rgba(255,255,255,0.8); backdrop-filter:blur(20px) saturate(180%); border:1px solid rgba(0,0,0,0.06); }
+    .animate-shimmer { animation:shimmer 1.5s linear infinite; background:linear-gradient(90deg, transparent 0%, rgba(124,58,237,0.04) 50%, transparent 100%); background-size:200% 100%; }
+    @keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
+    .status-dot-running { animation:pulseDot 2s ease-in-out infinite; }
+    @keyframes pulseDot { 0%,100%{opacity:1; box-shadow:0 0 4px currentColor} 50%{opacity:.5; box-shadow:0 0 12px currentColor} }
+    .page-transition { animation:fadeIn .25s ease-out; }
+    @keyframes fadeIn { from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:translateY(0)} }
+
+    .cmd-palette { position:fixed; top:20%; left:50%; transform:translateX(-50%); width:640px; max-width:90vw; background:white; border-radius:16px; box-shadow:0 12px 40px rgba(0,0,0,0.12); border:1px solid var(--border-default); z-index:1000; overflow:hidden; }
+    .cmd-backdrop { position:fixed; inset:0; background:rgba(0,0,0,0.2); backdrop-filter:blur(4px); z-index:999; }
+    .cmd-item { padding:10px 14px; cursor:pointer; display:flex; align-items:center; justify-content:space-between; transition:background .15s; }
+    .cmd-item:hover, .cmd-item.active { background:rgba(124,58,237,0.06); }
+    .cmd-item.active .cmd-label { color:var(--accent-ai); }
+
+    *:focus-visible { outline:none; box-shadow:0 0 0 3px rgba(124,58,237,0.25); border-radius:6px; }
+
+    .mobile-copilot { position:fixed; inset:0; background:var(--bg-base); z-index:900; display:none; flex-direction:column; }
+    .mobile-copilot.open { display:flex; }
+    .bottom-nav { display:none; position:fixed; bottom:0; left:0; right:0; height:56px; background:var(--bg-base); border-top:1px solid var(--border-default); justify-content:space-around; align-items:center; z-index:800; }
+    .copilot-fab { position:fixed; right:16px; bottom:72px; width:48px; height:48px; border-radius:50%; background:var(--accent-ai); color:white; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(124,58,237,0.35); z-index:850; cursor:pointer; }
+
+    .kanban-col { min-height:200px; }
+    .kanban-card { transition:all .2s ease-out; }
+    .kanban-card:hover { transform:translateY(-2px); box-shadow:0 4px 12px rgba(0,0,0,0.06); }
+    .kanban-card.ai-generating { border:2px solid transparent; background:linear-gradient(white,white) padding-box, linear-gradient(90deg,#7C3AED,#A78BFA,#7C3AED) border-box; background-size:200% 100%; animation:flow 2s linear infinite; }
+    @keyframes flow { 0%{background-position:0% 50%} 100%{background-position:200% 50%} }
+
+    .inline-ai-tooltip { position:absolute; display:none; background:white; border:1px solid var(--border-default); border-radius:8px; padding:6px 10px; box-shadow:0 4px 12px rgba(0,0,0,0.08); gap:8px; z-index:50; }
+    .inline-ai-tooltip.show { display:flex; }
+
+    .platform-preview-xhs { font-family:'PingFang SC','Microsoft YaHei',sans-serif; }
+    .platform-preview-douyin { font-family:'PingFang SC','Microsoft YaHei',sans-serif; }
+  </style>
+</head>
+<body class="h-screen overflow-hidden text-sm">
+  <div id="app" class="flex h-screen page-transition">
+    <!-- IconNav -->
+    <nav class="icon-nav" aria-label="主导航">
+      <div class="mb-4 w-8 h-8 rounded-xl flex items-center justify-center text-white font-bold" style="background:linear-gradient(135deg,#7C3AED,#A78BFA);">E</div>
+      <div class="flex-1 w-full flex flex-col gap-1">
+        <a href="./dashboard.html" class="nav-item" aria-label="工作台"><span>🏠</span><span class="nav-label">工作台</span></a>
+        <a href="#" class="nav-item active" aria-label="内容生产"><span>✨</span><span class="nav-label">内容生产</span></a>
+        <a href="#" class="nav-item" aria-label="审核发布"><span>🛡️</span><span class="nav-label">审核发布</span></a>
+        <a href="#" class="nav-item" aria-label="数据报表"><span>📊</span><span class="nav-label">数据报表</span></a>
+        <a href="#" class="nav-item" aria-label="账号矩阵"><span>👤</span><span class="nav-label">账号矩阵</span></a>
+        <a href="#" class="nav-item" aria-label="素材库"><span>🖼️</span><span class="nav-label">素材库</span></a>
+        <a href="#" class="nav-item" aria-label="Agent 舰队"><span>🤖</span><span class="nav-label">Agent 舰队</span></a>
+        <a href="#" class="nav-item" aria-label="模型中心"><span>🧠</span><span class="nav-label">模型中心</span></a>
+        <a href="#" class="nav-item" aria-label="工作流"><span>⚙️</span><span class="nav-label">工作流</span></a>
+        <a href="#" class="nav-item" aria-label="平台规则"><span>📋</span><span class="nav-label">平台规则</span></a>
+        <a href="#" class="nav-item" aria-label="Playground"><span>🧪</span><span class="nav-label">Playground</span></a>
+        <a href="#" class="nav-item" aria-label="设置"><span>🔧</span><span class="nav-label">设置</span></a>
+      </div>
+      <div class="mt-auto w-full px-3">
+        <button class="w-8 h-8 rounded-full border flex items-center justify-center text-xs" style="border-color:var(--border-default);color:var(--text-secondary);" aria-label="用户菜单">👤</button>
+      </div>
+    </nav>
+
+    <!-- Workspace -->
+    <main class="flex-1 flex flex-col min-w-0" style="background:var(--bg-base);">
+      <!-- PageHeader -->
+      <header class="h-16 border-b flex items-center justify-between px-6 glass-panel" style="border-color:var(--border-default);">
+        <div class="flex items-center gap-2" aria-label="面包屑">
+          <span style="color:var(--text-secondary);">内容生产</span>
+          <span style="color:var(--text-tertiary);">/</span>
+          <span class="font-semibold" style="color:var(--text-primary);">看板</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <button class="px-3 py-1.5 rounded-md border text-xs flex items-center gap-2 transition hover:border-purple-500" style="border-color:var(--border-default);color:var(--text-secondary);" aria-label="打开命令面板">
+            <span>⌘</span><span>K</span>
+          </button>
+          <select class="px-3 py-1.5 rounded-md border text-xs outline-none" style="border-color:var(--border-default);background:var(--bg-base);color:var(--text-secondary);">
+            <option>全部状态</option>
+            <option>待创作</option>
+            <option>创作中</option>
+            <option>已完成</option>
+          </select>
+          <!-- Mode C: 工作区禁止新建按钮，新建内容走 Copilot Action Card -->
+          <span class="text-xs" style="color:var(--text-tertiary);">🤖 操作请使用右侧 Copilot</span>
+        </div>
+      </header>
+
+      <!-- Canvas -->
+      <div class="flex-1 overflow-auto p-4 lg:p-6">
+        <div class="max-w-7xl mx-auto">
+          <!-- Kanban Board -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Column 1: 待创作 -->
+            <div class="kanban-col rounded-xl border p-3 flex flex-col gap-3" style="background:var(--bg-surface);border-color:var(--border-default);">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="text-base">📋</span>
+                  <span class="text-sm font-semibold" style="color:var(--text-primary);">待创作</span>
+                  <span class="text-xs px-2 py-0.5 rounded-full" style="background:var(--bg-tertiary);color:var(--text-secondary);">3</span>
+                </div>
+                <!-- Mode C: 列头禁止添加按钮 -->
+              </div>
+              <!-- Card 1 -->
+              <article tabindex="0" data-id="task_001" data-title="猫咪驱虫避坑指南" class="kanban-card rounded-xl border p-3 bg-white outline-none" style="border-color:var(--border-default);">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[10px] px-1.5 py-0.5 rounded" style="background:rgba(124,58,237,0.08);color:var(--accent-ai);">🤖 AI 生成中</span>
+                  <!-- Mode C: 卡片禁止操作按钮 -->
+                </div>
+                <p class="text-sm font-medium mb-2" style="color:var(--text-primary);">猫咪驱虫避坑指南</p>
+                <div class="h-24 rounded-lg mb-2 border flex items-center justify-center text-xs" style="background:var(--bg-tertiary);border-color:var(--border-default);color:var(--text-secondary);">[封面预览]</div>
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="text-[10px] px-1.5 py-0.5 rounded-full" style="background:rgba(124,58,237,0.08);color:var(--accent-ai);">驱虫</span>
+                  <span class="text-[10px] px-1.5 py-0.5 rounded-full" style="background:rgba(124,58,237,0.08);color:var(--accent-ai);">新手养猫</span>
+                </div>
+                <div class="flex items-center justify-between text-xs" style="color:var(--text-secondary);">
+                  <span>🐱 小艾养猫记</span>
+                  <span>小红书</span>
+                </div>
+                <!-- Agent Trace mini -->
+                <div class="mt-2 pt-2 border-t space-y-1" style="border-color:var(--border-default);">
+                  <div class="flex items-center gap-2 text-[10px]" style="color:var(--text-secondary);">
+                    <span class="w-1.5 h-1.5 rounded-full status-dot-running" style="color:var(--accent-success);background:var(--accent-success);"></span>
+                    <span>TrendScout</span>
+                    <span class="ml-auto">✓ 0.8s</span>
+                  </div>
+                  <div class="flex items-center gap-2 text-[10px]" style="color:var(--text-secondary);">
+                    <span class="w-1.5 h-1.5 rounded-full status-dot-running" style="color:var(--accent-ai);background:var(--accent-ai);"></span>
+                    <span>ContentForge</span>
+                    <span class="ml-auto">⏳ 8.5s</span>
+                  </div>
+                </div>
+              </article>
+              <!-- Card 2 -->
+              <article tabindex="0" data-id="task_002" class="kanban-card rounded-xl border p-3 bg-white outline-none" style="border-color:var(--border-default);">
+                <p class="text-sm font-medium mb-2" style="color:var(--text-primary);">平价狗粮测评，这5款值得买</p>
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="text-[10px] px-1.5 py-0.5 rounded-full" style="background:var(--bg-tertiary);color:var(--text-secondary);">狗粮</span>
+                  <span class="text-[10px] px-1.5 py-0.5 rounded-full" style="background:var(--bg-tertiary);color:var(--text-secondary);">测评</span>
+                </div>
+                <div class="flex items-center justify-between text-xs" style="color:var(--text-secondary);">
+                  <span>🐕 省钱狗爸</span>
+                  <span>小红书</span>
+                </div>
+              </article>
+              <!-- Card 3 -->
+              <article tabindex="0" data-id="task_003" class="kanban-card rounded-xl border p-3 bg-white outline-none" style="border-color:var(--border-default);">
+                <p class="text-sm font-medium mb-2" style="color:var(--text-primary);">流浪猫绝育指南</p>
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="text-[10px] px-1.5 py-0.5 rounded-full" style="background:var(--bg-tertiary);color:var(--text-secondary);">救助</span>
+                </div>
+                <div class="flex items-center justify-between text-xs" style="color:var(--text-secondary);">
+                  <span>🐈 阿明救助站</span>
+                  <span>小红书</span>
+                </div>
+              </article>
+              <!-- Empty state -->
+              <div class="hidden rounded-xl border border-dashed p-4 flex flex-col items-center justify-center text-center" style="border-color:var(--border-default);">
+                <span class="text-xl mb-1">📭</span>
+                <p class="text-xs" style="color:var(--text-secondary);">暂无待创作任务</p>
+                <p class="text-[10px] mt-1" style="color:var(--text-tertiary);">🤖 在 Copilot 面板中点击「新建内容」开始创作</p>
+              </div>
+            </div>
+
+            <!-- Column 2: 创作中 -->
+            <div class="kanban-col rounded-xl border p-3 flex flex-col gap-3" style="background:var(--bg-surface);border-color:var(--border-default);">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="text-base">✏️</span>
+                  <span class="text-sm font-semibold" style="color:var(--text-primary);">创作中</span>
+                  <span class="text-xs px-2 py-0.5 rounded-full" style="background:var(--bg-tertiary);color:var(--text-secondary);">1</span>
+                </div>
+              </div>
+              <!-- Card: AI Generating with glow -->
+              <article tabindex="0" data-id="task_004" data-title="新手养猫体检清单" class="kanban-card ai-generating rounded-xl p-3 bg-white outline-none relative">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[10px] px-1.5 py-0.5 rounded-full text-white font-medium" style="background:linear-gradient(135deg,#7C3AED,#A78BFA);">✨ AI 生成中</span>
+                </div>
+                <p class="text-sm font-medium mb-2" style="color:var(--text-primary);">新手养猫体检清单，这6项必查</p>
+                <div class="h-24 rounded-lg mb-2 border flex items-center justify-center text-xs animate-shimmer" style="background:var(--bg-tertiary);border-color:var(--border-default);color:var(--text-secondary);">[生成封面中...]</div>
+                <div class="flex items-center justify-between text-xs" style="color:var(--text-secondary);">
+                  <span>🏥 宠物医院日记</span>
+                  <span>小红书</span>
+                </div>
+                <!-- Six Layer Prompt Preview -->
+                <div class="mt-2 pt-2 border-t" style="border-color:var(--border-default);">
+                  <p class="text-[10px] font-medium mb-1" style="color:var(--accent-ai);">六层 Prompt 进度</p>
+                  <div class="space-y-0.5">
+                    <div class="flex items-center gap-1 text-[10px]" style="color:var(--text-secondary);"><span>✅</span><span>PlatformFormat</span></div>
+                    <div class="flex items-center gap-1 text-[10px]" style="color:var(--text-secondary);"><span>✅</span><span>结构模板</span></div>
+                    <div class="flex items-center gap-1 text-[10px]" style="color:var(--text-secondary);"><span>✅</span><span>品牌知识</span></div>
+                    <div class="flex items-center gap-1 text-[10px]" style="color:var(--text-secondary);"><span>✅</span><span>关键词注入</span></div>
+                    <div class="flex items-center gap-1 text-[10px]" style="color:var(--text-secondary);"><span>✅</span><span>人设层</span></div>
+                    <div class="flex items-center gap-1 text-[10px]" style="color:var(--accent-ai);"><span>🔄</span><span>风格层（亲切自然 + emoji）</span></div>
+                  </div>
+                </div>
+              </article>
+              <!-- Empty placeholder -->
+              <div class="rounded-xl border border-dashed p-4 flex flex-col items-center justify-center text-center min-h-[80px]" style="border-color:var(--border-default);">
+                <p class="text-xs" style="color:var(--text-tertiary);">拖拽卡片到此处</p>
+              </div>
+            </div>
+
+            <!-- Column 3: 已完成 -->
+            <div class="kanban-col rounded-xl border p-3 flex flex-col gap-3" style="background:var(--bg-surface);border-color:var(--border-default);">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="text-base">✅</span>
+                  <span class="text-sm font-semibold" style="color:var(--text-primary);">已完成</span>
+                  <span class="text-xs px-2 py-0.5 rounded-full" style="background:var(--bg-tertiary);color:var(--text-secondary);">2</span>
+                </div>
+              </div>
+              <!-- Card 1 -->
+              <article tabindex="0" data-id="task_005" data-title="第一次带猫体检" class="kanban-card rounded-xl border p-3 bg-white outline-none" style="border-color:var(--border-default);">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[10px] px-1.5 py-0.5 rounded-full" style="background:rgba(22,163,74,0.08);color:var(--accent-success);">已通过</span>
+                  <span class="text-xs font-semibold" style="color:var(--accent-success);">96分</span>
+                </div>
+                <p class="text-sm font-medium mb-2" style="color:var(--text-primary);">第一次带猫体检，新手必看</p>
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="text-[10px] px-1.5 py-0.5 rounded-full" style="background:var(--bg-tertiary);color:var(--text-secondary);">体检</span>
+                </div>
+                <div class="flex items-center justify-between text-xs" style="color:var(--text-secondary);">
+                  <span>🐱 小艾养猫记</span>
+                  <span>小红书</span>
+                </div>
+                <!-- Mode C: 卡片禁止操作按钮，点击卡片仅选中态 -->
+                <div class="mt-2 pt-2 border-t" style="border-color:var(--border-default);">
+                  <p class="text-[10px]" style="color:var(--text-tertiary);">💡 选中后在 Copilot 中操作</p>
+                </div>
+              </article>
+              <!-- Card 2 -->
+              <article tabindex="0" data-id="task_006" data-title="狗狗驱虫药推荐" class="kanban-card rounded-xl border p-3 bg-white outline-none" style="border-color:var(--border-default);">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-[10px] px-1.5 py-0.5 rounded-full" style="background:rgba(217,119,6,0.08);color:var(--accent-warning);">待修改</span>
+                  <span class="text-xs font-semibold" style="color:var(--accent-warning);">72分</span>
+                </div>
+                <p class="text-sm font-medium mb-2" style="color:var(--text-primary);">狗狗驱虫药推荐，这3款平价好用</p>
+                <div class="p-2 rounded-lg mb-2 text-[10px]" style="background:rgba(220,38,38,0.06);color:var(--accent-danger);">
+                  🤖 建议：补充医疗免责声明
+                </div>
+                <div class="flex items-center justify-between text-xs" style="color:var(--text-secondary);">
+                  <span>🐕 省钱狗爸</span>
+                  <span>小红书</span>
+                </div>
+                <!-- Mode C: 卡片禁止操作按钮，点击卡片仅选中态 -->
+                <div class="mt-2 pt-2 border-t" style="border-color:var(--border-default);">
+                  <p class="text-[10px]" style="color:var(--text-tertiary);">💡 选中后在 Copilot 中操作</p>
+                </div>
+              </article>
+            </div>
+          </div>
+
+          <!-- Inline AI Demo -->
+          <div class="mt-6 rounded-xl border p-4" style="background:var(--bg-surface);border-color:var(--border-default);">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-sm font-semibold" style="color:var(--text-primary);">Inline AI 浮层演示</span>
+              <span class="text-xs" style="color:var(--text-tertiary);">选中下方文字，500ms 后浮现 AI 操作浮层</span>
+            </div>
+            <div id="editor-area" class="relative p-4 rounded-lg bg-white border text-sm leading-relaxed" style="border-color:var(--border-default);color:var(--text-primary);" contenteditable="true">
+              猫咪驱虫是每个铲屎官的必修课，但很多新手容易陷入误区。首先要明确的是，<span id="selectable-text" class="cursor-text">驱虫药不是越贵越好，而是要针对猫咪的生活环境来选择</span>。如果你家猫从不出门，内驱三个月一次就够了...
+            </div>
+            <div id="inline-ai" class="inline-ai-tooltip">
+              <button class="px-2 py-1 rounded text-xs hover:bg-gray-100" style="color:var(--accent-ai);">✨ 优化</button>
+              <button class="px-2 py-1 rounded text-xs hover:bg-gray-100" style="color:var(--accent-ai);">🔄 改写</button>
+              <button class="px-2 py-1 rounded text-xs hover:bg-gray-100" style="color:var(--accent-ai);">🌐 翻译</button>
+              <button class="px-2 py-1 rounded text-xs hover:bg-gray-100" style="color:var(--accent-ai);">📏 扩写</button>
+              <button class="px-2 py-1 rounded text-xs hover:bg-gray-100" style="color:var(--accent-ai);">✂️ 缩短</button>
+            </div>
+          </div>
+
+          <!-- Platform Preview Demo -->
+          <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="rounded-xl border p-4" style="background:var(--bg-surface);border-color:var(--border-default);">
+              <div class="flex items-center gap-2 mb-3">
+                <span class="text-xs font-medium px-2 py-0.5 rounded" style="background:#FF2442;color:white;">小红书</span>
+                <span class="text-xs" style="color:var(--text-secondary);">平台预览</span>
+              </div>
+              <div class="platform-preview-xhs rounded-lg p-3 bg-white border" style="border-color:var(--border-default);">
+                <p class="text-sm font-bold mb-2">猫咪驱虫避坑指南，这3个误区90%的人都不知道</p>
+                <p class="text-xs leading-relaxed" style="color:var(--text-secondary);">猫咪驱虫是每个铲屎官的必修课... #猫咪驱虫 #新手养猫</p>
+              </div>
+            </div>
+            <div class="rounded-xl border p-4" style="background:var(--bg-surface);border-color:var(--border-default);">
+              <div class="flex items-center gap-2 mb-3">
+                <span class="text-xs font-medium px-2 py-0.5 rounded" style="background:#000;color:white;">抖音</span>
+                <span class="text-xs" style="color:var(--text-secondary);">平台预览</span>
+              </div>
+              <div class="platform-preview-douyin rounded-lg p-3 bg-black text-white">
+                <p class="text-sm font-bold mb-2">猫咪驱虫避坑指南</p>
+                <p class="text-xs leading-relaxed opacity-80">这3个误区90%的人都不知道...</p>
+              </div>
+            </div>
+            <div class="rounded-xl border p-4" style="background:var(--bg-surface);border-color:var(--border-default);">
+              <div class="flex items-center gap-2 mb-3">
+                <span class="text-xs font-medium px-2 py-0.5 rounded" style="background:#07C160;color:white;">公众号</span>
+                <span class="text-xs" style="color:var(--text-secondary);">平台预览</span>
+              </div>
+              <div class="rounded-lg p-3 bg-white border" style="border-color:var(--border-default);">
+                <p class="text-lg font-bold mb-2" style="color:var(--text-primary);">猫咪驱虫避坑指南</p>
+                <p class="text-sm leading-relaxed" style="color:var(--text-secondary);">猫咪驱虫是每个铲屎官的必修课，但很多新手容易陷入误区...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="h-20"></div>
+      </div>
+    </main>
+
+    <!-- Copilot Panel -->
+    <aside class="copilot-panel" aria-label="AI Copilot 面板">
+      <div class="h-12 border-b flex items-center justify-between px-4" style="border-color:var(--border-default);">
+        <div class="flex items-center gap-2">
+          <span>🤖</span>
+          <span class="text-sm font-semibold" style="color:var(--text-primary);">AI Copilot</span>
+        </div>
+        <button class="p-1 rounded hover:bg-gray-100" aria-label="折叠面板">—</button>
+      </div>
+      <!-- Context Bar -->
+      <div id="copilot-context" class="context-bar px-4 py-3">
+        <p class="text-xs font-medium mb-1" style="color:var(--accent-ai);">当前上下文：内容生产</p>
+        <p id="context-text" class="text-sm" style="color:var(--text-primary);">你有 3 个待创作任务，优先处理哪个？</p>
+        <div id="context-actions" class="flex flex-wrap gap-2 mt-2">
+          <button class="px-2 py-1 rounded-md text-xs border transition hover:border-purple-400" style="border-color:var(--border-default);color:var(--text-secondary);">批量生成</button>
+          <button class="px-2 py-1 rounded-md text-xs border transition hover:border-purple-400" style="border-color:var(--border-default);color:var(--text-secondary);">查看待创作</button>
+        </div>
+      </div>
+      <!-- Six Layer Prompt Visualization -->
+      <div class="px-4 py-3 border-b" style="border-color:var(--border-default);">
+        <p class="text-xs font-medium mb-2" style="color:var(--text-tertiary);">六层 Prompt 可视化</p>
+        <div class="space-y-1.5">
+          <div class="flex items-center gap-2 text-xs"><span class="text-success">✅</span><span style="color:var(--text-secondary);">Layer 1 PlatformFormat</span></div>
+          <div class="flex items-center gap-2 text-xs"><span class="text-success">✅</span><span style="color:var(--text-secondary);">Layer 2 结构模板</span></div>
+          <div class="flex items-center gap-2 text-xs"><span class="text-success">✅</span><span style="color:var(--text-secondary);">Layer 3 品牌知识</span></div>
+          <div class="flex items-center gap-2 text-xs"><span class="text-success">✅</span><span style="color:var(--text-secondary);">Layer 4 关键词注入</span></div>
+          <div class="flex items-center gap-2 text-xs"><span class="text-success">✅</span><span style="color:var(--text-secondary);">Layer 5 人设层</span></div>
+          <div class="flex items-center gap-2 text-xs"><span style="color:var(--accent-ai);">🔄</span><span style="color:var(--accent-ai);">Layer 6 风格层</span></div>
+        </div>
+        <div class="mt-2 h-1.5 rounded-full overflow-hidden" style="background:var(--bg-tertiary);">
+          <div class="h-full rounded-full" style="width:83%;background:linear-gradient(90deg,#7C3AED,#A78BFA);"></div>
+        </div>
+      </div>
+      <!-- Messages -->
+      <div class="flex-1 overflow-auto px-4 py-3 space-y-3">
+        <div class="flex gap-2">
+          <span class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] border" style="border-color:var(--border-default);background:var(--bg-surface);">🤖</span>
+          <div class="flex-1">
+            <div class="rounded-xl rounded-tl-sm px-3 py-2 border-l-[3px]" style="background:var(--bg-base);border-color:var(--border-default);border-left-color:var(--accent-ai);">
+              <p class="text-xs leading-relaxed" style="color:var(--text-primary);">正在为你生成「新手养猫体检清单」...<span class="inline-block w-0.5 h-3 ml-0.5 align-middle" style="background:var(--accent-ai);animation:typing 1s step-end infinite;"></span></p>
+            </div>
+          </div>
+        </div>
+        <!-- Action Card -->
+        <div class="rounded-xl border p-3 ai-glow" style="border-color:rgba(124,58,237,0.3);background:var(--bg-base);">
+          <div class="text-xs font-semibold mb-2" style="color:var(--accent-ai);">🤖 建议优化标题</div>
+          <div class="text-xs space-y-1" style="color:var(--text-secondary);">
+            <p>原标题：新手养猫体检清单</p>
+            <p>优化后：<span class="font-medium" style="color:var(--text-primary);">新手养猫体检清单，这6项必查</span></p>
+          </div>
+          <div class="flex gap-2 mt-3">
+            <button class="flex-1 py-1.5 rounded-md text-xs text-white font-medium" style="background:var(--accent-ai);">应用修改</button>
+            <button class="flex-1 py-1.5 rounded-md text-xs border" style="border-color:var(--border-default);color:var(--text-secondary);">忽略</button>
+          </div>
+        </div>
+      </div>
+      <!-- Input -->
+      <div class="border-t p-3" style="border-color:var(--border-default);">
+        <div class="flex items-center gap-2 mb-2">
+          <button class="p-1 rounded hover:bg-gray-100">🎨</button>
+          <button class="p-1 rounded hover:bg-gray-100">📎</button>
+          <button class="p-1 rounded hover:bg-gray-100">🎙️</button>
+        </div>
+        <div class="flex items-center gap-2">
+          <input type="text" placeholder="告诉 AI 你的需求..." class="flex-1 px-3 py-2 rounded-md border text-xs outline-none" style="border-color:var(--border-default);background:var(--bg-base);color:var(--text-primary);">
+          <button class="w-8 h-8 rounded-md flex items-center justify-center text-white" style="background:var(--accent-ai);">➤</button>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Mobile Copilot FAB -->
+  <button id="copilot-fab" class="copilot-fab" aria-label="打开 AI Copilot">🤖</button>
+  <div id="mobile-copilot" class="mobile-copilot">
+    <div class="h-12 border-b flex items-center justify-between px-4" style="border-color:var(--border-default);">
+      <span class="text-sm font-semibold" style="color:var(--text-primary);">🤖 AI Copilot</span>
+      <button id="mobile-copilot-close" class="p-2" aria-label="关闭">✕</button>
+    </div>
+    <div class="flex-1 overflow-auto p-4">
+      <div class="context-bar rounded-lg px-3 py-2 mb-3">
+        <p class="text-xs" style="color:var(--text-primary);">当前上下文：内容生产</p>
+        <p class="text-xs mt-1" style="color:var(--text-secondary);">你有 3 个待创作任务</p>
+      </div>
+    </div>
+    <div class="border-t p-3" style="border-color:var(--border-default);">
+      <div class="flex gap-2">
+        <input type="text" placeholder="告诉 AI 你的需求..." class="flex-1 px-3 py-2 rounded-md border text-xs outline-none" style="border-color:var(--border-default);background:var(--bg-base);color:var(--text-primary);">
+        <button class="px-3 py-2 rounded-md text-white text-xs" style="background:var(--accent-ai);">发送</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Bottom Tab -->
+  <nav class="bottom-nav" aria-label="底部导航">
+    <a href="./dashboard.html" class="flex flex-col items-center gap-0.5 text-[10px]" style="color:var(--text-secondary);">🏠<span>工作台</span></a>
+    <a href="#" class="flex flex-col items-center gap-0.5 text-[10px]" style="color:var(--accent-ai);">✨<span>内容</span></a>
+    <a href="#" class="flex flex-col items-center gap-0.5 text-[10px]" style="color:var(--text-secondary);">📊<span>数据</span></a>
+    <a href="#" class="flex flex-col items-center gap-0.5 text-[10px]" style="color:var(--text-secondary);">🤖<span>Agent</span></a>
+    <a href="#" class="flex flex-col items-center gap-0.5 text-[10px]" style="color:var(--text-secondary);">🔧<span>设置</span></a>
+  </nav>
+
+  <!-- Command Palette -->
+  <div id="cmdk-backdrop" class="cmd-backdrop hidden" aria-hidden="true"></div>
+  <div id="cmdk-panel" class="cmd-palette hidden" role="dialog" aria-label="命令面板">
+    <div class="p-3 border-b" style="border-color:var(--border-default);">
+      <input id="cmdk-input" type="text" placeholder="搜索页面、任务、内容或输入 / 命令..." class="w-full px-3 py-2 rounded-md border text-sm outline-none" style="border-color:var(--border-default);background:var(--bg-base);color:var(--text-primary);">
+    </div>
+    <div class="max-h-80 overflow-auto py-2">
+      <div class="px-3 py-1 text-[10px] font-semibold uppercase tracking-wider" style="color:var(--text-tertiary);">AI 命令</div>
+      <div class="cmd-item" tabindex="0"><div class="flex items-center gap-3"><span>🤖</span><span class="cmd-label text-sm" style="color:var(--text-primary);">/生成内容</span></div><span class="text-xs" style="color:var(--text-tertiary);">新建并预填充主题</span></div>
+      <div class="cmd-item" tabindex="0"><div class="flex items-center gap-3"><span>✨</span><span class="cmd-label text-sm" style="color:var(--text-primary);">/优化标题</span></div><span class="text-xs" style="color:var(--text-tertiary);">选中内容后优化</span></div>
+      <div class="px-3 py-1 mt-2 text-[10px] font-semibold uppercase tracking-wider" style="color:var(--text-tertiary);">任务</div>
+      <div class="cmd-item" tabindex="0"><div class="flex items-center gap-3"><span>📋</span><span class="cmd-label text-sm" style="color:var(--text-primary);">猫咪驱虫避坑指南</span></div><span class="text-xs" style="color:var(--text-tertiary);">待创作</span></div>
+    </div>
+    <div class="px-3 py-2 border-t flex items-center gap-4 text-[10px]" style="border-color:var(--border-default);color:var(--text-tertiary);">
+      <span>↑↓ 选择</span><span>Enter 确认</span><span>Esc 关闭</span>
+    </div>
+  </div>
+
+  <script>
+    // Inline AI tooltip
+    const editorArea = document.getElementById('editor-area');
+    const inlineAi = document.getElementById('inline-ai');
+    const selectableText = document.getElementById('selectable-text');
+    selectableText.addEventListener('mouseup', () => {
+      const selection = window.getSelection();
+      if (selection.toString().length > 0) {
+        const range = selection.getRangeAt(0);
+        const rect = range.getBoundingClientRect();
+        inlineAi.style.left = (rect.left + rect.width / 2 - inlineAi.offsetWidth / 2) + 'px';
+        inlineAi.style.top = (rect.top - inlineAi.offsetHeight - 8) + 'px';
+        inlineAi.classList.add('show');
+      }
+    });
+    document.addEventListener('mousedown', (e) => {
+      if (!editorArea.contains(e.target) && !inlineAi.contains(e.target)) {
+        inlineAi.classList.remove('show');
+      }
+    });
+
+    // Context-aware selection on Kanban cards
+    const cards = document.querySelectorAll('.kanban-card');
+    const contextText = document.getElementById('context-text');
+    const contextActions = document.getElementById('context-actions');
+    cards.forEach(card => {
+      card.addEventListener('click', (e) => {
+        if (e.target.closest('button')) return;
+        cards.forEach(c => c.style.borderColor = 'var(--border-default)');
+        card.style.borderColor = 'var(--accent-ai)';
+        const title = card.dataset.title;
+        if (title) {
+          contextText.textContent = `选中任务「${title}」，要我帮你优化标题或生成配图吗？`;
+          contextActions.innerHTML = '<button class="px-2 py-1 rounded-md text-xs border transition hover:border-purple-400" style="border-color:var(--accent-ai);color:var(--accent-ai);">优化标题</button><button class="px-2 py-1 rounded-md text-xs border transition hover:border-purple-400" style="border-color:var(--accent-ai);color:var(--accent-ai);">生成配图</button><button class="px-2 py-1 rounded-md text-xs border transition hover:border-purple-400" style="border-color:var(--border-default);color:var(--text-secondary);">忽略</button>';
+        }
+      });
+    });
+
+    // Command Palette
+    const cmdkBackdrop = document.getElementById('cmdk-backdrop');
+    const cmdkPanel = document.getElementById('cmdk-panel');
+    function openCmdk() { cmdkBackdrop.classList.remove('hidden'); cmdkPanel.classList.remove('hidden'); }
+    function closeCmdk() { cmdkBackdrop.classList.add('hidden'); cmdkPanel.classList.add('hidden'); }
+    document.addEventListener('keydown', (e) => { if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); openCmdk(); } if (e.key === 'Escape') closeCmdk(); });
+    cmdkBackdrop.addEventListener('click', closeCmdk);
+
+    // Mobile Copilot
+    document.getElementById('copilot-fab').addEventListener('click', () => document.getElementById('mobile-copilot').classList.add('open'));
+    document.getElementById('mobile-copilot-close').addEventListener('click', () => document.getElementById('mobile-copilot').classList.remove('open'));
+  </script>
+</body>
+</html>

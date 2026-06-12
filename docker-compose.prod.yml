@@ -1,0 +1,108 @@
+# EcoDreamOmni — Production Deployment on Single ECS
+# ===================================================
+# Phase 1: Local storage with Docker Volume separation
+#   - ECS runs containers (Nginx + FastAPI + Celery)
+#   - Database/Cache: Aliyun managed services (RDS / Redis)
+#   - File storage: Local filesystem via Docker Named Volume
+#
+# Principle: Container rebuilds must NOT destroy user data.
+#   Named Volume 'ecodream-uploads' persists across container recreation.
+#
+# Usage:
+#   export IMAGE_TAG=v1.0.0
+#   docker-compose -f docker-compose.prod.yml pull
+#   docker-compose -f docker-compose.prod.yml up -d
+#
+# Upgrade (data-safe):
+#   export IMAGE_TAG=v1.1.0
+#   docker-compose -f docker-compose.prod.yml pull
+#   docker-compose -f docker-compose.prod.yml up -d
+#   # uploads volume is preserved automatically
+
+version: "3.9"
+
+services:
+  nginx:
+    image: nginx:alpine
+    container_name: ecodream-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      # Serve uploaded files directly via Nginx (bypasses FastAPI)
+      - ecodream-uploads:/var/www/uploads:ro
+      # SSL certificates (optional, via certbot)
+      # - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - ecodream-network
+
+  backend:
+    image: ${ACR_REGISTRY:-ecodreamomni-backend}:${IMAGE_TAG:-latest}
+    container_name: ecodream-backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env.prod
+    environment:
+      - ENV=production
+      - UPLOAD_DIR=/app/uploads
+    volumes:
+      # Named volume for uploads — survives container recreation
+      - ecodream-uploads:/app/uploads
+    restart: unless-stopped
+    networks:
+      - ecodream-network
+    healthcheck:
+      test: ["CMD-SHELL", "python -c 'import urllib.request; urllib.request.urlopen(\"http://localhost:8000/health\")'"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  celery-worker:
+    image: ${ACR_REGISTRY:-ecodreamomni-backend}:${IMAGE_TAG:-latest}
+    container_name: ecodream-celery-worker
+    command: celery -A src.celery_app worker --loglevel=info --concurrency=2
+    env_file:
+      - .env.prod
+    environment:
+      - UPLOAD_DIR=/app/uploads
+    volumes:
+      - ecodream-uploads:/app/uploads
+    restart: unless-stopped
+    networks:
+      - ecodream-network
+    depends_on:
+      - backend
+
+  celery-beat:
+    image: ${ACR_REGISTRY:-ecodreamomni-backend}:${IMAGE_TAG:-latest}
+    container_name: ecodream-celery-beat
+    command: celery -A src.celery_app beat --loglevel=info
+    env_file:
+      - .env.prod
+    environment:
+      - UPLOAD_DIR=/app/uploads
+    volumes:
+      - ecodream-uploads:/app/uploads
+    restart: unless-stopped
+    networks:
+      - ecodream-network
+    depends_on:
+      - backend
+
+volumes:
+  ecodream-uploads:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/ecodreamomni/data/uploads
+
+networks:
+  ecodream-network:
+    driver: bridge

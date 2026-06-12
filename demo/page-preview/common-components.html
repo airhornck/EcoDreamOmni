@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EcoDream Omni v4.0 — 通用组件库建设预览</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../../apps/frontend/src/index.css">
+  <style>
+    :root {
+      --bg-base: #FFFFFF;
+      --bg-surface: #F7F7F8;
+      --text-primary: #1F1F1F;
+      --text-secondary: #6B7280;
+      --text-tertiary: #9CA3AF;
+      --border-default: #E5E7EB;
+      --border-hover: #D1D5DB;
+      --accent-ai: #7C3AED;
+      --radius-lg: 14px;
+      --radius-md: 10px;
+    }
+    body { background: var(--bg-base); color: var(--text-primary); font-family: 'Inter', 'Noto Sans SC', -apple-system, sans-serif; }
+
+    .card-hover { transition: all 0.2s ease-out; cursor: pointer; }
+    .card-hover:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.06); transform: translateY(-1px); border-color: var(--border-hover); }
+
+    @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+    .animate-shimmer {
+      animation: shimmer 1.5s linear infinite;
+      background: linear-gradient(90deg, #F3F4F6 0%, #E5E7EB 50%, #F3F4F6 100%);
+      background-size: 200% 100%;
+    }
+
+    @keyframes flow {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 200% 50%; }
+    }
+    .ai-border-flow {
+      border: 2px solid transparent;
+      background: linear-gradient(white, white) padding-box,
+                  linear-gradient(90deg, #7C3AED, #A78BFA, #7C3AED) border-box;
+      background-size: 200% 100%;
+      animation: flow 2s linear infinite;
+    }
+
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; box-shadow: 0 0 4px rgba(124,58,237,0.4); }
+      50% { opacity: 0.5; box-shadow: 0 0 10px rgba(124,58,237,0.7); }
+    }
+    .ai-pulse {
+      animation: pulseDot 2s ease-in-out infinite;
+    }
+
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 3px; }
+
+    /* Command Palette */
+    .cmd-palette {
+      position: fixed;
+      top: 20%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 640px;
+      max-width: 90vw;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+      border: 1px solid #E5E7EB;
+      z-index: 1000;
+      overflow: hidden;
+    }
+    .cmd-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.2);
+      backdrop-filter: blur(4px);
+      z-index: 999;
+    }
+    .cmd-item:hover, .cmd-item.active {
+      background: rgba(124,58,237,0.06);
+    }
+    .cmd-item.active .cmd-label { color: #7C3AED; }
+
+    /* Bento Grid */
+    .bento-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+    .bento-small { grid-column: span 1; aspect-ratio: 1 / 1; }
+    .bento-wide { grid-column: span 2; aspect-ratio: 2 / 1; }
+    .bento-large { grid-column: span 2; grid-row: span 2; }
+    .bento-full { grid-column: span 4; }
+
+    @media (max-width: 1023px) {
+      .bento-grid { grid-template-columns: repeat(2, 1fr); }
+      .bento-small, .bento-wide, .bento-large, .bento-full { grid-column: span 2; }
+    }
+  </style>
+</head>
+<body class="min-h-screen p-6 lg:p-10">
+
+  <header class="mb-10">
+    <div class="flex items-center gap-3 mb-2">
+      <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold" style="background: linear-gradient(135deg, #7C3AED, #A78BFA);">E</div>
+      <div>
+        <h1 class="text-2xl font-bold" style="color: var(--text-primary);">EcoDream Omni v4.0</h1>
+        <p class="text-sm" style="color: var(--text-secondary);">通用组件库建设预览 — P1-3 | BentoCard / ContentCard / CommandPalette / EmptyState / Skeleton</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- ═══════════════════════════════════════
+       Section 1: BentoCard 组件
+       ═══════════════════════════════════════ -->
+  <section class="mb-12">
+    <h2 class="text-lg font-semibold mb-4 flex items-center gap-2" style="color: var(--text-primary);">
+      <span class="w-6 h-6 rounded-md flex items-center justify-center text-xs text-white" style="background: #7C3AED;">1</span>
+      🍱 BentoCard 组件（4 种尺寸）
+    </h2>
+    <div class="bento-grid">
+      <!-- Small: 1:1 -->
+      <div class="bento-small rounded-xl p-4 border card-hover flex flex-col justify-between" style="background: var(--bg-surface); border-color: var(--border-default);">
+        <div class="flex items-center justify-between">
+          <span class="text-xs" style="color: var(--text-tertiary);">待审</span>
+          <span class="w-2 h-2 rounded-full" style="background: #7C3AED;"></span>
+        </div>
+        <div>
+          <p class="text-2xl font-bold" style="color: var(--text-primary);">5</p>
+          <p class="text-xs" style="color: var(--text-secondary);">个任务待处理</p>
+        </div>
+      </div>
+
+      <!-- Small: 1:1 -->
+      <div class="bento-small rounded-xl p-4 border card-hover flex flex-col justify-between" style="background: var(--bg-surface); border-color: var(--border-default);">
+        <div class="flex items-center justify-between">
+          <span class="text-xs" style="color: var(--text-tertiary);">今日</span>
+          <span class="w-2 h-2 rounded-full" style="background: #16A34A;"></span>
+        </div>
+        <div>
+          <p class="text-2xl font-bold" style="color: var(--text-primary);">3</p>
+          <p class="text-xs" style="color: var(--text-secondary);">条内容已发布</p>
+        </div>
+      </div>
+
+      <!-- Small: 1:1 -->
+      <div class="bento-small rounded-xl p-4 border card-hover flex flex-col justify-between" style="background: var(--bg-surface); border-color: var(--border-default);">
+        <div class="flex items-center justify-between">
+          <span class="text-xs" style="color: var(--text-tertiary);">违规</span>
+          <span class="w-2 h-2 rounded-full" style="background: #DC2626;"></span>
+        </div>
+        <div>
+          <p class="text-2xl font-bold" style="color: var(--text-primary);">0</p>
+          <p class="text-xs" style="color: var(--text-secondary);">个违规内容</p>
+        </div>
+      </div>
+
+      <!-- Small: 1:1 -->
+      <div class="bento-small rounded-xl p-4 border card-hover flex flex-col justify-between" style="background: var(--bg-surface); border-color: var(--border-default);">
+        <div class="flex items-center justify-between">
+          <span class="text-xs" style="color: var(--text-tertiary);">Agent</span>
+          <span class="w-2 h-2 rounded-full ai-pulse" style="background: #7C3AED;"></span>
+        </div>
+        <div>
+          <p class="text-2xl font-bold" style="color: var(--text-primary);">6</p>
+          <p class="text-xs" style="color: var(--text-secondary);">个运行中</p>
+        </div>
+      </div>
+
+      <!-- Wide: 2:1 -->
+      <div class="bento-wide rounded-xl p-4 border card-hover" style="background: var(--bg-surface); border-color: var(--border-default);">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-sm font-medium" style="color: var(--text-primary);">内容趋势（7天互动量）</span>
+          <span class="text-xs px-2 py-0.5 rounded-full" style="background: rgba(124,58,237,0.08); color: #7C3AED;">↑ 15%</span>
+        </div>
+        <div class="flex items-end gap-2 h-16">
+          <div class="flex-1 rounded-t" style="height: 40%; background: linear-gradient(to top, #7C3AED, #A78BFA);"></div>
+          <div class="flex-1 rounded-t" style="height: 60%; background: linear-gradient(to top, #7C3AED, #A78BFA);"></div>
+          <div class="flex-1 rounded-t" style="height: 45%; background: linear-gradient(to top, #7C3AED, #A78BFA);"></div>
+          <div class="flex-1 rounded-t" style="height: 80%; background: linear-gradient(to top, #7C3AED, #A78BFA);"></div>
+          <div class="flex-1 rounded-t" style="height: 70%; background: linear-gradient(to top, #7C3AED, #A78BFA);"></div>
+          <div class="flex-1 rounded-t" style="height: 90%; background: linear-gradient(to top, #7C3AED, #A78BFA);"></div>
+          <div class="flex-1 rounded-t" style="height: 100%; background: linear-gradient(to top, #7C3AED, #A78BFA);"></div>
+        </div>
+        <div class="flex justify-between mt-1">
+          <span class="text-[10px]" style="color: var(--text-tertiary);">周一</span>
+          <span class="text-[10px]" style="color: var(--text-tertiary);">周二</span>
+          <span class="text-[10px]" style="color: var(--text-tertiary);">周三</span>
+          <span class="text-[10px]" style="color: var(--text-tertiary);">周四</span>
+          <span class="text-[10px]" style="color: var(--text-tertiary);">周五</span>
+          <span class="text-[10px]" style="color: var(--text-tertiary);">周六</span>
+          <span class="text-[10px]" style="color: var(--text-tertiary);">周日</span>
+        </div>
+      </div>
+
+      <!-- Large: 2:2 -->
+      <div class="bento-large rounded-xl p-4 border card-hover" style="background: var(--bg-surface); border-color: var(--border-default);">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-sm font-medium" style="color: var(--text-primary);">待办任务列表</span>
+          <span class="text-xs px-2 py-0.5 rounded-full" style="background: rgba(124,58,237,0.08); color: #7C3AED;">5 个待审</span>
+        </div>
+        <div class="space-y-2">
+          <div class="flex items-center gap-2 p-2 rounded-lg" style="background: var(--bg-base); border: 1px solid var(--border-default);">
+            <span class="w-2 h-2 rounded-full" style="background: #D97706;"></span>
+            <span class="text-xs flex-1" style="color: var(--text-primary);">猫咪驱虫避坑指南待审核</span>
+            <span class="text-[10px]" style="color: var(--text-tertiary);">2h前</span>
+          </div>
+          <div class="flex items-center gap-2 p-2 rounded-lg" style="background: var(--bg-base); border: 1px solid var(--border-default);">
+            <span class="w-2 h-2 rounded-full" style="background: #D97706;"></span>
+            <span class="text-xs flex-1" style="color: var(--text-primary);">第一次带猫体检内容优化</span>
+            <span class="text-[10px]" style="color: var(--text-tertiary);">4h前</span>
+          </div>
+          <div class="flex items-center gap-2 p-2 rounded-lg" style="background: var(--bg-base); border: 1px solid var(--border-default);">
+            <span class="w-2 h-2 rounded-full" style="background: #7C3AED;"></span>
+            <span class="text-xs flex-1" style="color: var(--text-primary);">AI 生成中：新手养猫系列 #3</span>
+            <span class="text-[10px]" style="color: var(--text-tertiary);">⏳</span>
+          </div>
+          <div class="flex items-center gap-2 p-2 rounded-lg" style="background: var(--bg-base); border: 1px solid var(--border-default);">
+            <span class="w-2 h-2 rounded-full" style="background: #16A34A;"></span>
+            <span class="text-xs flex-1" style="color: var(--text-primary);">疫苗接种时间表已发布</span>
+            <span class="text-[10px]" style="color: var(--text-tertiary);">✓</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Full: 通栏 -->
+      <div class="bento-full rounded-xl p-4 border card-hover" style="background: var(--bg-surface); border-color: var(--border-default);">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-sm font-medium" style="color: var(--text-primary);">最近内容卡片流</span>
+          <span class="text-xs" style="color: var(--text-tertiary);">横向滚动 →</span>
+        </div>
+        <div class="flex gap-3 overflow-x-auto pb-2">
+          <!-- 3 个 ContentCard 缩略 -->
+          <div class="flex-shrink-0 w-48 rounded-lg p-3 border" style="background: var(--bg-base); border-color: var(--border-default);">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-lg">🐱</span>
+              <span class="text-xs font-medium" style="color: var(--text-primary);">小艾养猫记</span>
+            </div>
+            <p class="text-xs mb-2 line-clamp-2" style="color: var(--text-secondary);">猫咪驱虫避坑指南，这3个误区90%的人都不知道</p>
+            <div class="flex items-center gap-1 text-[10px]" style="color: var(--text-tertiary);">
+              <span>驱虫</span><span>|</span><span>新手养猫</span>
+            </div>
+          </div>
+          <div class="flex-shrink-0 w-48 rounded-lg p-3 border" style="background: var(--bg-base); border-color: var(--border-default);">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-lg">🐕</span>
+              <span class="text-xs font-medium" style="color: var(--text-primary);">阿明救助站</span>
+            </div>
+            <p class="text-xs mb-2 line-clamp-2" style="color: var(--text-secondary);">流浪猫救助日记：第 30 天的变化</p>
+            <div class="flex items-center gap-1 text-[10px]" style="color: var(--text-tertiary);">
+              <span>救助</span><span>|</span><span>日记</span>
+            </div>
+          </div>
+          <div class="flex-shrink-0 w-48 rounded-lg p-3 border ai-border-flow" style="background: var(--bg-base);">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-lg">💊</span>
+              <span class="text-xs font-medium" style="color: var(--text-primary);">省钱狗爸</span>
+            </div>
+            <p class="text-xs mb-2 line-clamp-2" style="color: var(--text-secondary);">AI 生成中：驱虫药对比测评...</p>
+            <div class="flex items-center gap-1 text-[10px]" style="color: var(--accent-ai);">
+              <span>🤖 AI 生成中</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Highlight BentoCard -->
+    <div class="mt-4 p-4 rounded-xl ai-border-flow" style="background: var(--bg-base);">
+      <div class="flex items-center justify-between">
+        <div>
+          <span class="text-xs px-2 py-0.5 rounded-full text-white font-medium" style="background: linear-gradient(135deg, #7C3AED, #A78BFA);">🤖 AI 分析中</span>
+          <p class="text-sm font-medium mt-1" style="color: var(--text-primary);">AI 流光边框 BentoCard（aiHighlight=true）</p>
+          <p class="text-xs" style="color: var(--text-secondary);">Hover 时显示「🤖 AI 分析」快捷入口</p>
+        </div>
+        <span class="text-2xl">✨</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════
+       Section 2: ContentCard 组件
+       ═══════════════════════════════════════ -->
+  <section class="mb-12">
+    <h2 class="text-lg font-semibold mb-4 flex items-center gap-2" style="color: var(--text-primary);">
+      <span class="w-6 h-6 rounded-md flex items-center justify-center text-xs text-white" style="background: #7C3AED;">2</span>
+      🃏 ContentCard 组件（Agent Trace + 合规分数）
+    </h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+      <!-- ContentCard 1: 高分 + 已完成 -->
+      <div class="rounded-xl p-4 border card-hover" style="background: var(--bg-surface); border-color: var(--border-default);">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2">
+            <span class="text-lg">🐱</span>
+            <span class="text-sm font-medium" style="color: var(--text-primary);">小艾养猫记</span>
+            <span class="text-[10px] px-1.5 py-0.5 rounded" style="background: #F3F4F6; color: #6B7280;">小红书</span>
+          </div>
+          <div class="flex gap-1">
+            <button class="p-1 rounded hover:bg-gray-100" title="编辑">✏️</button>
+            <button class="p-1 rounded hover:bg-gray-100" title="预览">👁️</button>
+          </div>
+        </div>
+        <p class="text-sm mb-3" style="color: var(--text-secondary);">猫咪驱虫避坑指南，这3个误区90%的人都不知道</p>
+        <div class="rounded-lg h-24 mb-3 flex items-center justify-center text-xs" style="background: linear-gradient(135deg, #F3F4F6, #E5E7EB); color: var(--text-tertiary);">
+          [图片预览区]
+        </div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex gap-2 text-[10px]">
+            <span class="px-2 py-0.5 rounded-full" style="background: rgba(124,58,237,0.08); color: #7C3AED;">驱虫</span>
+            <span class="px-2 py-0.5 rounded-full" style="background: rgba(124,58,237,0.08); color: #7C3AED;">新手养猫</span>
+          </div>
+          <span class="text-xs" style="color: var(--text-secondary);">❤️ 25-60</span>
+        </div>
+        <!-- 合规分数 -->
+        <div class="mb-3">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-xs" style="color: var(--text-tertiary);">合规分数</span>
+            <span class="text-xs font-semibold" style="color: #16A34A;">96分</span>
+          </div>
+          <div class="h-1.5 rounded-full overflow-hidden" style="background: #F3F4F6;">
+            <div class="h-full rounded-full" style="width: 96%; background: linear-gradient(90deg, #16A34A, #22C55E);"></div>
+          </div>
+        </div>
+        <!-- Agent Trace -->
+        <div class="space-y-1 mb-3 text-xs">
+          <div class="flex items-center gap-2" style="color: var(--text-secondary);">
+            <span class="w-2 h-2 rounded-full" style="background: #16A34A;"></span>
+            <span class="flex-1">TrendScout</span>
+            <span>0.8s</span>
+            <span>✓</span>
+          </div>
+          <div class="flex items-center gap-2" style="color: var(--text-secondary);">
+            <span class="w-2 h-2 rounded-full" style="background: #16A34A;"></span>
+            <span class="flex-1">ContentForge</span>
+            <span>8.5s</span>
+            <span>✓</span>
+          </div>
+          <div class="flex items-center gap-2" style="color: var(--text-secondary);">
+            <span class="w-2 h-2 rounded-full" style="background: #16A34A;"></span>
+            <span class="flex-1">Compliance</span>
+            <span>--</span>
+            <span>✓</span>
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <button class="flex-1 px-3 py-1.5 rounded-lg text-xs font-medium text-white" style="background: var(--accent-ai);">一键发布</button>
+          <button class="px-3 py-1.5 rounded-lg text-xs font-medium" style="background: var(--bg-base); border: 1px solid var(--border-default); color: var(--text-secondary);">修改</button>
+          <button class="px-3 py-1.5 rounded-lg text-xs font-medium" style="background: var(--bg-base); border: 1px solid var(--border-default); color: var(--text-secondary);">详情</button>
+        </div>
+      </div>
+
+      <!-- ContentCard 2: 中分 + 运行中 -->
+      <div class="rounded-xl p-4 border ai-border-flow" style="background: var(--bg-surface);">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2">
+            <span class="text-lg">💊</span>
+            <span class="text-sm font-medium" style="color: var(--text-primary);">省钱狗爸</span>
+            <span class="text-[10px] px-1.5 py-0.5 rounded" style="background: #F3F4F6; color: #6B7280;">小红书</span>
+          </div>
+          <span class="text-xs px-2 py-0.5 rounded-full text-white font-medium" style="background: linear-gradient(135deg, #7C3AED, #A78BFA);">🤖 AI 生成中</span>
+        </div>
+        <p class="text-sm mb-3" style="color: var(--text-secondary);">驱虫药对比测评：这3款性价比最高...</p>
+        <div class="rounded-lg h-24 mb-3 flex items-center justify-center text-xs" style="background: linear-gradient(135deg, #F3F4F6, #E5E7EB); color: var(--text-tertiary);">
+          [图片生成中...]
+        </div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex gap-2 text-[10px]">
+            <span class="px-2 py-0.5 rounded-full" style="background: rgba(124,58,237,0.08); color: #7C3AED;">测评</span>
+            <span class="px-2 py-0.5 rounded-full" style="background: rgba(124,58,237,0.08); color: #7C3AED;">省钱</span>
+          </div>
+          <span class="text-xs" style="color: var(--text-secondary);">❤️ --</span>
+        </div>
+        <!-- 合规分数 -->
+        <div class="mb-3">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-xs" style="color: var(--text-tertiary);">合规分数</span>
+            <span class="text-xs font-semibold" style="color: #D97706;">78分</span>
+          </div>
+          <div class="h-1.5 rounded-full overflow-hidden" style="background: #F3F4F6;">
+            <div class="h-full rounded-full" style="width: 78%; background: linear-gradient(90deg, #D97706, #F59E0B);"></div>
+          </div>
+        </div>
+        <!-- Agent Trace -->
+        <div class="space-y-1 mb-3 text-xs">
+          <div class="flex items-center gap-2" style="color: var(--text-secondary);">
+            <span class="w-2 h-2 rounded-full" style="background: #16A34A;"></span>
+            <span class="flex-1">TrendScout</span>
+            <span>0.8s</span>
+            <span>✓</span>
+          </div>
+          <div class="flex items-center gap-2" style="color: var(--text-secondary);">
+            <span class="w-2 h-2 rounded-full ai-pulse" style="background: #7C3AED;"></span>
+            <span class="flex-1">ContentForge</span>
+            <span>⏱ 8.5s</span>
+            <span>...</span>
+          </div>
+          <div class="flex items-center gap-2" style="color: var(--text-secondary);">
+            <span class="w-2 h-2 rounded-full" style="background: #9CA3AF;"></span>
+            <span class="flex-1">Compliance</span>
+            <span>--</span>
+            <span>⏳</span>
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <button class="flex-1 px-3 py-1.5 rounded-lg text-xs font-medium text-white opacity-50 cursor-not-allowed" style="background: var(--accent-ai);">生成中...</button>
+        </div>
+      </div>
+
+      <!-- ContentCard 3: 低分 + 警告 -->
+      <div class="rounded-xl p-4 border card-hover" style="background: var(--bg-surface); border-color: var(--border-default);">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-2">
+            <span class="text-lg">🐕</span>
+            <span class="text-sm font-medium" style="color: var(--text-primary);">阿明救助站</span>
+            <span class="text-[10px] px-1.5 py-0.5 rounded" style="background: #F3F4F6; color: #6B7280;">小红书</span>
+          </div>
+        </div>
+        <p class="text-sm mb-3" style="color: var(--text-secondary);">流浪猫救助日记：第 30 天的变化（含敏感词）</p>
+        <div class="rounded-lg h-24 mb-3 flex items-center justify-center text-xs" style="background: linear-gradient(135deg, #F3F4F6, #E5E7EB); color: var(--text-tertiary);">
+          [图片预览区]
+        </div>
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex gap-2 text-[10px]">
+            <span class="px-2 py-0.5 rounded-full" style="background: rgba(124,58,237,0.08); color: #7C3AED;">救助</span>
+            <span class="px-2 py-0.5 rounded-full" style="background: rgba(124,58,237,0.08); color: #7C3AED;">日记</span>
+          </div>
+          <span class="text-xs" style="color: var(--text-secondary);">❤️ 15-30</span>
+        </div>
+        <!-- 合规分数 -->
+        <div class="mb-3">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-xs" style="color: var(--text-tertiary);">合规分数</span>
+            <span class="text-xs font-semibold" style="color: #DC2626;">62分 ⚠️</span>
+          </div>
+          <div class="h-1.5 rounded-full overflow-hidden" style="background: #F3F4F6;">
+            <div class="h-full rounded-full" style="width: 62%; background: linear-gradient(90deg, #DC2626, #EF4444);"></div>
+          </div>
+        </div>
+        <!-- Agent Trace -->
+        <div class="space-y-1 mb-3 text-xs">
+          <div class="flex items-center gap-2" style="color: var(--text-secondary);">
+            <span class="w-2 h-2 rounded-full" style="background: #16A34A;"></span>
+            <span class="flex-1">TrendScout</span>
+            <span>0.8s</span>
+            <span>✓</span>
+          </div>
+          <div class="flex items-center gap-2" style="color: var(--text-secondary);">
+            <span class="w-2 h-2 rounded-full" style="background: #16A34A;"></span>
+            <span class="flex-1">ContentForge</span>
+            <span>8.5s</span>
+            <span>✓</span>
+          </div>
+          <div class="flex items-center gap-2" style="color: var(--text-secondary);">
+            <span class="w-2 h-2 rounded-full" style="background: #DC2626;"></span>
+            <span class="flex-1">Compliance</span>
+            <span>--</span>
+            <span>✗</span>
+          </div>
+        </div>
+        <div class="p-2 rounded-lg mb-3 text-xs" style="background: rgba(220,38,38,0.06); color: #DC2626;">
+          🤖 AI 建议：标题包含敏感词「救助」，建议改为「帮助」
+        </div>
+        <div class="flex gap-2">
+          <button class="flex-1 px-3 py-1.5 rounded-lg text-xs font-medium" style="background: rgba(220,38,38,0.08); color: #DC2626; border: 1px solid rgba(220,38,38,0.2);">退回修改</button>
+          <button class="px-3 py-1.5 rounded-lg text-xs font-medium" style="background: var(--bg-base); border: 1px solid var(--border-default); color: var(--text-secondary);">忽略</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════
+       Section 3: CommandPalette 组件
+       ═══════════════════════════════════════ -->
+  <section class="mb-12">
+    <h2 class="text-lg font-semibold mb-4 flex items-center gap-2" style="color: var(--text-primary);">
+      <span class="w-6 h-6 rounded-md flex items-center justify-center text-xs text-white" style="background: #7C3AED;">3</span>
+      ⌨️ CommandPalette 组件（Command+K）
+    </h2>
+
+    <!-- 触发按钮 -->
+    <div class="flex items-center gap-4 mb-4">
+      <button class="px-4 py-2 rounded-lg text-sm font-medium text-white" style="background: var(--accent-ai);" onclick="document.getElementById('cmd-palette').classList.remove('hidden'); document.getElementById('cmd-backdrop').classList.remove('hidden');">
+        打开 Command Palette (Ctrl+K)
+      </button>
+      <span class="text-sm" style="color: var(--text-secondary);">点击按钮或按键盘快捷键体验</span>
+    </div>
+
+    <!-- Command Palette 弹窗 -->
+    <div id="cmd-backdrop" class="cmd-backdrop hidden" onclick="document.getElementById('cmd-palette').classList.add('hidden'); document.getElementById('cmd-backdrop').classList.add('hidden');"></div>
+    <div id="cmd-palette" class="cmd-palette hidden">
+      <!-- 搜索框 -->
+      <div class="flex items-center gap-2 p-3 border-b" style="border-color: var(--border-default);">
+        <svg class="w-5 h-5" style="color: var(--text-tertiary);" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+        <input type="text" placeholder="搜索命令、页面、快捷操作..." class="flex-1 text-sm outline-none bg-transparent" style="color: var(--text-primary);" id="cmd-input" onkeydown="handleCmdKeydown(event)">
+        <kbd class="px-2 py-0.5 rounded text-[10px] font-mono" style="background: var(--bg-surface); color: var(--text-tertiary); border: 1px solid var(--border-default);">ESC</kbd>
+      </div>
+      <!-- 命令列表 -->
+      <div class="max-h-80 overflow-y-auto py-1" id="cmd-list">
+        <div class="px-3 py-1 text-[10px] font-semibold uppercase tracking-wider" style="color: var(--text-tertiary);">最近使用</div>
+        <div class="cmd-item px-3 py-2.5 flex items-center gap-3 cursor-pointer mx-2 rounded-lg active">
+          <span class="w-5 text-center">📝</span>
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-medium cmd-label" style="color: var(--text-primary);">创建内容</div>
+            <div class="text-xs" style="color: var(--text-tertiary);">快速创建一篇新内容</div>
+          </div>
+          <span class="text-[10px] px-1.5 py-0.5 rounded" style="background: var(--bg-surface); color: var(--text-tertiary);">Ctrl+N</span>
+        </div>
+        <div class="cmd-item px-3 py-2.5 flex items-center gap-3 cursor-pointer mx-2 rounded-lg">
+          <span class="w-5 text-center">👁️</span>
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-medium cmd-label" style="color: var(--text-primary);">审核队列</div>
+            <div class="text-xs" style="color: var(--text-tertiary);">5 个待审任务</div>
+          </div>
+        </div>
+        <div class="px-3 py-1 text-[10px] font-semibold uppercase tracking-wider mt-1" style="color: var(--text-tertiary);">AI 快捷操作</div>
+        <div class="cmd-item px-3 py-2.5 flex items-center gap-3 cursor-pointer mx-2 rounded-lg">
+          <span class="w-5 text-center">✨</span>
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-medium cmd-label" style="color: var(--text-primary);">AI 分析选中内容</div>
+            <div class="text-xs" style="color: var(--text-tertiary);">使用 AI 分析当前选中的内容</div>
+          </div>
+          <span class="text-[10px] px-1.5 py-0.5 rounded" style="background: var(--bg-surface); color: var(--text-tertiary);">Ctrl+I</span>
+        </div>
+        <div class="cmd-item px-3 py-2.5 flex items-center gap-3 cursor-pointer mx-2 rounded-lg">
+          <span class="w-5 text-center">🔄</span>
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-medium cmd-label" style="color: var(--text-primary);">AI 润色</div>
+            <div class="text-xs" style="color: var(--text-tertiary);">使用 AI 润色当前文案</div>
+          </div>
+          <span class="text-[10px] px-1.5 py-0.5 rounded" style="background: var(--bg-surface); color: var(--text-tertiary);">Ctrl+Shift+P</span>
+        </div>
+        <div class="cmd-item px-3 py-2.5 flex items-center gap-3 cursor-pointer mx-2 rounded-lg">
+          <span class="w-5 text-center">🔍</span>
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-medium cmd-label" style="color: var(--text-primary);">AI 检测敏感词</div>
+            <div class="text-xs" style="color: var(--text-tertiary);">检测内容中的敏感词汇</div>
+          </div>
+          <span class="text-[10px] px-1.5 py-0.5 rounded" style="background: var(--bg-surface); color: var(--text-tertiary);">Ctrl+Shift+S</span>
+        </div>
+        <div class="px-3 py-1 text-[10px] font-semibold uppercase tracking-wider mt-1" style="color: var(--text-tertiary);">页面跳转</div>
+        <div class="cmd-item px-3 py-2.5 flex items-center gap-3 cursor-pointer mx-2 rounded-lg">
+          <span class="w-5 text-center">🏠</span>
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-medium cmd-label" style="color: var(--text-primary);">工作台</div>
+          </div>
+          <kbd class="text-[10px] px-1.5 py-0.5 rounded" style="background: var(--bg-surface); color: var(--text-tertiary); border: 1px solid var(--border-default);">G 1</kbd>
+        </div>
+        <div class="cmd-item px-3 py-2.5 flex items-center gap-3 cursor-pointer mx-2 rounded-lg">
+          <span class="w-5 text-center">🎨</span>
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-medium cmd-label" style="color: var(--text-primary);">内容生产</div>
+          </div>
+          <kbd class="text-[10px] px-1.5 py-0.5 rounded" style="background: var(--bg-surface); color: var(--text-tertiary); border: 1px solid var(--border-default);">G 2</kbd>
+        </div>
+        <div class="cmd-item px-3 py-2.5 flex items-center gap-3 cursor-pointer mx-2 rounded-lg">
+          <span class="w-5 text-center">✅</span>
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-medium cmd-label" style="color: var(--text-primary);">审核发布</div>
+          </div>
+          <kbd class="text-[10px] px-1.5 py-0.5 rounded" style="background: var(--bg-surface); color: var(--text-tertiary); border: 1px solid var(--border-default);">G 3</kbd>
+        </div>
+        <div class="cmd-item px-3 py-2.5 flex items-center gap-3 cursor-pointer mx-2 rounded-lg">
+          <span class="w-5 text-center">⚙️</span>
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-medium cmd-label" style="color: var(--text-primary);">设置</div>
+          </div>
+          <kbd class="text-[10px] px-1.5 py-0.5 rounded" style="background: var(--bg-surface); color: var(--text-tertiary); border: 1px solid var(--border-default);">G 0</kbd>
+        </div>
+        <div class="px-3 py-1 text-[10px] font-semibold uppercase tracking-wider mt-1" style="color: var(--text-tertiary);">AI Copilot</div>
+        <div class="cmd-item px-3 py-2.5 flex items-center gap-3 cursor-pointer mx-2 rounded-lg">
+          <span class="w-5 text-center">🤖</span>
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-medium cmd-label" style="color: var(--text-primary);">打开 AI 副驾驶</div>
+            <div class="text-xs" style="color: var(--text-tertiary);">启动 AI 辅助对话面板</div>
+          </div>
+          <span class="text-[10px] px-1.5 py-0.5 rounded" style="background: var(--bg-surface); color: var(--text-tertiary);">/</span>
+        </div>
+      </div>
+      <!-- 底部提示 -->
+      <div class="flex items-center justify-between px-3 py-2 border-t text-[10px]" style="border-color: var(--border-default); color: var(--text-tertiary);">
+        <div class="flex gap-3">
+          <span>↑↓ 导航</span>
+          <span>↵ 选择</span>
+          <span>ESC 关闭</span>
+        </div>
+        <span>v4.0</span>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    // 键盘快捷键触发 Command Palette
+    document.addEventListener('keydown', function(e) {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        var palette = document.getElementById('cmd-palette');
+        var backdrop = document.getElementById('cmd-backdrop');
+        if (palette.classList.contains('hidden')) {
+          palette.classList.remove('hidden');
+          backdrop.classList.remove('hidden');
+          setTimeout(function() { document.getElementById('cmd-input').focus(); }, 50);
+        } else {
+          palette.classList.add('hidden');
+          backdrop.classList.add('hidden');
+        }
+      }
+      if (e.key === 'Escape') {
+        document.getElementById('cmd-palette').classList.add('hidden');
+        document.getElementById('cmd-backdrop').classList.add('hidden');
+      }
+    });
+    // 列表项键盘导航
+    var activeIndex = 0;
+    function handleCmdKeydown(e) {
+      var items = document.querySelectorAll('#cmd-list .cmd-item');
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        items[activeIndex].classList.remove('active');
+        activeIndex = (activeIndex + 1) % items.length;
+        items[activeIndex].classList.add('active');
+        items[activeIndex].scrollIntoView({ block: 'nearest' });
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        items[activeIndex].classList.remove('active');
+        activeIndex = (activeIndex - 1 + items.length) % items.length;
+        items[activeIndex].classList.add('active');
+        items[activeIndex].scrollIntoView({ block: 'nearest' });
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        var label = items[activeIndex].querySelector('.cmd-label').textContent;
+        alert('执行命令：' + label);
+        document.getElementById('cmd-palette').classList.add('hidden');
+        document.getElementById('cmd-backdrop').classList.add('hidden');
+      }
+    }
+    // 鼠标点击高亮
+    document.querySelectorAll('#cmd-list .cmd-item').forEach(function(item, idx) {
+      item.addEventListener('mouseenter', function() {
+        document.querySelectorAll('#cmd-list .cmd-item').forEach(function(i) { i.classList.remove('active'); });
+        activeIndex = idx;
+        item.classList.add('active');
+      });
+    });
+  </script>
+
+  <!-- ═══════════════════════════════════════
+       Section 4: EmptyState 组件
+       ═══════════════════════════════════════ -->
+  <section class="mb-12">
+    <h2 class="text-lg font-semibold mb-4 flex items-center gap-2" style="color: var(--text-primary);">
+      <span class="w-6 h-6 rounded-md flex items-center justify-center text-xs text-white" style="background: #7C3AED;">4</span>
+      🫙 EmptyState 组件（AI 建议文案）
+    </h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+      <!-- 场景 1: 无内容 -->
+      <div class="rounded-xl p-6 border flex flex-col items-center text-center" style="background: var(--bg-surface); border-color: var(--border-default);">
+        <div class="w-16 h-16 rounded-full flex items-center justify-center mb-4" style="background: rgba(124,58,237,0.08);">
+          <span class="text-3xl">📝</span>
+        </div>
+        <h3 class="text-sm font-semibold mb-1" style="color: var(--text-primary);">暂无内容</h3>
+        <p class="text-xs mb-4" style="color: var(--text-secondary);">开始创建你的第一篇内容吧</p>
+        <button class="px-4 py-2 rounded-lg text-xs font-medium text-white" style="background: var(--accent-ai);">创建内容</button>
+        <p class="text-[10px] mt-3 flex items-center gap-1" style="color: var(--accent-ai);">
+          <span>🤖</span>
+          <span>AI 建议：根据最近热度话题「猫咪驱虫」生成内容</span>
+        </p>
+      </div>
+
+      <!-- 场景 2: 搜索无结果 -->
+      <div class="rounded-xl p-6 border flex flex-col items-center text-center" style="background: var(--bg-surface); border-color: var(--border-default);">
+        <div class="w-16 h-16 rounded-full flex items-center justify-center mb-4" style="background: rgba(124,58,237,0.08);">
+          <span class="text-3xl">🔍</span>
+        </div>
+        <h3 class="text-sm font-semibold mb-1" style="color: var(--text-primary);">没有找到相关内容</h3>
+        <p class="text-xs mb-4" style="color: var(--text-secondary);">换个关键词试试，或清除筛选条件</p>
+        <div class="flex gap-2">
+          <button class="px-3 py-1.5 rounded-lg text-xs font-medium" style="background: var(--bg-base); border: 1px solid var(--border-default); color: var(--text-secondary);">清除筛选</button>
+          <button class="px-3 py-1.5 rounded-lg text-xs font-medium text-white" style="background: var(--accent-ai);">AI 智能搜索</button>
+        </div>
+        <p class="text-[10px] mt-3 flex items-center gap-1" style="color: var(--accent-ai);">
+          <span>🤖</span>
+          <span>AI 建议：尝试搜索「驱虫」相关话题</span>
+        </p>
+      </div>
+
+      <!-- 场景 3: 无数据（图表/报表） -->
+      <div class="rounded-xl p-6 border flex flex-col items-center text-center" style="background: var(--bg-surface); border-color: var(--border-default);">
+        <div class="w-16 h-16 rounded-full flex items-center justify-center mb-4" style="background: rgba(124,58,237,0.08);">
+          <span class="text-3xl">📊</span>
+        </div>
+        <h3 class="text-sm font-semibold mb-1" style="color: var(--text-primary);">暂无数据</h3>
+        <p class="text-xs mb-4" style="color: var(--text-secondary);">数据正在收集中，请稍后再来查看</p>
+        <button class="px-4 py-2 rounded-lg text-xs font-medium text-white opacity-50 cursor-not-allowed" style="background: var(--accent-ai);">刷新中...</button>
+        <p class="text-[10px] mt-3 flex items-center gap-1" style="color: var(--accent-ai);">
+          <span>🤖</span>
+          <span>AI 建议：今日数据预计 12:00 更新完成</span>
+        </p>
+      </div>
+
+      <!-- 场景 4: 网络错误 -->
+      <div class="rounded-xl p-6 border flex flex-col items-center text-center" style="background: var(--bg-surface); border-color: var(--border-default);">
+        <div class="w-16 h-16 rounded-full flex items-center justify-center mb-4" style="background: rgba(220,38,38,0.06);">
+          <span class="text-3xl">📡</span>
+        </div>
+        <h3 class="text-sm font-semibold mb-1" style="color: var(--text-primary);">网络连接异常</h3>
+        <p class="text-xs mb-4" style="color: var(--text-secondary);">请检查网络设置后重试</p>
+        <div class="flex gap-2">
+          <button class="px-3 py-1.5 rounded-lg text-xs font-medium" style="background: var(--bg-base); border: 1px solid var(--border-default); color: var(--text-secondary);">重试</button>
+          <button class="px-3 py-1.5 rounded-lg text-xs font-medium text-white" style="background: var(--accent-ai);">离线模式</button>
+        </div>
+        <p class="text-[10px] mt-3 flex items-center gap-1" style="color: var(--accent-ai);">
+          <span>🤖</span>
+          <span>AI 建议：已切换至本地缓存数据</span>
+        </p>
+      </div>
+
+      <!-- 场景 5: 无权限 -->
+      <div class="rounded-xl p-6 border flex flex-col items-center text-center" style="background: var(--bg-surface); border-color: var(--border-default);">
+        <div class="w-16 h-16 rounded-full flex items-center justify-center mb-4" style="background: rgba(217,119,6,0.06);">
+          <span class="text-3xl">🔒</span>
+        </div>
+        <h3 class="text-sm font-semibold mb-1" style="color: var(--text-primary);">无权访问</h3>
+        <p class="text-xs mb-4" style="color: var(--text-secondary);">你需要管理员权限才能访问此页面</p>
+        <button class="px-4 py-2 rounded-lg text-xs font-medium text-white" style="background: var(--accent-ai);">申请权限</button>
+        <p class="text-[10px] mt-3 flex items-center gap-1" style="color: var(--accent-ai);">
+          <span>🤖</span>
+          <span>AI 建议：联系管理员开通「内容管理」权限</span>
+        </p>
+      </div>
+
+      <!-- 场景 6: 404 -->
+      <div class="rounded-xl p-6 border flex flex-col items-center text-center" style="background: var(--bg-surface); border-color: var(--border-default);">
+        <div class="w-16 h-16 rounded-full flex items-center justify-center mb-4" style="background: rgba(107,114,128,0.06);">
+          <span class="text-3xl">🤷</span>
+        </div>
+        <h3 class="text-sm font-semibold mb-1" style="color: var(--text-primary);">页面未找到</h3>
+        <p class="text-xs mb-4" style="color: var(--text-secondary);">这个页面可能已经移动或不存在</p>
+        <div class="flex gap-2">
+          <button class="px-3 py-1.5 rounded-lg text-xs font-medium" style="background: var(--bg-base); border: 1px solid var(--border-default); color: var(--text-secondary);">返回首页</button>
+          <button class="px-3 py-1.5 rounded-lg text-xs font-medium text-white" style="background: var(--accent-ai);">搜索</button>
+        </div>
+        <p class="text-[10px] mt-3 flex items-center gap-1" style="color: var(--accent-ai);">
+          <span>🤖</span>
+          <span>AI 建议：查看帮助文档获取导航指引</span>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════
+       Section 5: Skeleton 组件
+       ═══════════════════════════════════════ -->
+  <section class="mb-12">
+    <h2 class="text-lg font-semibold mb-4 flex items-center gap-2" style="color: var(--text-primary);">
+      <span class="w-6 h-6 rounded-md flex items-center justify-center text-xs text-white" style="background: #7C3AED;">5</span>
+      💀 Skeleton 组件（Shimmer 动画）
+    </h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+      <!-- Skeleton Card -->
+      <div class="rounded-xl p-4 border" style="background: var(--bg-surface); border-color: var(--border-default);">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 rounded-full animate-shimmer"></div>
+          <div class="flex-1 space-y-2">
+            <div class="h-3 rounded w-24 animate-shimmer"></div>
+            <div class="h-2 rounded w-16 animate-shimmer"></div>
+          </div>
+        </div>
+        <div class="space-y-2 mb-3">
+          <div class="h-4 rounded w-full animate-shimmer"></div>
+          <div class="h-4 rounded w-3/4 animate-shimmer"></div>
+        </div>
+        <div class="h-24 rounded-lg mb-3 animate-shimmer"></div>
+        <div class="flex gap-2">
+          <div class="h-8 rounded-lg flex-1 animate-shimmer"></div>
+          <div class="h-8 rounded-lg w-16 animate-shimmer"></div>
+        </div>
+      </div>
+
+      <!-- Skeleton List -->
+      <div class="rounded-xl p-4 border" style="background: var(--bg-surface); border-color: var(--border-default);">
+        <div class="h-4 rounded w-20 mb-3 animate-shimmer"></div>
+        <div class="space-y-3">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg animate-shimmer"></div>
+            <div class="flex-1 space-y-1.5">
+              <div class="h-3 rounded w-full animate-shimmer"></div>
+              <div class="h-2 rounded w-2/3 animate-shimmer"></div>
+            </div>
+            <div class="h-3 rounded w-12 animate-shimmer"></div>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg animate-shimmer"></div>
+            <div class="flex-1 space-y-1.5">
+              <div class="h-3 rounded w-full animate-shimmer"></div>
+              <div class="h-2 rounded w-2/3 animate-shimmer"></div>
+            </div>
+            <div class="h-3 rounded w-12 animate-shimmer"></div>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg animate-shimmer"></div>
+            <div class="flex-1 space-y-1.5">
+              <div class="h-3 rounded w-full animate-shimmer"></div>
+              <div class="h-2 rounded w-2/3 animate-shimmer"></div>
+            </div>
+            <div class="h-3 rounded w-12 animate-shimmer"></div>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg animate-shimmer"></div>
+            <div class="flex-1 space-y-1.5">
+              <div class="h-3 rounded w-full animate-shimmer"></div>
+              <div class="h-2 rounded w-2/3 animate-shimmer"></div>
+            </div>
+            <div class="h-3 rounded w-12 animate-shimmer"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Skeleton Dashboard Stats -->
+      <div class="rounded-xl p-4 border" style="background: var(--bg-surface); border-color: var(--border-default);">
+        <div class="grid grid-cols-2 gap-3">
+          <div class="rounded-lg p-3 border" style="border-color: var(--border-default);">
+            <div class="h-2 rounded w-10 mb-2 animate-shimmer"></div>
+            <div class="h-6 rounded w-16 mb-1 animate-shimmer"></div>
+            <div class="h-2 rounded w-20 animate-shimmer"></div>
+          </div>
+          <div class="rounded-lg p-3 border" style="border-color: var(--border-default);">
+            <div class="h-2 rounded w-10 mb-2 animate-shimmer"></div>
+            <div class="h-6 rounded w-16 mb-1 animate-shimmer"></div>
+            <div class="h-2 rounded w-20 animate-shimmer"></div>
+          </div>
+          <div class="rounded-lg p-3 border" style="border-color: var(--border-default);">
+            <div class="h-2 rounded w-10 mb-2 animate-shimmer"></div>
+            <div class="h-6 rounded w-16 mb-1 animate-shimmer"></div>
+            <div class="h-2 rounded w-20 animate-shimmer"></div>
+          </div>
+          <div class="rounded-lg p-3 border" style="border-color: var(--border-default);">
+            <div class="h-2 rounded w-10 mb-2 animate-shimmer"></div>
+            <div class="h-6 rounded w-16 mb-1 animate-shimmer"></div>
+            <div class="h-2 rounded w-20 animate-shimmer"></div>
+          </div>
+        </div>
+        <div class="mt-3 h-32 rounded-lg animate-shimmer"></div>
+      </div>
+    </div>
+
+    <!-- Skeleton Bento 布局 -->
+    <div class="mt-4 p-4 rounded-xl border" style="background: var(--bg-surface); border-color: var(--border-default);">
+      <div class="h-4 rounded w-32 mb-3 animate-shimmer"></div>
+      <div class="grid grid-cols-4 gap-3">
+        <div class="aspect-square rounded-xl animate-shimmer"></div>
+        <div class="aspect-square rounded-xl animate-shimmer"></div>
+        <div class="col-span-2 aspect-[2/1] rounded-xl animate-shimmer"></div>
+        <div class="col-span-2 row-span-2 rounded-xl animate-shimmer"></div>
+        <div class="aspect-square rounded-xl animate-shimmer"></div>
+        <div class="aspect-square rounded-xl animate-shimmer"></div>
+        <div class="col-span-2 aspect-[2/1] rounded-xl animate-shimmer"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════
+       Section 6: 组合场景展示
+       ═══════════════════════════════════════ -->
+  <section class="mb-12">
+    <h2 class="text-lg font-semibold mb-4 flex items-center gap-2" style="color: var(--text-primary);">
+      <span class="w-6 h-6 rounded-md flex items-center justify-center text-xs text-white" style="background: #7C3AED;">6</span>
+      🔗 组合场景展示（综合使用）
+    </h2>
+    <div class="rounded-xl p-4 border" style="background: var(--bg-surface); border-color: var(--border-default);">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-sm font-semibold" style="color: var(--text-primary);">工作台首页 — Bento Grid 组合</h3>
+        <span class="text-xs" style="color: var(--text-tertiary);">响应式 4 列 → 2 列 → 1 列</span>
+      </div>
+      <div class="bento-grid">
+        <!-- Large: 任务列表 -->
+        <div class="bento-large rounded-xl p-4 border card-hover" style="background: var(--bg-base); border-color: var(--border-default);">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-sm font-medium" style="color: var(--text-primary);">待办任务</span>
+            <span class="text-xs px-2 py-0.5 rounded-full" style="background: rgba(124,58,237,0.08); color: #7C3AED;">5 待审</span>
+          </div>
+          <div class="space-y-2">
+            <div class="flex items-center gap-2 p-2 rounded-lg" style="background: var(--bg-surface); border: 1px solid var(--border-default);">
+              <span class="w-2 h-2 rounded-full" style="background: #D97706;"></span>
+              <span class="text-xs flex-1" style="color: var(--text-primary);">猫咪驱虫避坑指南待审核</span>
+              <span class="text-[10px]" style="color: var(--text-tertiary);">2h</span>
+            </div>
+            <div class="flex items-center gap-2 p-2 rounded-lg" style="background: var(--bg-surface); border: 1px solid var(--border-default);">
+              <span class="w-2 h-2 rounded-full ai-pulse" style="background: #7C3AED;"></span>
+              <span class="text-xs flex-1" style="color: var(--text-primary);">AI 生成中：新手养猫 #3</span>
+              <span class="text-[10px]" style="color: var(--accent-ai);">⏳</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Wide: 统计图表 -->
+        <div class="bento-wide rounded-xl p-4 border card-hover" style="background: var(--bg-base); border-color: var(--border-default);">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm font-medium" style="color: var(--text-primary);">互动趋势</span>
+            <span class="text-xs px-2 py-0.5 rounded-full" style="background: rgba(22,163,74,0.08); color: #16A34A;">↑ 23%</span>
+          </div>
+          <div class="flex items-end gap-1 h-20">
+            <div class="flex-1 rounded-t" style="height: 30%; background: linear-gradient(to top, #7C3AED, #A78BFA);"></div>
+            <div class="flex-1 rounded-t" style="height: 50%; background: linear-gradient(to top, #7C3AED, #A78BFA);"></div>
+            <div class="flex-1 rounded-t" style="height: 70%; background: linear-gradient(to top, #7C3AED, #A78BFA);"></div>
+            <div class="flex-1 rounded-t" style="height: 60%; background: linear-gradient(to top, #7C3AED, #A78BFA);"></div>
+            <div class="flex-1 rounded-t" style="height: 90%; background: linear-gradient(to top, #7C3AED, #A78BFA);"></div>
+          </div>
+        </div>
+
+        <!-- Small: 审核数量 -->
+        <div class="bento-small rounded-xl p-4 border card-hover flex flex-col justify-between" style="background: var(--bg-base); border-color: var(--border-default);">
+          <div class="flex items-center justify-between">
+            <span class="text-xs" style="color: var(--text-tertiary);">待审</span>
+            <span class="w-2 h-2 rounded-full" style="background: #D97706;"></span>
+          </div>
+          <div>
+            <p class="text-2xl font-bold" style="color: var(--text-primary);">5</p>
+            <p class="text-xs" style="color: var(--text-secondary);">个任务</p>
+          </div>
+        </div>
+
+        <!-- Small: 已发布 -->
+        <div class="bento-small rounded-xl p-4 border card-hover flex flex-col justify-between" style="background: var(--bg-base); border-color: var(--border-default);">
+          <div class="flex items-center justify-between">
+            <span class="text-xs" style="color: var(--text-tertiary);">已发布</span>
+            <span class="w-2 h-2 rounded-full" style="background: #16A34A;"></span>
+          </div>
+          <div>
+            <p class="text-2xl font-bold" style="color: var(--text-primary);">42</p>
+            <p class="text-xs" style="color: var(--text-secondary);">本周</p>
+          </div>
+        </div>
+
+        <!-- Wide: ContentCard 流 -->
+        <div class="bento-wide rounded-xl p-4 border ai-border-flow" style="background: var(--bg-base);">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-xs px-2 py-0.5 rounded-full text-white font-medium" style="background: linear-gradient(135deg, #7C3AED, #A78BFA);">🤖 AI 分析中</span>
+            <span class="text-xs font-medium" style="color: var(--text-primary);">驱虫药测评</span>
+          </div>
+          <p class="text-xs mb-1" style="color: var(--text-secondary);">AI 正在分析驱虫药对比数据，预计 30 秒后完成...</p>
+          <div class="flex items-center gap-2 text-[10px]" style="color: var(--accent-ai);">
+            <span class="w-2 h-2 rounded-full ai-pulse" style="background: #7C3AED;"></span>
+            <span>ContentForge 运行中 | 12.5s 已用</span>
+          </div>
+        </div>
+
+        <!-- Small: Agent 状态 -->
+        <div class="bento-small rounded-xl p-4 border card-hover flex flex-col justify-between" style="background: var(--bg-base); border-color: var(--border-default);">
+          <div class="flex items-center justify-between">
+            <span class="text-xs" style="color: var(--text-tertiary);">Agent</span>
+            <span class="w-2 h-2 rounded-full ai-pulse" style="background: #7C3AED;"></span>
+          </div>
+          <div>
+            <p class="text-2xl font-bold" style="color: var(--text-primary);">6</p>
+            <p class="text-xs" style="color: var(--text-secondary);">运行中</p>
+          </div>
+        </div>
+
+        <!-- Small: 合规分数 -->
+        <div class="bento-small rounded-xl p-4 border card-hover flex flex-col justify-between" style="background: var(--bg-base); border-color: var(--border-default);">
+          <div class="flex items-center justify-between">
+            <span class="text-xs" style="color: var(--text-tertiary);">合规</span>
+            <span class="text-xs font-semibold" style="color: #16A34A;">92分</span>
+          </div>
+          <div class="h-1.5 rounded-full overflow-hidden" style="background: #F3F4F6;">
+            <div class="h-full rounded-full" style="width: 92%; background: linear-gradient(90deg, #16A34A, #22C55E);"></div>
+          </div>
+          <p class="text-xs" style="color: var(--text-secondary);">平均分数</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════
+       尾注
+       ═══════════════════════════════════════ -->
+  <footer class="pt-6 border-t" style="border-color: var(--border-default);">
+    <p class="text-xs mb-2" style="color: var(--text-tertiary);">
+      <strong>尾注：</strong> 所有组件 Token 引用 `index.css` 中 `@theme` 定义的语义化色值。AI 流光边框使用 `ai-border-flow` 类，Hover 时视觉强度增强。Bento Grid 响应式断点：lg ≥1024px 4 列、md 2 列、sm 1 列。CommandPalette 支持键盘快捷键（Ctrl+K 打开、↑↓ 导航、Enter 执行、ESC 关闭）。EmptyState 预留 6 种常见空态场景，每个场景都包含 AI 建议文案。Skeleton 使用 `animate-shimmer` 无限循环动画，所有占位块为圆角矩形。
+    </p>
+    <p class="text-xs" style="color: var(--text-tertiary);">
+      ✅ 自查项：[ ] 浅色主题一致、[ ] 12 项 IconNav 完整、[ ] AI 流光边框可用、[ ] 响应式正常、[ ] 中文字体正常、[ ] 无溢出/遮挡/重叠
+    </p>
+  </footer>
+
+</body>
+</html>

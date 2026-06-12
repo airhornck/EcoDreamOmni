@@ -1,0 +1,1 @@
+import{t as e}from"./createLucideIcon-CxDy_8zL.js";var t=e(`smartphone`,[[`rect`,{width:`14`,height:`20`,x:`5`,y:`2`,rx:`2`,ry:`2`,key:`1yt0o3`}],[`path`,{d:`M12 18h.01`,key:`mhygvu`}]]),n=e(`tv`,[[`path`,{d:`m17 2-5 5-5-5`,key:`16satq`}],[`rect`,{width:`20`,height:`15`,x:`2`,y:`7`,rx:`2`,key:`1e6viu`}]]);export{t as n,n as t};

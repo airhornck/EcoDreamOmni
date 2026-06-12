@@ -1,0 +1,45 @@
+# syntax=docker/dockerfile:1
+# Backend Dockerfile — OFFLINE build (uses pre-downloaded packages)
+# Run scripts/prepare-offline-build.ps1 first to download packages.
+
+FROM python:3.11-slim AS builder
+
+WORKDIR /app
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends gcc libpq-dev && \
+    rm -rf /var/lib/apt/lists/*
+
+# Copy requirements first (for layer cache)
+COPY apps/backend/requirements.txt ./
+
+# Check if offline packages exist; if yes, use them; otherwise fallback to network
+COPY vendor/docker-build/pip/ /packages/
+RUN if ls /packages/*.whl 1>/dev/null 2>&1; then \
+      echo "[OFFLINE] Installing from local packages..." && \
+      pip install --user --no-index --find-links /packages -r requirements.txt; \
+    else \
+      echo "[ONLINE] No local packages found, downloading from network..." && \
+      pip install --user -r requirements.txt; \
+    fi
+
+# Production stage
+FROM python:3.11-slim
+
+WORKDIR /app
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends libpq5 curl && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /root/.local /root/.local
+COPY apps/backend/src ./src
+COPY apps/backend/pytest.ini ./
+
+ENV PATH=/root/.local/bin:$PATH
+ENV PYTHONPATH=/app
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+EXPOSE 8000
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]

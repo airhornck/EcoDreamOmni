@@ -1,0 +1,60 @@
+============================================================
+XHS Cookie 实战验证报告
+测试时间: 2026-05-24T11:17:12.981125
+============================================================
+
+【初始化 XhsClient】
+  [OK] Client 创建成功
+  UA    : Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36
+  Proxy : 无
+  Cookie[a1] = 19cdbf89844wtn4sjagtymcuh85j5qmuyqvhxhuta500001392...
+  Cookie[web_session] = 040069b6405c5872c1b0702b27384bf5f770eb...
+  Cookie[webId] = c627f37c5ca63300818755771909cc87...
+  Cookie[gid] = yjSfDiY0W2vWyjSfDiYjYAx744E9I4MV0k9vh906S7xY2x28V2...
+  Cookie[xsecappid] = ranchi...
+  Cookie[x-rednote-datactry] = CN...
+
+【签名机制自检】
+  [OK] sign() 返回字段: ['x-s', 'x-t', 'x-s-common']
+       x-t        = 1779592632981
+       x-s        = slALOlFGOgTGZYMW1Bcp121p...
+       x-s-common = 2UQAPsHC+aIjqArjwjHjNsQh...
+
+【登录验证】get_self_info2()
+  [OK] 用户信息获取成功
+       user_id : 67341f1000000000080091e6
+       nickname: 开服装店的王大姐
+       red_id : 95476081477
+       images : https://sns-avatar-qc.xhscdn.com/avatar/1040g2jo31ps9lm1e4m6g5ppk3s8214f6k6omqu0?imageView2/2/w/360/format/webp
+       desc : 做了8年女装实体，房租压得喘不过气😭
+与其坐以待毙，不如拿起手机
+记录一个实体老板娘的流量突围战
+
+探索个人IP打造中，欢迎同行私信咨询～
+
+【创作者中心】get_self_info_from_creator()
+  [WARN] 未登录创作者中心（Cookie 可能缺少 creator 域权限）
+
+【发布能力探测】create_image_note(title='', desc='', is_private=True)
+  [OK] 发布接口通，返回: {"id": "6a126dbd0000000035020107", "score": 10}
+  [结论] Cookie + 签名完全有效，账号具备发布权限
+
+【读接口存活探测】
+  [WARN] get_home_feed_category 数据异常: 错误码 -1
+  [WARN] get_search_suggestion('猫') 数据异常: 错误码 -1
+
+【指纹 & 反检测套件状态】
+  UA 自定义          : 已启用
+  代理配置           : 未启用
+  签名函数           : Python 本地签名 (help.sign)
+  x-s-common 生成    : 是（包含平台码、版本、xhs-pc-web 等）
+  Cookie 自动补全    : a1/webId/gid 缺失时自动填充（当前已提供完整 Cookie）
+
+【结论】
+  1. Cookie 有效，已登录（user_id=67341f1000000000080091e6）
+  2. 签名机制运行正常（未报 SignError）
+  3. 如需完整指纹对抗，建议配合：
+     • 真实浏览器 UA + viewport
+     • 住宅代理 / 移动端代理
+     • Playwright 真机签名（window._webmsxyw）
+============================================================

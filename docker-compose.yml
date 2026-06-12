@@ -1,0 +1,120 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg14
+    container_name: ecodream-postgres
+    environment:
+      POSTGRES_USER: ecodream
+      POSTGRES_PASSWORD: ecodream
+      POSTGRES_DB: ecodream
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - ecodream-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ecodream -d ecodream"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: ecodream-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - ecodream-network
+
+  backend:
+    build:
+      context: ./apps/backend
+      dockerfile: Dockerfile
+      args:
+        - PIP_INDEX_URL=${PIP_INDEX_URL:-}
+        - APT_MIRROR=${APT_MIRROR:-}
+    image: ecodreamomni-backend:latest
+    container_name: ecodream-backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./apps/backend/.env
+    environment:
+      - COOKIE_VAULT_KEY=${COOKIE_VAULT_KEY:-ecodream-default-key}
+      - DATABASE_URL=postgresql+asyncpg://ecodream:ecodream@postgres:5432/ecodream
+      - REDIS_URL=redis://redis:6379/0
+    volumes:
+      - ./apps/backend/src:/app/src
+    command: ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "python -c 'import urllib.request; urllib.request.urlopen(\"http://localhost:8000/health\")'"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - ecodream-network
+
+  celery-worker:
+    image: ecodreamomni-backend:latest
+    container_name: ecodream-celery-worker
+    command: celery -A src.celery_app worker --loglevel=info --concurrency=2
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://ecodream:ecodream@postgres:5432/ecodream
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      redis:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    networks:
+      - ecodream-network
+    volumes:
+      - ./apps/backend/src:/app/src
+
+  celery-beat:
+    image: ecodreamomni-backend:latest
+    container_name: ecodream-celery-beat
+    command: celery -A src.celery_app beat --loglevel=info
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://ecodream:ecodream@postgres:5432/ecodream
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      redis:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    networks:
+      - ecodream-network
+    volumes:
+      - ./apps/backend/src:/app/src
+
+  frontend:
+    build:
+      context: ./apps/frontend
+      dockerfile: Dockerfile
+    container_name: ecodream-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - ecodream-network
+
+networks:
+  ecodream-network:
+    driver: bridge
+
+volumes:
+  postgres-data:
+  redis-data:

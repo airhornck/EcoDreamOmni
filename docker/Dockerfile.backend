@@ -1,0 +1,62 @@
+# syntax=docker/dockerfile:1
+# Backend Dockerfile — optimized for China network + layer caching
+# Build args:
+#   PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple  (optional, for China)
+#   APT_MIRROR=mirrors.tuna.tsinghua.edu.cn                 (optional, for China)
+
+ARG PIP_INDEX_URL=""
+ARG APT_MIRROR=""
+
+# ── Builder stage ──
+FROM python:3.11-slim AS builder
+
+ARG PIP_INDEX_URL
+ARG APT_MIRROR
+
+WORKDIR /app
+
+# Configure apt mirror (optional)
+RUN if [ -n "$APT_MIRROR" ]; then \
+      sed -i "s|deb.debian.org|$APT_MIRROR|g" /etc/apt/sources.list.d/debian.sources || \
+      sed -i "s|deb.debian.org|$APT_MIRROR|g" /etc/apt/sources.list; \
+    fi
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends gcc libpq-dev && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install dependencies (leveraging layer cache: only re-runs if requirements.txt changes)
+COPY apps/backend/requirements.txt ./
+RUN if [ -n "$PIP_INDEX_URL" ]; then \
+      pip install --user -i "$PIP_INDEX_URL" -r requirements.txt; \
+    else \
+      pip install --user -r requirements.txt; \
+    fi
+
+# ── Production stage ──
+FROM python:3.11-slim
+
+ARG APT_MIRROR
+
+WORKDIR /app
+
+RUN if [ -n "$APT_MIRROR" ]; then \
+      sed -i "s|deb.debian.org|$APT_MIRROR|g" /etc/apt/sources.list.d/debian.sources || \
+      sed -i "s|deb.debian.org|$APT_MIRROR|g" /etc/apt/sources.list; \
+    fi
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends libpq5 curl && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /root/.local /root/.local
+COPY apps/backend/src ./src
+COPY apps/backend/pytest.ini ./
+
+ENV PATH=/root/.local/bin:$PATH
+ENV PYTHONPATH=/app
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+EXPOSE 8000
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]

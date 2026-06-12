@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Copilot Panel 布局预览 — MessageHistory 限高 + Action Cards 保活</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --bg-primary: #FFFFFF;
+      --bg-secondary: #F5F5F7;
+      --bg-card: #FFFFFF;
+      --bg-muted: #F5F5F7;
+      --text-primary: #1F1F1F;
+      --text-secondary: #6B7280;
+      --text-muted: #9CA3AF;
+      --border: #E5E7EB;
+      --primary: #7C3AED;
+      --primary-foreground: #FFFFFF;
+      --success: #10B981;
+      --warning: #F59E0B;
+      --destructive: #EF4444;
+      --header-height: 56px;
+      --copilot-width: 320px;
+      --iconnav-width: 48px;
+    }
+    body { background: var(--bg-secondary); color: var(--text-primary); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+    .panel-border { border-color: var(--border); }
+    .bg-card-theme { background: var(--bg-card); }
+    .bg-primary-theme { background: var(--primary); color: var(--primary-foreground); }
+    .bg-secondary-theme { background: var(--bg-secondary); }
+    .text-muted-theme { color: var(--text-muted); }
+    .text-primary-theme { color: var(--primary); }
+    .border-theme { border-color: var(--border); }
+    /* Scrollbar styling */
+    .custom-scroll::-webkit-scrollbar { width: 4px; }
+    .custom-scroll::-webkit-scrollbar-track { background: transparent; }
+    .custom-scroll::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 2px; }
+  </style>
+</head>
+<body class="h-screen w-screen overflow-hidden">
+
+  <!-- Workspace Layout -->
+  <div class="h-full w-full flex">
+    <!-- IconNav -->
+    <div class="shrink-0 h-full bg-[#1F1F1F] flex flex-col items-center py-3 gap-3" style="width: var(--iconnav-width);">
+      <div class="w-8 h-8 rounded-lg bg-[#7C3AED] flex items-center justify-center text-white text-xs font-bold">E</div>
+      <div class="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-white/60">📊</div>
+      <div class="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-white/60">📝</div>
+      <div class="w-8 h-8 rounded-lg bg-[#7C3AED]/30 flex items-center justify-center text-white">✨</div>
+    </div>
+
+    <!-- Main Canvas -->
+    <main class="flex-1 flex flex-col min-w-0 overflow-hidden transition-all duration-300">
+      <!-- Header -->
+      <header class="shrink-0 h-14 flex items-center justify-between px-4 bg-white border-b panel-border">
+        <h1 class="text-sm font-semibold">新建任务 — 内容生产</h1>
+        <div class="flex items-center gap-2">
+          <button class="p-2 rounded hover:bg-gray-100 text-sm">👤</button>
+          <button class="p-2 rounded hover:bg-gray-100 text-sm">⚙️</button>
+        </div>
+      </header>
+
+      <!-- Canvas Content (Stepper mock) -->
+      <div class="flex-1 p-6 overflow-y-auto custom-scroll">
+        <div class="max-w-3xl mx-auto space-y-4">
+          <h2 class="text-lg font-semibold">创建向导</h2>
+          <!-- Stepper -->
+          <div class="flex items-center gap-2">
+            <div class="flex-1 h-2 rounded-full bg-[#7C3AED]"></div>
+            <div class="flex-1 h-2 rounded-full bg-[#7C3AED]"></div>
+            <div class="flex-1 h-2 rounded-full bg-[#7C3AED]"></div>
+            <div class="flex-1 h-2 rounded-full bg-gray-200"></div>
+          </div>
+          <!-- Step 4 mock -->
+          <div class="rounded-lg border panel-border p-4 bg-white">
+            <h3 class="text-sm font-medium mb-3">发布确认</h3>
+            <div class="space-y-2 text-sm">
+              <div class="flex justify-between"><span class="text-muted-theme">任务名称</span><span>猫咪驱虫避坑指南</span></div>
+              <div class="flex justify-between"><span class="text-muted-theme">平台</span><span>小红书</span></div>
+              <div class="flex justify-between"><span class="text-muted-theme">Agent</span><span>小红书图文生成</span></div>
+              <div class="flex justify-between"><span class="text-muted-theme">账号</span><span>小艾养猫记</span></div>
+            </div>
+            <p class="text-xs text-muted-theme mt-3">配置预览模式 — 请在右侧 Copilot 面板中确认创建</p>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- AI Copilot Panel -->
+    <aside class="shrink-0 h-[calc(100vh-56px)] mt-14 border-l panel-border bg-card-theme flex flex-col transition-all duration-300" style="width: var(--copilot-width);">
+      <!-- Panel Header -->
+      <div class="shrink-0 flex items-center justify-between px-4 py-3 border-b panel-border">
+        <div>
+          <h2 class="text-sm font-semibold">AI Copilot</h2>
+          <p class="text-xs text-muted-theme">智能助手面板</p>
+        </div>
+        <button class="p-1.5 rounded hover:bg-gray-100">✕</button>
+      </div>
+
+      <!-- ContextBar -->
+      <div class="shrink-0 px-3 py-2 border-b panel-border text-xs text-muted-theme truncate">
+        📍 /generate/create — 新建任务
+      </div>
+
+      <!-- MessageHistory — 限高确保 Action Cards 可见 -->
+      <div id="message-area" class="shrink-0 h-32 flex items-center justify-center p-4">
+        <div class="text-center space-y-2">
+          <div class="w-10 h-10 rounded-full bg-[#7C3AED]/10 flex items-center justify-center mx-auto text-[#7C3AED]">🤖</div>
+          <p class="text-sm text-muted-theme" id="welcome-text">请检查配置信息，确认无误后点击「确认创建」</p>
+        </div>
+      </div>
+
+      <!-- Action Cards Area — 始终可见 -->
+      <div class="shrink-0 px-3 py-2 border-t panel-border space-y-2 overflow-y-auto custom-scroll">
+        <!-- Confirm Create Card -->
+        <div class="rounded-lg border panel-border p-3 space-y-2.5">
+          <div class="flex items-center gap-2">
+            <span class="text-sm">✅</span>
+            <span class="text-sm font-medium">确认创建</span>
+          </div>
+          <p class="text-xs text-muted-theme leading-relaxed whitespace-pre-line">任务名称：猫咪驱虫避坑指南
+平台：小红书
+内容格式：图文
+Agent：小红书图文生成
+账号：小艾养猫记</p>
+          <div class="flex flex-wrap gap-1.5">
+            <button class="px-2.5 py-1.5 rounded-md text-xs font-medium bg-[#7C3AED] text-white hover:opacity-90">确认创建</button>
+            <button class="px-2.5 py-1.5 rounded-md text-xs font-medium bg-gray-100 hover:bg-gray-200">返回修改</button>
+          </div>
+        </div>
+        <!-- Agent Recommend Card -->
+        <div class="rounded-lg border panel-border p-3 space-y-1.5">
+          <div class="flex items-center gap-2">
+            <span class="text-sm">🤖</span>
+            <span class="text-sm font-medium">推荐 Agent</span>
+          </div>
+          <p class="text-xs text-muted-theme">根据「小红书 + 图文」配置，推荐「小红书图文生成 Agent」，成功率 94%</p>
+        </div>
+      </div>
+
+      <!-- QuickActions -->
+      <div class="shrink-0 px-3 py-2 border-t panel-border">
+        <div class="flex flex-wrap gap-1.5">
+          <button class="px-2 py-1 rounded bg-gray-100 text-xs hover:bg-gray-200">← 上一步</button>
+          <button class="px-2 py-1 rounded bg-[#7C3AED]/10 text-[#7C3AED] text-xs hover:bg-[#7C3AED]/20">确认创建</button>
+          <button class="px-2 py-1 rounded bg-gray-100 text-xs hover:bg-gray-200">取消</button>
+        </div>
+      </div>
+
+      <!-- InputBox -->
+      <div class="shrink-0 px-3 py-2 border-t panel-border">
+        <div class="relative flex items-end gap-2 bg-gray-100 rounded-lg px-3 py-2">
+          <textarea class="flex-1 bg-transparent resize-none outline-none text-sm min-h-[20px] max-h-[120px] py-0.5" rows="1" placeholder="输入指令或问题..."></textarea>
+          <button class="p-1.5 rounded-md bg-[#7C3AED] text-white shrink-0">➤</button>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Toggle Buttons -->
+  <div class="fixed bottom-4 left-1/2 -translate-x-1/2 flex gap-2 bg-white rounded-lg shadow-lg p-2 border panel-border z-50">
+    <button onclick="setState('empty')" class="px-3 py-1.5 rounded text-xs font-medium bg-[#7C3AED] text-white" id="btn-empty">无消息</button>
+    <button onclick="setState('few')" class="px-3 py-1.5 rounded text-xs font-medium bg-gray-100 hover:bg-gray-200" id="btn-few">少量消息</button>
+    <button onclick="setState('many')" class="px-3 py-1.5 rounded text-xs font-medium bg-gray-100 hover:bg-gray-200" id="btn-many">多条消息</button>
+  </div>
+
+  <script>
+    const welcomeText = "请检查配置信息，确认无误后点击「确认创建」";
+    const msgs = [
+      { role: 'user', content: '帮我创建一条关于猫咪驱虫的内容' },
+      { role: 'assistant', content: '好的，我已经为您预填充了配置。平台选择小红书，Agent 推荐「小红书图文生成」（成功率 94%）。请检查右侧配置后点击「确认创建」。' },
+      { role: 'user', content: '把标题改成更有吸引力的' },
+      { role: 'assistant', content: '已优化标题为「猫咪驱虫避坑指南，这3个误区90%的人都不知道」，加入数字可提升 CTR 约 15%。' },
+      { role: 'user', content: '能不能再加一个话题标签' },
+      { role: 'assistant', content: '已补充标签「养宠攻略」「科学养宠」，这两个标签近期热度较高。' },
+      { role: 'user', content: '确认一下最终配置' },
+      { role: 'assistant', content: '最终配置如下：\n• 任务：猫咪驱虫避坑指南\n• 平台：小红书\n• Agent：小红书图文生成\n• 账号：小艾养猫记\n• 标签：驱虫、新手养猫、养宠攻略、科学养宠\n\n请在下方 Action Card 中点击「确认创建」提交任务。' },
+    ];
+
+    function setState(state) {
+      const area = document.getElementById('message-area');
+      const btnEmpty = document.getElementById('btn-empty');
+      const btnFew = document.getElementById('btn-few');
+      const btnMany = document.getElementById('btn-many');
+
+      [btnEmpty, btnFew, btnMany].forEach(b => {
+        b.classList.remove('bg-[#7C3AED]', 'text-white');
+        b.classList.add('bg-gray-100');
+      });
+
+      if (state === 'empty') {
+        btnEmpty.classList.add('bg-[#7C3AED]', 'text-white');
+        btnEmpty.classList.remove('bg-gray-100');
+        area.className = 'shrink-0 h-32 flex items-center justify-center p-4';
+        area.innerHTML = `
+          <div class="text-center space-y-2">
+            <div class="w-10 h-10 rounded-full bg-[#7C3AED]/10 flex items-center justify-center mx-auto text-[#7C3AED]">🤖</div>
+            <p class="text-sm text-muted-theme">${welcomeText}</p>
+          </div>
+        `;
+      } else if (state === 'few') {
+        btnFew.classList.add('bg-[#7C3AED]', 'text-white');
+        btnFew.classList.remove('bg-gray-100');
+        area.className = 'flex-1 min-h-0 max-h-[55%] overflow-y-auto custom-scroll p-3 space-y-3';
+        area.innerHTML = msgs.slice(0, 4).map(m => `
+          <div class="flex gap-2 ${m.role === 'user' ? 'flex-row-reverse' : 'flex-row'}">
+            <div class="w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${m.role === 'user' ? 'bg-gray-200' : 'bg-[#7C3AED]/10'}">
+              <span class="text-xs">${m.role === 'user' ? '👤' : '🤖'}</span>
+            </div>
+            <div class="max-w-[85%] rounded-lg px-3 py-2 text-sm ${m.role === 'user' ? 'bg-[#7C3AED] text-white' : 'bg-gray-100'}">
+              ${m.content.replace(/\n/g, '<br>')}
+            </div>
+          </div>
+        `).join('');
+      } else if (state === 'many') {
+        btnMany.classList.add('bg-[#7C3AED]', 'text-white');
+        btnMany.classList.remove('bg-gray-100');
+        area.className = 'flex-1 min-h-0 max-h-[55%] overflow-y-auto custom-scroll p-3 space-y-3';
+        area.innerHTML = msgs.map(m => `
+          <div class="flex gap-2 ${m.role === 'user' ? 'flex-row-reverse' : 'flex-row'}">
+            <div class="w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${m.role === 'user' ? 'bg-gray-200' : 'bg-[#7C3AED]/10'}">
+              <span class="text-xs">${m.role === 'user' ? '👤' : '🤖'}</span>
+            </div>
+            <div class="max-w-[85%] rounded-lg px-3 py-2 text-sm ${m.role === 'user' ? 'bg-[#7C3AED] text-white' : 'bg-gray-100'}">
+              ${m.content.replace(/\n/g, '<br>')}
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+  </script>
+</body>
+</html>

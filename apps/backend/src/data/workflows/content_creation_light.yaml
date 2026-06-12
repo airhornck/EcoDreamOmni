@@ -1,0 +1,46 @@
+id: content_creation_light
+name: 轻量内容生产工作流
+description: 简化版：框架生成→正文生成→关键词注入→合规审核→互动预演→人工审核→发布
+source_preset: content_creation_light
+version: 2
+status: ACTIVE
+owner: system
+nodes:
+- node_index: 0
+  node_type: AGENT
+  node_name: 框架生成
+  agent_id: content-forge
+  prompt_template_id: cf-outline
+  fail_strategy: FAIL_FAST
+- node_index: 1
+  node_type: AGENT
+  node_name: 正文生成
+  agent_id: content-forge
+  prompt_template_id: cf-body
+  fail_strategy: FAIL_FAST
+- node_index: 2
+  node_type: SKILL
+  node_name: 关键词注入
+  skill_id: keyword_inject
+  fail_strategy: FAIL_FAST
+- node_index: 3
+  node_type: AGENT
+  node_name: 合规审核
+  agent_id: compliance-guard
+  fail_strategy: FAIL_FAST
+- node_index: 4
+  node_type: AGENT
+  node_name: 互动预演
+  agent_id: pool-predictor
+  fail_strategy: CONTINUE
+- node_index: 5
+  node_type: HUMAN_APPROVAL
+  node_name: 人工审核
+  human_config:
+    review_type: CONTENT_PUBLISH
+    timeout_hours: 24
+- node_index: 6
+  node_type: AGENT
+  node_name: 发布
+  agent_id: publisher
+  fail_strategy: FAIL_FAST

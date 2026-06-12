@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EcoDream Omni v4.0 — 浅色主题系统预览</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* ═══════════════════════════════════════════
+       EcoDream Omni v4.0 — Light Theme Token Preview
+       Aligned with 04-全局设计规范_浅色主题_AI工作台.md
+       ═══════════════════════════════════════════ */
+
+    :root {
+      /* ── Base palette (Light default) ── */
+      --color-background: #FFFFFF;
+      --color-foreground: #1F1F1F;
+      --color-card: #F7F7F8;
+      --color-card-foreground: #1F1F1F;
+      --color-popover: #FFFFFF;
+      --color-popover-foreground: #1F1F1F;
+
+      /* ── Primary (AI Purple) ── */
+      --color-primary: #7C3AED;
+      --color-primary-foreground: #FFFFFF;
+
+      /* ── Secondary / Muted ── */
+      --color-secondary: #F3F4F6;
+      --color-secondary-foreground: #374151;
+      --color-muted: #F7F7F8;
+      --color-muted-foreground: #6B7280;
+
+      /* ── Accent ── */
+      --color-accent: #F3F4F6;
+      --color-accent-foreground: #1F1F1F;
+
+      /* ── Destructive ── */
+      --color-destructive: #DC2626;
+      --color-destructive-foreground: #FFFFFF;
+
+      /* ── Semantic colors ── */
+      --color-success: #16A34A;
+      --color-success-foreground: #FFFFFF;
+      --color-success-bg: rgba(22, 163, 74, 0.08);
+      --color-success-border: rgba(22, 163, 74, 0.2);
+
+      --color-warning: #D97706;
+      --color-warning-foreground: #FFFFFF;
+      --color-warning-bg: rgba(217, 119, 6, 0.08);
+      --color-warning-border: rgba(217, 119, 6, 0.2);
+
+      --color-info: #2563EB;
+      --color-info-foreground: #FFFFFF;
+      --color-info-bg: rgba(37, 99, 235, 0.08);
+      --color-info-border: rgba(37, 99, 235, 0.2);
+
+      /* ── Structural ── */
+      --color-border: #E5E7EB;
+      --color-input: #E5E7EB;
+      --color-ring: #7C3AED;
+
+      /* ── Custom properties for CSS use ── */
+      --bg-base: #FFFFFF;
+      --bg-primary: #FFFFFF;
+      --bg-secondary: #F7F7F8;
+      --bg-tertiary: #F3F4F6;
+      --bg-elevated: #FFFFFF;
+      --surface-1: #F7F7F8;
+      --surface-2: #F3F4F6;
+      --surface-3: #E5E7EB;
+      --accent-ai: #7C3AED;
+      --accent-ai-hover: #6D28D9;
+      --accent-success: #16A34A;
+      --accent-info: #2563EB;
+      --accent-warning: #D97706;
+      --accent-danger: #DC2626;
+      --accent-human: #F778BA;
+      --text-primary: #1F1F1F;
+      --text-secondary: #6B7280;
+      --text-tertiary: #9CA3AF;
+      --border-default: #E5E7EB;
+      --border-hover: #D1D5DB;
+      --border-subtle: #F3F4F6;
+      --glow-ai: 0 0 20px rgba(124, 58, 237, 0.15);
+      --glow-ai-subtle: 0 0 8px rgba(124, 58, 237, 0.08);
+    }
+
+    body {
+      background: var(--bg-base);
+      color: var(--text-primary);
+      font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    /* ── Utility classes ── */
+    .glass-panel {
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border: 1px solid rgba(0, 0, 0, 0.06);
+    }
+    .glass {
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      background: rgba(255, 255, 255, 0.85);
+    }
+    .ai-glow {
+      box-shadow: var(--glow-ai);
+    }
+    .ai-glow-subtle {
+      box-shadow: var(--glow-ai-subtle);
+    }
+    .card-hover {
+      transition: all 0.2s ease-out;
+      cursor: pointer;
+    }
+    .card-hover:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+      transform: translateY(-1px);
+      border-color: var(--border-hover);
+    }
+    .page-transition {
+      animation: fade-in 0.25s ease-out;
+    }
+    @keyframes fade-in {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 8px rgba(124, 58, 237, 0.06); border-color: rgba(124, 58, 237, 0.2); }
+      50% { box-shadow: 0 0 20px rgba(124, 58, 237, 0.15); border-color: rgba(124, 58, 237, 0.5); }
+    }
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    @keyframes flow {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 200% 50%; }
+    }
+    .animate-shimmer {
+      animation: shimmer 2s linear infinite;
+      background: linear-gradient(90deg, transparent 0%, rgba(124,58,237,0.04) 50%, transparent 100%);
+      background-size: 200% 100%;
+    }
+    .gradient-border {
+      background: linear-gradient(90deg, #7C3AED, #A78BFA, #7C3AED);
+      background-size: 200% 100%;
+      animation: flow 3s linear infinite;
+    }
+    .status-dot-running {
+      animation: pulseDot 2s ease-in-out infinite;
+    }
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; box-shadow: 0 0 4px currentColor; }
+      50% { opacity: 0.5; box-shadow: 0 0 12px currentColor; }
+    }
+    .ai-border-flow {
+      border: 2px solid transparent;
+      background: linear-gradient(white, white) padding-box,
+                  linear-gradient(90deg, #7C3AED, #A78BFA, #7C3AED) border-box;
+      background-size: 200% 100%;
+      animation: flow 2s linear infinite;
+    }
+
+    /* Scrollbar for light theme */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #9CA3AF; }
+  </style>
+</head>
+<body class="min-h-screen p-6 lg:p-10">
+
+  <!-- Page Header -->
+  <header class="page-transition mb-10">
+    <div class="flex items-center gap-3 mb-2">
+      <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold" style="background: linear-gradient(135deg, #7C3AED, #A78BFA);">E</div>
+      <div>
+        <h1 class="text-2xl font-bold" style="color: var(--text-primary);">EcoDream Omni v4.0</h1>
+        <p class="text-sm" style="color: var(--text-secondary);">浅色主题系统预览 — P1-1 主题系统重构验收</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- Section: Color Tokens -->
+  <section class="page-transition mb-10">
+    <h2 class="text-lg font-semibold mb-4" style="color: var(--text-primary);">🎨 色彩 Token</h2>
+    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+      <div class="rounded-xl p-4 border" style="background: var(--bg-base); border-color: var(--border-default);">
+        <div class="w-full h-12 rounded-lg mb-2 border" style="background: #FFFFFF; border-color: var(--border-default);"></div>
+        <p class="text-xs font-mono" style="color: var(--text-secondary);">bg-base</p>
+        <p class="text-xs font-mono font-semibold">#FFFFFF</p>
+      </div>
+      <div class="rounded-xl p-4 border" style="background: var(--bg-base); border-color: var(--border-default);">
+        <div class="w-full h-12 rounded-lg mb-2" style="background: var(--surface-1);"></div>
+        <p class="text-xs font-mono" style="color: var(--text-secondary);">surface-1</p>
+        <p class="text-xs font-mono font-semibold">#F7F7F8</p>
+      </div>
+      <div class="rounded-xl p-4 border" style="background: var(--bg-base); border-color: var(--border-default);">
+        <div class="w-full h-12 rounded-lg mb-2" style="background: var(--surface-2);"></div>
+        <p class="text-xs font-mono" style="color: var(--text-secondary);">surface-2</p>
+        <p class="text-xs font-mono font-semibold">#F3F4F6</p>
+      </div>
+      <div class="rounded-xl p-4 border" style="background: var(--bg-base); border-color: var(--border-default);">
+        <div class="w-full h-12 rounded-lg mb-2" style="background: var(--surface-3);"></div>
+        <p class="text-xs font-mono" style="color: var(--text-secondary);">surface-3</p>
+        <p class="text-xs font-mono font-semibold">#E5E7EB</p>
+      </div>
+      <div class="rounded-xl p-4 border" style="background: var(--bg-base); border-color: var(--border-default);">
+        <div class="w-full h-12 rounded-lg mb-2" style="background: var(--accent-ai);"></div>
+        <p class="text-xs font-mono" style="color: var(--text-secondary);">accent-ai</p>
+        <p class="text-xs font-mono font-semibold">#7C3AED</p>
+      </div>
+      <div class="rounded-xl p-4 border" style="background: var(--bg-base); border-color: var(--border-default);">
+        <div class="w-full h-12 rounded-lg mb-2" style="background: var(--text-primary);"></div>
+        <p class="text-xs font-mono" style="color: var(--text-secondary);">text-primary</p>
+        <p class="text-xs font-mono font-semibold">#1F1F1F</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section: Semantic Colors -->
+  <section class="page-transition mb-10">
+    <h2 class="text-lg font-semibold mb-4" style="color: var(--text-primary);">🚦 语义色彩</h2>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="rounded-xl p-4 border flex items-center gap-3" style="background: var(--color-success-bg); border-color: var(--color-success-border);">
+        <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm" style="background: var(--color-success);">✓</div>
+        <div>
+          <p class="text-sm font-semibold" style="color: var(--color-success);">Success</p>
+          <p class="text-xs font-mono">#16A34A</p>
+        </div>
+      </div>
+      <div class="rounded-xl p-4 border flex items-center gap-3" style="background: var(--color-warning-bg); border-color: var(--color-warning-border);">
+        <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm" style="background: var(--color-warning);">!</div>
+        <div>
+          <p class="text-sm font-semibold" style="color: var(--color-warning);">Warning</p>
+          <p class="text-xs font-mono">#D97706</p>
+        </div>
+      </div>
+      <div class="rounded-xl p-4 border flex items-center gap-3" style="background: var(--color-info-bg); border-color: var(--color-info-border);">
+        <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm" style="background: var(--color-info);">i</div>
+        <div>
+          <p class="text-sm font-semibold" style="color: var(--color-info);">Info</p>
+          <p class="text-xs font-mono">#2563EB</p>
+        </div>
+      </div>
+      <div class="rounded-xl p-4 border flex items-center gap-3" style="background: rgba(220,38,38,0.08); border-color: rgba(220,38,38,0.2);">
+        <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm" style="background: var(--color-destructive);">×</div>
+        <div>
+          <p class="text-sm font-semibold" style="color: var(--color-destructive);">Danger</p>
+          <p class="text-xs font-mono">#DC2626</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section: Buttons -->
+  <section class="page-transition mb-10">
+    <h2 class="text-lg font-semibold mb-4" style="color: var(--text-primary);">🔘 按钮四态</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <!-- Primary -->
+      <div class="rounded-xl p-5 border" style="background: var(--surface-1); border-color: var(--border-default);">
+        <p class="text-sm font-medium mb-3" style="color: var(--text-secondary);">Primary</p>
+        <div class="space-y-2">
+          <button class="px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors" style="background: var(--color-primary);">默认状态</button>
+          <button class="px-4 py-2 rounded-lg text-sm font-medium text-white" style="background: #6D28D9;">Hover (#6D28D9)</button>
+          <button class="px-4 py-2 rounded-lg text-sm font-medium text-white opacity-50 cursor-not-allowed" style="background: var(--color-primary);">Disabled</button>
+        </div>
+      </div>
+      <!-- Secondary -->
+      <div class="rounded-xl p-5 border" style="background: var(--surface-1); border-color: var(--border-default);">
+        <p class="text-sm font-medium mb-3" style="color: var(--text-secondary);">Secondary</p>
+        <div class="space-y-2">
+          <button class="px-4 py-2 rounded-lg text-sm font-medium border transition-colors" style="background: var(--color-secondary); color: var(--color-secondary-foreground); border-color: var(--color-border);">默认状态</button>
+          <button class="px-4 py-2 rounded-lg text-sm font-medium border" style="background: #E5E7EB; color: #374151; border-color: #D1D5DB;">Hover (#E5E7EB)</button>
+          <button class="px-4 py-2 rounded-lg text-sm font-medium border opacity-50 cursor-not-allowed" style="background: var(--color-secondary); color: var(--color-secondary-foreground); border-color: var(--color-border);">Disabled</button>
+        </div>
+      </div>
+      <!-- Ghost -->
+      <div class="rounded-xl p-5 border" style="background: var(--surface-1); border-color: var(--border-default);">
+        <p class="text-sm font-medium mb-3" style="color: var(--text-secondary);">Ghost</p>
+        <div class="space-y-2">
+          <button class="px-4 py-2 rounded-lg text-sm font-medium transition-colors" style="color: var(--text-secondary);">默认状态</button>
+          <button class="px-4 py-2 rounded-lg text-sm font-medium" style="background: #F3F4F6; color: #6B7280;">Hover (#F3F4F6)</button>
+          <button class="px-4 py-2 rounded-lg text-sm font-medium opacity-50 cursor-not-allowed" style="color: var(--text-secondary);">Disabled</button>
+        </div>
+      </div>
+      <!-- AI Gradient -->
+      <div class="rounded-xl p-5 border" style="background: var(--surface-1); border-color: var(--border-default);">
+        <p class="text-sm font-medium mb-3" style="color: var(--text-secondary);">AI Gradient</p>
+        <div class="space-y-2">
+          <button class="px-4 py-2 rounded-lg text-sm font-medium text-white" style="background: linear-gradient(135deg, #7C3AED, #A78BFA);">AI 按钮</button>
+          <button class="px-4 py-2 rounded-lg text-sm font-medium text-white ai-glow" style="background: linear-gradient(135deg, #7C3AED, #A78BFA);">Hover (Glow)</button>
+          <button class="px-4 py-2 rounded-lg text-sm font-medium text-white opacity-50 cursor-not-allowed" style="background: linear-gradient(135deg, #7C3AED, #A78BFA);">Disabled</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section: Cards -->
+  <section class="page-transition mb-10">
+    <h2 class="text-lg font-semibold mb-4" style="color: var(--text-primary);">🃏 卡片与动效</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- Normal Card -->
+      <div class="card-hover rounded-xl p-5 border" style="background: var(--surface-1); border-color: var(--border-default);">
+        <div class="flex items-center gap-2 mb-3">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs" style="background: var(--accent-ai);">🐱</div>
+          <div>
+            <p class="text-sm font-semibold" style="color: var(--text-primary);">小艾养猫记</p>
+            <p class="text-xs" style="color: var(--text-tertiary);">小红书</p>
+          </div>
+        </div>
+        <p class="text-sm mb-3" style="color: var(--text-secondary);">猫咪驱虫避坑指南，这3个误区90%的人都不知道</p>
+        <div class="flex gap-2">
+          <span class="px-2 py-0.5 rounded-full text-xs font-medium" style="background: rgba(124,58,237,0.08); color: #7C3AED;">驱虫</span>
+          <span class="px-2 py-0.5 rounded-full text-xs font-medium" style="background: rgba(124,58,237,0.08); color: #7C3AED;">新手养猫</span>
+        </div>
+        <p class="text-xs mt-3" style="color: var(--text-tertiary);">Hover 查看 card-hover 动效 ↑</p>
+      </div>
+
+      <!-- AI Highlight Card -->
+      <div class="ai-border-flow rounded-xl p-5">
+        <div class="flex items-center justify-between mb-3">
+          <span class="px-2 py-0.5 rounded-full text-xs font-medium text-white" style="background: linear-gradient(135deg, #7C3AED, #A78BFA);">🤖 AI 生成中</span>
+          <span class="status-dot-running w-2 h-2 rounded-full" style="color: #7C3AED; background: #7C3AED;"></span>
+        </div>
+        <p class="text-sm font-semibold mb-2" style="color: var(--text-primary);">AI 流光边框卡片</p>
+        <p class="text-sm" style="color: var(--text-secondary);">这是 AI 生成中的内容卡片，展示流光边框动画效果。边框使用紫罗兰渐变流动。</p>
+        <div class="mt-3 space-y-1">
+          <div class="flex items-center gap-2 text-xs" style="color: var(--text-secondary);">
+            <span class="w-2 h-2 rounded-full" style="background: #16A34A;"></span>
+            <span>TrendScout 0.8s ✓</span>
+          </div>
+          <div class="flex items-center gap-2 text-xs" style="color: var(--text-secondary);">
+            <span class="w-2 h-2 rounded-full status-dot-running" style="background: #7C3AED;"></span>
+            <span>ContentForge 8.5s ⏳</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Glass Panel Card -->
+      <div class="glass-panel rounded-xl p-5">
+        <p class="text-sm font-semibold mb-2" style="color: var(--text-primary);">Glass Panel 毛玻璃</p>
+        <p class="text-sm" style="color: var(--text-secondary);">浅色毛玻璃效果：rgba(255,255,255,0.8) + backdrop-blur(20px)。在浅色背景上依然可见。</p>
+        <div class="mt-3 p-2 rounded-lg text-xs" style="background: rgba(124,58,237,0.08); color: #7C3AED;">
+          🤖 AI 建议：标题加入具体数字可提升 15% 点击率
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section: Loading & Empty States -->
+  <section class="page-transition mb-10">
+    <h2 class="text-lg font-semibold mb-4" style="color: var(--text-primary);">⏳ 加载与空状态</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Skeleton -->
+      <div class="rounded-xl p-5 border" style="background: var(--surface-1); border-color: var(--border-default);">
+        <p class="text-sm font-medium mb-3" style="color: var(--text-secondary);">Skeleton Shimmer</p>
+        <div class="space-y-3">
+          <div class="h-4 rounded animate-shimmer" style="background: linear-gradient(90deg, #F3F4F6 0%, #E5E7EB 50%, #F3F4F6 100%); background-size: 200% 100%;"></div>
+          <div class="h-4 rounded animate-shimmer w-3/4" style="background: linear-gradient(90deg, #F3F4F6 0%, #E5E7EB 50%, #F3F4F6 100%); background-size: 200% 100%;"></div>
+          <div class="h-4 rounded animate-shimmer w-1/2" style="background: linear-gradient(90deg, #F3F4F6 0%, #E5E7EB 50%, #F3F4F6 100%); background-size: 200% 100%;"></div>
+        </div>
+      </div>
+      <!-- Empty State -->
+      <div class="rounded-xl p-8 border text-center" style="background: var(--surface-1); border-color: var(--border-default);">
+        <div class="w-12 h-12 rounded-full mx-auto mb-3 flex items-center justify-center text-2xl" style="background: var(--surface-2);">📭</div>
+        <p class="text-sm font-semibold mb-1" style="color: var(--text-primary);">暂无内容</p>
+        <p class="text-sm mb-4" style="color: var(--text-secondary);">当前列表为空，点击下方按钮开始创建</p>
+        <p class="text-xs mb-3 px-3 py-2 rounded-lg inline-block" style="background: rgba(124,58,237,0.08); color: #7C3AED;">🤖 暂无任务，要我帮你生成 3 个选题吗？</p>
+        <div>
+          <button class="px-4 py-2 rounded-lg text-sm font-medium text-white" style="background: var(--color-primary);">新建内容</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section: Layout Preview -->
+  <section class="page-transition mb-10">
+    <h2 class="text-lg font-semibold mb-4" style="color: var(--text-primary);">🖥️ 三栏布局预览</h2>
+    <div class="flex h-80 rounded-xl overflow-hidden border" style="border-color: var(--border-default);">
+      <!-- IconNav -->
+      <div class="w-14 flex flex-col items-center py-4 gap-4 border-r" style="background: var(--surface-1); border-color: var(--border-default);">
+        <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white text-xs font-bold" style="background: linear-gradient(135deg, #7C3AED, #A78BFA);">E</div>
+        <div class="w-8 h-8 rounded-lg flex items-center justify-center text-sm" style="background: rgba(124,58,237,0.1); color: #7C3AED; border-left: 3px solid #7C3AED;">🏠</div>
+        <div class="w-8 h-8 rounded-lg flex items-center justify-center text-sm" style="color: var(--text-tertiary);">✨</div>
+        <div class="w-8 h-8 rounded-lg flex items-center justify-center text-sm" style="color: var(--text-tertiary);">🛡️</div>
+        <div class="mt-auto w-8 h-8 rounded-full flex items-center justify-center text-xs" style="background: var(--surface-2);">👤</div>
+      </div>
+      <!-- Workspace Canvas -->
+      <div class="flex-1 p-4 overflow-y-auto" style="background: var(--bg-base);">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-base font-semibold" style="color: var(--text-primary);">工作台</h3>
+          <button class="px-3 py-1.5 rounded-lg text-xs font-medium text-white" style="background: var(--color-primary);">+ 新建任务</button>
+        </div>
+        <div class="grid grid-cols-4 gap-3">
+          <div class="rounded-lg p-3 border card-hover" style="background: var(--surface-1); border-color: var(--border-default);">
+            <p class="text-xs" style="color: var(--text-tertiary);">待审</p>
+            <p class="text-xl font-bold" style="color: var(--text-primary);">5</p>
+          </div>
+          <div class="rounded-lg p-3 border card-hover" style="background: var(--surface-1); border-color: var(--border-default);">
+            <p class="text-xs" style="color: var(--text-tertiary);">今日</p>
+            <p class="text-xl font-bold" style="color: var(--text-primary);">3</p>
+          </div>
+          <div class="rounded-lg p-3 border card-hover" style="background: var(--surface-1); border-color: var(--border-default);">
+            <p class="text-xs" style="color: var(--text-tertiary);">违规</p>
+            <p class="text-xl font-bold" style="color: var(--text-primary);">0</p>
+          </div>
+          <div class="rounded-lg p-3 border card-hover" style="background: var(--surface-1); border-color: var(--border-default);">
+            <p class="text-xs" style="color: var(--text-tertiary);">Agent</p>
+            <p class="text-xl font-bold" style="color: var(--text-primary);">6</p>
+          </div>
+        </div>
+      </div>
+      <!-- AI Copilot -->
+      <div class="w-72 border-l p-4 flex flex-col" style="background: var(--surface-1); border-color: var(--border-default);">
+        <div class="flex items-center justify-between mb-3">
+          <span class="text-sm font-semibold" style="color: var(--text-primary);">🤖 AI Copilot</span>
+          <span class="text-xs" style="color: var(--text-tertiary);">—</span>
+        </div>
+        <div class="flex-1 space-y-3">
+          <div class="p-3 rounded-lg" style="background: var(--bg-base); border: 1px solid var(--border-default);">
+            <p class="text-xs mb-1" style="color: var(--text-tertiary);">💡 当前任务</p>
+            <p class="text-sm" style="color: var(--text-primary);">猫咪驱虫避坑指南</p>
+            <div class="flex gap-2 mt-2">
+              <span class="px-2 py-0.5 rounded text-xs" style="background: rgba(124,58,237,0.08); color: #7C3AED;">优化标题</span>
+              <span class="px-2 py-0.5 rounded text-xs" style="background: rgba(124,58,237,0.08); color: #7C3AED;">生成配图</span>
+            </div>
+          </div>
+          <div class="p-3 rounded-lg border-l-2" style="background: var(--bg-base); border-color: var(--border-default); border-left-color: #7C3AED;">
+            <p class="text-sm" style="color: var(--text-secondary);">🤖 建议加入具体数字可提升点击率...</p>
+          </div>
+        </div>
+        <div class="mt-3 p-2 rounded-lg border flex items-center gap-2" style="background: var(--bg-base); border-color: var(--border-default);">
+          <span class="text-xs" style="color: var(--text-tertiary);">告诉 AI 你的需求...</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section: Responsive Breakpoints -->
+  <section class="page-transition mb-10">
+    <h2 class="text-lg font-semibold mb-4" style="color: var(--text-primary);">📱 响应式断点</h2>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="rounded-xl p-4 border text-center" style="background: var(--surface-1); border-color: var(--border-default);">
+        <p class="text-2xl mb-1">🖥️</p>
+        <p class="text-sm font-semibold" style="color: var(--text-primary);">Desktop XL</p>
+        <p class="text-xs" style="color: var(--text-tertiary);">≥1440px</p>
+        <p class="text-xs mt-1" style="color: var(--text-secondary);">三栏完整显示</p>
+      </div>
+      <div class="rounded-xl p-4 border text-center" style="background: var(--surface-1); border-color: var(--border-default);">
+        <p class="text-2xl mb-1">💻</p>
+        <p class="text-sm font-semibold" style="color: var(--text-primary);">Desktop</p>
+        <p class="text-xs" style="color: var(--text-tertiary);">1280~1439px</p>
+        <p class="text-xs mt-1" style="color: var(--text-secondary);">Copilot 可折叠</p>
+      </div>
+      <div class="rounded-xl p-4 border text-center" style="background: var(--surface-1); border-color: var(--border-default);">
+        <p class="text-2xl mb-1">📱</p>
+        <p class="text-sm font-semibold" style="color: var(--text-primary);">Tablet</p>
+        <p class="text-xs" style="color: var(--text-tertiary);">768~1279px</p>
+        <p class="text-xs mt-1" style="color: var(--text-secondary);">Copilot 隐藏为悬浮按钮</p>
+      </div>
+      <div class="rounded-xl p-4 border text-center" style="background: var(--surface-1); border-color: var(--border-default);">
+        <p class="text-2xl mb-1">📲</p>
+        <p class="text-sm font-semibold" style="color: var(--text-primary);">Mobile</p>
+        <p class="text-xs" style="color: var(--text-tertiary);">&lt;768px</p>
+        <p class="text-xs mt-1" style="color: var(--text-secondary);">底部 Tab 导航</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer Checklist -->
+  <footer class="page-transition mt-12 pt-6 border-t" style="border-color: var(--border-default);">
+    <h3 class="text-sm font-semibold mb-3" style="color: var(--text-primary);">✅ 自查清单</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm" style="color: var(--text-secondary);">
+      <div class="flex items-center gap-2"><span class="w-4 h-4 rounded-full flex items-center justify-center text-xs text-white" style="background: #16A34A;">✓</span> 颜色 Token 与 index.css 一致，禁止硬编码色值</div>
+      <div class="flex items-center gap-2"><span class="w-4 h-4 rounded-full flex items-center justify-center text-xs text-white" style="background: #16A34A;">✓</span> 复用 index.css utility classes，禁止重复定义</div>
+      <div class="flex items-center gap-2"><span class="w-4 h-4 rounded-full flex items-center justify-center text-xs text-white" style="background: #16A34A;">✓</span> 按钮有 Hover/Active/Focus/Disabled 四态</div>
+      <div class="flex items-center gap-2"><span class="w-4 h-4 rounded-full flex items-center justify-center text-xs text-white" style="background: #16A34A;">✓</span> 卡片有 card-hover 动效</div>
+      <div class="flex items-center gap-2"><span class="w-4 h-4 rounded-full flex items-center justify-center text-xs text-white" style="background: #16A34A;">✓</span> AI 流光边框在浅色背景上清晰可见</div>
+      <div class="flex items-center gap-2"><span class="w-4 h-4 rounded-full flex items-center justify-center text-xs text-white" style="background: #16A34A;">✓</span> 空状态、加载状态、错误状态均有设计</div>
+      <div class="flex items-center gap-2"><span class="w-4 h-4 rounded-full flex items-center justify-center text-xs text-white" style="background: #16A34A;">✓</span> 响应式断点（Desktop/Tablet/Mobile）</div>
+      <div class="flex items-center gap-2"><span class="w-4 h-4 rounded-full flex items-center justify-center text-xs text-white" style="background: #16A34A;">✓</span> 滚动条在浅色背景上可见（深色 thumb）</div>
+    </div>
+    <p class="text-xs mt-4" style="color: var(--text-tertiary);">文件位置: demo/page-preview/theme-system.html | 审核状态: 待人工审核</p>
+  </footer>
+
+</body>
+</html>

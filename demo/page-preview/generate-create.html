@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EcoDream Omni v4.0 — 新建任务 /generate/create HTML 预览</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../../apps/frontend/src/index.css">
+  <style>
+    :root {
+      --bg-base: #ffffff;
+      --bg-surface: #F7F7F8;
+      --bg-tertiary: #F3F4F6;
+      --text-primary: #1F1F1F;
+      --text-secondary: #6B7280;
+      --text-tertiary: #9CA3AF;
+      --accent-ai: #7C3AED;
+      --accent-ai-hover: #6D28D9;
+      --accent-success: #16A34A;
+      --accent-warning: #D97706;
+      --accent-danger: #DC2626;
+      --border-default: #E5E7EB;
+      --border-hover: #D1D5DB;
+    }
+    body { background: var(--bg-base); color: var(--text-primary); font-family: 'Inter','Noto Sans SC',-apple-system,sans-serif; }
+
+    .icon-nav { width:52px; height:100vh; background:var(--bg-surface); border-right:1px solid var(--border-default); display:flex; flex-direction:column; align-items:center; padding:12px 0; flex-shrink:0; transition:width .2s ease-out; overflow:hidden; }
+    .icon-nav:hover { width:180px; }
+    .nav-item { position:relative; width:100%; display:flex; align-items:center; gap:12px; padding:10px 14px; transition:all .15s ease-out; cursor:pointer; color:var(--text-secondary); }
+    .nav-item:hover { color:var(--accent-ai); background:rgba(124,58,237,0.06); }
+    .nav-item.active { color:var(--accent-ai); }
+    .nav-item.active::before { content:''; position:absolute; left:0; top:50%; transform:translateY(-50%); width:3px; height:20px; background:var(--accent-ai); border-radius:0 4px 4px 0; }
+    .nav-label { font-size:12px; font-weight:500; white-space:nowrap; opacity:0; transition:opacity .2s ease-out; }
+    .icon-nav:hover .nav-label { opacity:1; }
+
+    .copilot-panel { width:320px; background:var(--bg-base); border-left:1px solid var(--border-default); display:flex; flex-direction:column; }
+    .context-bar { background:rgba(124,58,237,0.06); border-bottom:1px solid rgba(124,58,237,0.12); }
+
+    @media (max-width: 1279px) { .copilot-panel { display:none; } .copilot-fab { display:flex; } }
+    @media (min-width: 1280px) { .copilot-panel { display:flex; } .copilot-fab { display:none; } }
+    @media (max-width: 767px) { .icon-nav { display:none; } .bottom-nav { display:flex; } }
+
+    .page-transition { animation:fadeIn .25s ease-out; }
+    @keyframes fadeIn { from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:translateY(0)} }
+
+    .stepper-step { display:flex; align-items:center; gap:6px; padding:8px 16px; border-radius:999px; font-size:13px; font-weight:500; transition:all .2s; cursor:pointer; border:1px solid transparent; }
+    .stepper-step.completed { background:rgba(22,163,74,0.08); color:var(--accent-success); cursor:pointer; }
+    .stepper-step.completed:hover { background:rgba(22,163,74,0.15); }
+    .stepper-step.current { background:var(--accent-ai); color:white; }
+    .stepper-step.pending { background:var(--bg-tertiary); color:var(--text-tertiary); cursor:not-allowed; opacity:.7; }
+    .stepper-connector { width:24px; height:2px; border-radius:1px; background:var(--border-default); transition:all .2s; }
+    .stepper-connector.completed { background:var(--accent-success); }
+
+    .form-card { border:1px solid var(--border-default); border-radius:12px; background:white; }
+    .form-label { font-size:13px; font-weight:500; color:var(--text-primary); margin-bottom:6px; display:block; }
+    .form-select, .form-input { width:100%; height:40px; padding:0 12px; border:1px solid var(--border-default); border-radius:8px; background:var(--bg-base); color:var(--text-primary); font-size:13px; outline:none; transition:border-color .15s; }
+    .form-select:focus, .form-input:focus { border-color:var(--accent-ai); }
+    .form-select:disabled, .form-input:disabled { opacity:.5; cursor:not-allowed; background:var(--bg-surface); }
+    .form-error { font-size:11px; color:var(--accent-danger); margin-top:4px; }
+    .form-hint { font-size:11px; color:var(--text-tertiary); margin-top:4px; }
+
+    .summary-row { display:flex; justify-content:space-between; padding:8px 0; font-size:13px; border-bottom:1px solid var(--border-default); }
+    .summary-row:last-child { border-bottom:none; }
+
+    .glass-panel { background:rgba(255,255,255,0.8); backdrop-filter:blur(20px) saturate(180%); border:1px solid rgba(0,0,0,0.06); }
+
+    .mobile-copilot { position:fixed; inset:0; background:var(--bg-base); z-index:900; display:none; flex-direction:column; }
+    .mobile-copilot.open { display:flex; }
+    .bottom-nav { display:none; position:fixed; bottom:0; left:0; right:0; height:56px; background:var(--bg-base); border-top:1px solid var(--border-default); justify-content:space-around; align-items:center; z-index:800; }
+    .copilot-fab { position:fixed; right:16px; bottom:72px; width:48px; height:48px; border-radius:50%; background:var(--accent-ai); color:white; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(124,58,237,0.35); z-index:850; cursor:pointer; }
+
+    .ai-badge { display:inline-flex; align-items:center; gap:3px; padding:2px 8px; border-radius:4px; font-size:10px; font-weight:500; background:rgba(124,58,237,0.08); color:var(--accent-ai); }
+  </style>
+</head>
+<body class="h-screen overflow-hidden text-sm">
+  <div id="app" class="flex h-screen page-transition">
+    <!-- IconNav -->
+    <nav class="icon-nav" aria-label="主导航">
+      <div class="mb-4 w-8 h-8 rounded-xl flex items-center justify-center text-white font-bold" style="background:linear-gradient(135deg,#7C3AED,#A78BFA);">E</div>
+      <div class="flex-1 w-full flex flex-col gap-1">
+        <a href="./dashboard.html" class="nav-item" aria-label="工作台"><span>🏠</span><span class="nav-label">工作台</span></a>
+        <a href="./generate.html" class="nav-item active" aria-label="内容生产"><span>✨</span><span class="nav-label">内容生产</span></a>
+        <a href="#" class="nav-item" aria-label="审核发布"><span>🛡️</span><span class="nav-label">审核发布</span></a>
+        <a href="#" class="nav-item" aria-label="数据报表"><span>📊</span><span class="nav-label">数据报表</span></a>
+        <a href="#" class="nav-item" aria-label="账号矩阵"><span>👤</span><span class="nav-label">账号矩阵</span></a>
+        <a href="#" class="nav-item" aria-label="素材库"><span>🖼️</span><span class="nav-label">素材库</span></a>
+        <a href="#" class="nav-item" aria-label="Agent 舰队"><span>🤖</span><span class="nav-label">Agent 舰队</span></a>
+        <a href="#" class="nav-item" aria-label="模型中心"><span>🧠</span><span class="nav-label">模型中心</span></a>
+        <a href="#" class="nav-item" aria-label="工作流"><span>⚙️</span><span class="nav-label">工作流</span></a>
+        <a href="#" class="nav-item" aria-label="平台规则"><span>📋</span><span class="nav-label">平台规则</span></a>
+        <a href="#" class="nav-item" aria-label="Playground"><span>🧪</span><span class="nav-label">Playground</span></a>
+        <a href="#" class="nav-item" aria-label="设置"><span>🔧</span><span class="nav-label">设置</span></a>
+      </div>
+      <div class="mt-auto w-full px-3">
+        <button class="w-8 h-8 rounded-full border flex items-center justify-center text-xs" style="border-color:var(--border-default);color:var(--text-secondary);" aria-label="用户菜单">👤</button>
+      </div>
+    </nav>
+
+    <!-- Workspace -->
+    <main class="flex-1 flex flex-col min-w-0" style="background:var(--bg-base);">
+      <!-- PageHeader -->
+      <header class="h-16 border-b flex items-center justify-between px-6 glass-panel" style="border-color:var(--border-default);">
+        <div class="flex items-center gap-2" aria-label="面包屑">
+          <span style="color:var(--text-secondary);">内容生产</span>
+          <span style="color:var(--text-tertiary);">/</span>
+          <span style="color:var(--text-secondary);"><a href="./generate.html" style="color:inherit;text-decoration:none;">看板</a></span>
+          <span style="color:var(--text-tertiary);">/</span>
+          <span class="font-semibold" style="color:var(--text-primary);">新建任务</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <button class="px-3 py-1.5 rounded-md border text-xs flex items-center gap-2 transition hover:border-purple-500" style="border-color:var(--border-default);color:var(--text-secondary);" aria-label="打开命令面板">
+            <span>⌘</span><span>K</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Canvas -->
+      <div class="flex-1 overflow-auto p-4 lg:p-6">
+        <div class="max-w-4xl mx-auto space-y-6">
+
+          <!-- Stepper -->
+          <div class="flex items-center justify-center gap-1" id="stepper">
+            <button class="stepper-step completed" data-step="0" onclick="goToStep(0)">
+              <span>✅</span>基础配置
+            </button>
+            <div class="stepper-connector completed" data-conn="0-1"></div>
+            <button class="stepper-step current" data-step="1" onclick="goToStep(1)">
+              <span>🧑</span>人设与故事
+            </button>
+            <div class="stepper-connector" data-conn="1-2"></div>
+            <button class="stepper-step pending" data-step="2" onclick="goToStep(2)">
+              <span>🤖</span>Agent 选择
+            </button>
+            <div class="stepper-connector" data-conn="2-3"></div>
+            <button class="stepper-step pending" data-step="3" onclick="goToStep(3)">
+              <span>📤</span>发布确认
+            </button>
+          </div>
+
+          <!-- Form Card -->
+          <div class="form-card p-6 min-h-[380px]">
+
+            <!-- Step 1: 基础配置 -->
+            <div id="step-0" class="step-content hidden max-w-xl mx-auto space-y-5">
+              <h3 class="text-base font-semibold" style="color:var(--text-primary);">基础配置</h3>
+
+              <div>
+                <label class="form-label">任务名称 <span style="color:var(--accent-danger);">*</span></label>
+                <input type="text" placeholder="输入任务名称" value="猫咪驱虫避坑指南" class="form-input">
+                <p class="form-hint">简短描述本次生成内容的主题</p>
+              </div>
+
+              <div>
+                <label class="form-label">目标平台 <span style="color:var(--accent-danger);">*</span></label>
+                <select class="form-select" id="platform-select" onchange="onPlatformChange()">
+                  <option value="">选择平台</option>
+                  <option value="xiaohongshu" selected>小红书</option>
+                  <option value="douyin">抖音</option>
+                  <option value="wechat_channels">视频号</option>
+                  <option value="bilibili">哔哩哔哩</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="form-label">内容格式 <span style="color:var(--accent-danger);">*</span></label>
+                <select class="form-select" id="format-select">
+                  <option value="">选择内容格式</option>
+                  <option value="图文" selected>图文</option>
+                  <option value="视频">视频</option>
+                  <option value="仅文字">仅文字</option>
+                </select>
+                <p class="form-hint">已选择 <strong>图文</strong>，系统将根据平台规范校验字段约束</p>
+              </div>
+
+              <div>
+                <label class="form-label">目标账号 <span style="color:var(--accent-danger);">*</span></label>
+                <select class="form-select">
+                  <option value="">选择账号</option>
+                  <option value="acc_001" selected>🐱 小艾养猫记（小红书）</option>
+                  <option value="acc_002">🐕 省钱狗爸（小红书）</option>
+                  <option value="acc_003">🏥 宠物医院日记（小红书）</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="form-label">优先级</label>
+                <select class="form-select">
+                  <option value="0">P0 — 最高</option>
+                  <option value="25">P1 — 高</option>
+                  <option value="50" selected>P2 — 普通</option>
+                  <option value="75">P3 — 低</option>
+                  <option value="100">P4 — 最低</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Step 2: 人设与故事 -->
+            <div id="step-1" class="step-content max-w-xl mx-auto space-y-5">
+              <h3 class="text-base font-semibold" style="color:var(--text-primary);">人设与故事</h3>
+
+              <div>
+                <label class="form-label">Persona <span style="color:var(--accent-danger);">*</span></label>
+                <select class="form-select" id="persona-select" onchange="onPersonaChange()">
+                  <option value="">选择人设</option>
+                  <option value="per_001" selected>🐱 小艾养猫记 — 省钱铲屎官</option>
+                  <option value="per_002">🐕 省钱狗爸 — 理性消费者</option>
+                  <option value="per_003">🏥 宠物医院日记 — 专业兽医</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="form-label">PersonaStory（故事线）</label>
+                <select class="form-select" id="story-select" onchange="onStoryChange()">
+                  <option value="">选择故事线</option>
+                  <option value="story_001" selected>新手养猫系列</option>
+                  <option value="story_002">宠物健康科普</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="form-label">当前节点</label>
+                <select class="form-select" id="node-select">
+                  <option value="">选择节点</option>
+                  <option value="node_001" selected>驱虫篇 — 第3集：驱虫药选择</option>
+                  <option value="node_002">驱虫篇 — 第4集：驱虫时间表</option>
+                  <option value="node_003">体检篇 — 第1集：基础检查</option>
+                </select>
+                <p class="form-hint">选择故事线中的具体节点，AI 将围绕该节点主题生成内容</p>
+              </div>
+            </div>
+
+            <!-- Step 3: Agent 选择 (v4.0 Agent-First) -->
+            <div id="step-2" class="step-content hidden max-w-xl mx-auto space-y-5">
+              <div class="flex items-center justify-between">
+                <h3 class="text-base font-semibold" style="color:var(--text-primary);">选择执行 Agent</h3>
+                <span class="ai-badge"><span>✨</span>已智能推荐</span>
+              </div>
+              <p class="form-hint">系统根据 <strong>小红书 + 图文</strong> 筛选了以下可用 Agent</p>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <button type="button" class="relative text-left rounded-xl border p-4 transition-all" style="border-color:var(--accent-ai);background:rgba(124,58,237,0.04);">
+                  <span class="absolute -top-2 -right-2 px-2 py-0.5 rounded-full text-[10px] font-medium text-white" style="background:var(--accent-ai);">✨ 推荐</span>
+                  <div class="flex items-start gap-3">
+                    <div class="w-10 h-10 rounded-lg flex items-center justify-center text-lg shrink-0" style="background:rgba(124,58,237,0.1);color:var(--accent-ai);">🤖</div>
+                    <div>
+                      <p class="text-sm font-medium">小红书图文生成 Agent</p>
+                      <p class="text-xs" style="color:var(--text-secondary);">专为小红书图文笔记优化的内容生成 Agent</p>
+                    </div>
+                  </div>
+                  <div class="mt-3 flex items-center gap-3 text-[10px]" style="color:var(--text-secondary);">
+                    <span>成功率 94%</span><span>近1h 12 任务</span>
+                  </div>
+                  <div class="mt-2 flex flex-wrap gap-1">
+                    <span class="px-1.5 py-0.5 rounded text-[10px]" style="background:var(--bg-tertiary);color:var(--text-secondary);">text_generate</span>
+                    <span class="px-1.5 py-0.5 rounded text-[10px]" style="background:var(--bg-tertiary);color:var(--text-secondary);">rag_inject</span>
+                  </div>
+                </button>
+                <button type="button" class="text-left rounded-xl border p-4 transition-all hover:shadow-sm" style="border-color:var(--border-default);background:var(--bg-base);">
+                  <div class="flex items-start gap-3">
+                    <div class="w-10 h-10 rounded-lg flex items-center justify-center text-lg shrink-0" style="background:var(--bg-tertiary);color:var(--text-secondary);">🤖</div>
+                    <div>
+                      <p class="text-sm font-medium">小红书视频生成 Agent</p>
+                      <p class="text-xs" style="color:var(--text-secondary);">专为小红书视频内容优化的生成 Agent</p>
+                    </div>
+                  </div>
+                  <div class="mt-3 flex items-center gap-3 text-[10px]" style="color:var(--text-secondary);">
+                    <span>成功率 91%</span><span>近1h 8 任务</span>
+                  </div>
+                  <div class="mt-2 flex flex-wrap gap-1">
+                    <span class="px-1.5 py-0.5 rounded text-[10px]" style="background:var(--bg-tertiary);color:var(--text-secondary);">video_gen</span>
+                  </div>
+                </button>
+                <button type="button" class="text-left rounded-xl border p-4 transition-all hover:shadow-sm" style="border-color:var(--border-default);background:var(--bg-base);">
+                  <div class="flex items-start gap-3">
+                    <div class="w-10 h-10 rounded-lg flex items-center justify-center text-lg shrink-0" style="background:var(--bg-tertiary);color:var(--text-secondary);">🤖</div>
+                    <div>
+                      <p class="text-sm font-medium">通用内容生成 Agent</p>
+                      <p class="text-xs" style="color:var(--text-secondary);">支持多平台多格式的通用内容生成 Agent</p>
+                    </div>
+                  </div>
+                  <div class="mt-3 flex items-center gap-3 text-[10px]" style="color:var(--text-secondary);">
+                    <span>成功率 89%</span><span>近1h 23 任务</span>
+                  </div>
+                  <div class="mt-2 flex flex-wrap gap-1">
+                    <span class="px-1.5 py-0.5 rounded text-[10px]" style="background:var(--bg-tertiary);color:var(--text-secondary);">multi_platform</span>
+                  </div>
+                </button>
+              </div>
+
+              <div>
+                <label class="form-label">ContentSeries（内容系列）</label>
+                <select class="form-select" id="series-select" onchange="onSeriesChange()">
+                  <option value="">不绑定系列</option>
+                  <option value="series_001" selected>新手养猫 2026 Q2</option>
+                  <option value="series_002">宠物健康科普</option>
+                </select>
+              </div>
+              <div id="new-series" class="hidden">
+                <label class="form-label">或输入新系列名称</label>
+                <input type="text" placeholder="输入新系列名称" class="form-input">
+              </div>
+            </div>
+
+            <!-- Step 4: 发布确认 -->
+            <div id="step-3" class="step-content hidden max-w-xl mx-auto space-y-5">
+              <h3 class="text-base font-semibold" style="color:var(--text-primary);">发布确认</h3>
+
+              <!-- 执行方式 -->
+              <div class="space-y-3">
+                <label class="form-label">执行方式</label>
+                <div class="flex items-center gap-6">
+                  <label class="flex items-center gap-2 text-sm cursor-pointer">
+                    <input type="radio" name="schedule" value="immediate" checked onchange="onScheduleChange(this.value)" class="accent-purple-600">
+                    <span>立即执行</span>
+                  </label>
+                  <label class="flex items-center gap-2 text-sm cursor-pointer">
+                    <input type="radio" name="schedule" value="scheduled" onchange="onScheduleChange(this.value)" class="accent-purple-600">
+                    <span>定时执行</span>
+                  </label>
+                  <label class="flex items-center gap-2 text-sm cursor-pointer">
+                    <input type="radio" name="schedule" value="cron" onchange="onScheduleChange(this.value)" class="accent-purple-600">
+                    <span>循环执行</span>
+                  </label>
+                </div>
+
+                <!-- 定时 -->
+                <div id="schedule-input" class="hidden">
+                  <input type="datetime-local" class="form-input mt-2" value="2026-06-05T20:00">
+                </div>
+
+                <!-- 循环 -->
+                <div id="cron-input" class="hidden space-y-3">
+                  <div class="flex items-center gap-3">
+                    <label class="flex items-center gap-1.5 text-xs cursor-pointer">
+                      <input type="radio" name="cronMode" value="preset" checked class="accent-purple-600"> 固定循环
+                    </label>
+                    <label class="flex items-center gap-1.5 text-xs cursor-pointer">
+                      <input type="radio" name="cronMode" value="custom" class="accent-purple-600"> 自定义循环
+                    </label>
+                  </div>
+                  <div class="flex flex-wrap gap-2">
+                    <button class="px-3 py-1.5 rounded-md text-xs border transition" style="border-color:var(--accent-ai);background:rgba(124,58,237,0.08);color:var(--accent-ai);">每天早9点</button>
+                    <button class="px-3 py-1.5 rounded-md text-xs border transition hover:bg-gray-50" style="border-color:var(--border-default);color:var(--text-secondary);">每晚8点</button>
+                    <button class="px-3 py-1.5 rounded-md text-xs border transition hover:bg-gray-50" style="border-color:var(--border-default);color:var(--text-secondary);">每周一早9点</button>
+                    <button class="px-3 py-1.5 rounded-md text-xs border transition hover:bg-gray-50" style="border-color:var(--border-default);color:var(--text-secondary);">每月1号早9点</button>
+                  </div>
+                  <p class="form-hint">格式：分 时 日 月 周（如 <code>0 9 * * 1</code> 表示每周一上午9点）</p>
+                </div>
+              </div>
+
+              <!-- 系统注入摘要 -->
+              <div class="space-y-2 pt-4 border-t" style="border-color:var(--border-default);">
+                <label class="form-label flex items-center gap-1.5">
+                  <span>🖥️</span>系统注入摘要
+                </label>
+                <div class="p-3 rounded-lg space-y-2 text-xs" style="background:var(--bg-surface);">
+                  <div class="flex items-start gap-2" style="color:var(--text-secondary);">
+                    <span class="mt-0.5">ℹ️</span>
+                    <span><strong>BrandKnowledge：</strong>宠物健康知识库已加载，内容生成时将自动注入品牌合规约束</span>
+                  </div>
+                  <div class="flex items-start gap-2" style="color:var(--text-secondary);">
+                    <span class="mt-0.5">ℹ️</span>
+                    <span><strong>PlatformRule：</strong>小红书 L3 日配额检查已启用，L4 动态风控已启用</span>
+                  </div>
+                  <div class="flex items-start gap-2" style="color:var(--text-secondary);">
+                    <span class="mt-0.5">ℹ️</span>
+                    <span><strong>PlatformSchema：</strong>内容格式「图文」字段约束已加载，发布前将自动校验</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 配置汇总 -->
+              <div class="space-y-2 pt-4 border-t" style="border-color:var(--border-default);">
+                <label class="form-label">配置汇总</label>
+                <div class="form-card p-4 space-y-0">
+                  <div class="summary-row"><span style="color:var(--text-secondary);">任务名称</span><span class="font-medium">猫咪驱虫避坑指南</span></div>
+                  <div class="summary-row"><span style="color:var(--text-secondary);">目标平台</span><span class="font-medium">小红书</span></div>
+                  <div class="summary-row"><span style="color:var(--text-secondary);">内容格式</span><span class="font-medium">图文</span></div>
+                  <div class="summary-row"><span style="color:var(--text-secondary);">目标账号</span><span class="font-medium">小艾养猫记</span></div>
+                  <div class="summary-row"><span style="color:var(--text-secondary);">Persona</span><span class="font-medium">省钱铲屎官</span></div>
+                  <div class="summary-row"><span style="color:var(--text-secondary);">执行 Agent</span><span class="font-medium">小红书图文生成 Agent</span></div>
+                  <div class="summary-row"><span style="color:var(--text-secondary);">优先级</span><span class="px-2 py-0.5 rounded-full text-xs font-medium" style="background:var(--accent-ai);color:white;">P50</span></div>
+                  <div class="summary-row"><span style="color:var(--text-secondary);">执行方式</span><span class="font-medium">立即执行</span></div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Mode C: 工作区无提交按钮，纯展示配置，操作走 Copilot Action Cards -->
+          <div class="flex items-center justify-between rounded-xl border p-4" style="background:rgba(124,58,237,0.04);border-color:rgba(124,58,237,0.2);">
+            <div class="flex items-center gap-2">
+              <span style="color:var(--accent-ai);">🤖</span>
+              <span class="text-xs" style="color:var(--accent-ai);">配置预览模式 — 请在右侧 Copilot 面板中确认创建</span>
+            </div>
+            <a href="./generate.html" class="px-3 py-1.5 rounded-md text-xs font-medium border transition hover:bg-gray-50" style="border-color:var(--border-default);color:var(--text-secondary);text-decoration:none;">
+              返回看板
+            </a>
+          </div>
+        </div>
+        <div class="h-20"></div>
+      </div>
+    </main>
+
+    <!-- Copilot Panel -->
+    <aside class="copilot-panel" aria-label="AI Copilot 面板">
+      <div class="h-12 border-b flex items-center justify-between px-4" style="border-color:var(--border-default);">
+        <div class="flex items-center gap-2">
+          <span>🤖</span>
+          <span class="text-sm font-semibold" style="color:var(--text-primary);">AI Copilot</span>
+        </div>
+        <button class="p-1 rounded hover:bg-gray-100" aria-label="折叠面板">—</button>
+      </div>
+      <!-- Context Bar -->
+      <div class="context-bar px-4 py-3">
+        <p class="text-xs font-medium mb-1" style="color:var(--accent-ai);">当前上下文：新建任务向导</p>
+        <p id="copilot-tip" class="text-sm" style="color:var(--text-primary);">我正在帮你配置「猫咪驱虫避坑指南」，需要调整人设或工作流吗？</p>
+        <div class="flex flex-wrap gap-2 mt-2">
+          <button class="px-2 py-1 rounded-md text-xs border transition hover:border-purple-400" style="border-color:var(--border-default);color:var(--text-secondary);">🔄 换一个人设</button>
+          <button class="px-2 py-1 rounded-md text-xs border transition hover:border-purple-400" style="border-color:var(--border-default);color:var(--text-secondary);">📋 查看推荐模板</button>
+        </div>
+      </div>
+      <!-- Messages -->
+      <div class="flex-1 overflow-auto px-4 py-3 space-y-3">
+        <div class="flex gap-2">
+          <span class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] border" style="border-color:var(--border-default);background:var(--bg-surface);">🤖</span>
+          <div class="flex-1">
+            <div class="rounded-xl rounded-tl-sm px-3 py-2 border-l-[3px]" style="background:var(--bg-base);border-color:var(--border-default);border-left-color:var(--accent-ai);">
+              <p class="text-xs leading-relaxed" style="color:var(--text-primary);">已根据「小红书 + 图文」智能推荐「内容创作 — 图文笔记」模板。该模板包含：标题生成 → 正文结构 → 标签建议 → 封面推荐 4 个步骤。</p>
+            </div>
+          </div>
+        </div>
+        <!-- Action Card -->
+        <div class="rounded-xl border p-3" style="border-color:rgba(124,58,237,0.3);background:var(--bg-base);">
+          <div class="text-xs font-semibold mb-2" style="color:var(--accent-ai);">🤖 AI 建议</div>
+          <div class="text-xs space-y-1" style="color:var(--text-secondary);">
+            <p>检测到「驱虫」属于医疗健康话题，建议启用医疗免责声明。</p>
+          </div>
+          <div class="flex gap-2 mt-3">
+            <button class="flex-1 py-1.5 rounded-md text-xs text-white font-medium" style="background:var(--accent-ai);">启用免责声明</button>
+            <button class="flex-1 py-1.5 rounded-md text-xs border" style="border-color:var(--border-default);color:var(--text-secondary);">忽略</button>
+          </div>
+        </div>
+      </div>
+      <!-- Input -->
+      <div class="border-t p-3" style="border-color:var(--border-default);">
+        <div class="flex items-center gap-2 mb-2">
+          <button class="p-1 rounded hover:bg-gray-100">🎨</button>
+          <button class="p-1 rounded hover:bg-gray-100">📎</button>
+          <button class="p-1 rounded hover:bg-gray-100">🎙️</button>
+        </div>
+        <div class="flex items-center gap-2">
+          <input type="text" placeholder="告诉 AI 你的需求..." class="flex-1 px-3 py-2 rounded-md border text-xs outline-none" style="border-color:var(--border-default);background:var(--bg-base);color:var(--text-primary);">
+          <button class="w-8 h-8 rounded-md flex items-center justify-center text-white" style="background:var(--accent-ai);">➤</button>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Mobile Copilot FAB -->
+  <button id="copilot-fab" class="copilot-fab" aria-label="打开 AI Copilot">🤖</button>
+  <div id="mobile-copilot" class="mobile-copilot">
+    <div class="h-12 border-b flex items-center justify-between px-4" style="border-color:var(--border-default);">
+      <span class="text-sm font-semibold" style="color:var(--text-primary);">🤖 AI Copilot</span>
+      <button id="mobile-copilot-close" class="p-2" aria-label="关闭">✕</button>
+    </div>
+    <div class="flex-1 overflow-auto p-4">
+      <div class="context-bar rounded-lg px-3 py-2 mb-3">
+        <p class="text-xs" style="color:var(--text-primary);">当前上下文：新建任务向导</p>
+        <p class="text-xs mt-1" style="color:var(--text-secondary);">已推荐「图文笔记」模板</p>
+      </div>
+    </div>
+    <div class="border-t p-3" style="border-color:var(--border-default);">
+      <div class="flex gap-2">
+        <input type="text" placeholder="告诉 AI 你的需求..." class="flex-1 px-3 py-2 rounded-md border text-xs outline-none" style="border-color:var(--border-default);background:var(--bg-base);color:var(--text-primary);">
+        <button class="px-3 py-2 rounded-md text-white text-xs" style="background:var(--accent-ai);">发送</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Bottom Tab -->
+  <nav class="bottom-nav" aria-label="底部导航">
+    <a href="./dashboard.html" class="flex flex-col items-center gap-0.5 text-[10px]" style="color:var(--text-secondary);">🏠<span>工作台</span></a>
+    <a href="./generate.html" class="flex flex-col items-center gap-0.5 text-[10px]" style="color:var(--accent-ai);">✨<span>内容</span></a>
+    <a href="#" class="flex flex-col items-center gap-0.5 text-[10px]" style="color:var(--text-secondary);">📊<span>数据</span></a>
+    <a href="#" class="flex flex-col items-center gap-0.5 text-[10px]" style="color:var(--text-secondary);">🤖<span>Agent</span></a>
+    <a href="#" class="flex flex-col items-center gap-0.5 text-[10px]" style="color:var(--text-secondary);">🔧<span>设置</span></a>
+  </nav>
+
+  <script>
+    let currentStep = 1;
+    const totalSteps = 4;
+    const stepLabels = ['基础配置','人设与故事','Agent 选择','发布确认'];
+    const copilotTips = [
+      '请输入任务名称、目标平台和内容格式。我可以根据你的账号历史推荐最优格式。',
+      '选择适合本次内容的 Persona 和故事节点。故事节点将决定 AI 生成内容的方向和深度。',
+      '系统已根据「小红书 + 图文」智能推荐了「小红书图文生成 Agent」。该 Agent 过去 30 天处理过 47 个同类任务，成功率 94%。'
+      '确认所有配置后点击「确认创建」。系统会自动注入平台规则和品牌知识。'
+    ];
+
+    function updateStepper() {
+      document.querySelectorAll('.stepper-step').forEach((btn, idx) => {
+        btn.classList.remove('completed','current','pending');
+        if (idx < currentStep) btn.classList.add('completed');
+        else if (idx === currentStep) btn.classList.add('current');
+        else btn.classList.add('pending');
+      });
+      document.querySelectorAll('.stepper-connector').forEach((conn, idx) => {
+        conn.classList.toggle('completed', idx < currentStep);
+      });
+
+      document.querySelectorAll('.step-content').forEach((el, idx) => {
+        el.classList.toggle('hidden', idx !== currentStep);
+      });
+
+      document.getElementById('btn-prev').style.visibility = currentStep === 0 ? 'hidden' : 'visible';
+      if (currentStep === totalSteps - 1) {
+        document.getElementById('btn-next').classList.add('hidden');
+        document.getElementById('btn-submit').classList.remove('hidden');
+      } else {
+        document.getElementById('btn-next').classList.remove('hidden');
+        document.getElementById('btn-submit').classList.add('hidden');
+      }
+
+      document.getElementById('copilot-tip').textContent = copilotTips[currentStep];
+    }
+
+    function nextStep() {
+      if (currentStep < totalSteps - 1) {
+        currentStep++;
+        updateStepper();
+      }
+    }
+    function prevStep() {
+      if (currentStep > 0) {
+        currentStep--;
+        updateStepper();
+      }
+    }
+    function goToStep(step) {
+      if (step <= currentStep) {
+        currentStep = step;
+        updateStepper();
+      }
+    }
+    function submitForm() {
+      alert('✅ 任务「猫咪驱虫避坑指南」创建成功！\n\n即将跳转到内容生产看板...');
+      window.location.href = './generate.html';
+    }
+
+    function onPlatformChange() {
+      const p = document.getElementById('platform-select').value;
+      const fmt = document.getElementById('format-select');
+      if (!p) { fmt.disabled = true; fmt.value = ''; return; }
+      fmt.disabled = false;
+      // Simulate format options update
+    }
+    function onPersonaChange() {
+      const p = document.getElementById('persona-select').value;
+      const story = document.getElementById('story-select');
+      if (!p) { story.disabled = true; story.value = ''; }
+      else { story.disabled = false; }
+    }
+    function onStoryChange() {
+      const s = document.getElementById('story-select').value;
+      const node = document.getElementById('node-select');
+      if (!s) { node.disabled = true; node.value = ''; }
+      else { node.disabled = false; }
+    }
+    function onSeriesChange() {
+      const s = document.getElementById('series-select').value;
+      document.getElementById('new-series').classList.toggle('hidden', !!s);
+    }
+    function onScheduleChange(val) {
+      document.getElementById('schedule-input').classList.toggle('hidden', val !== 'scheduled');
+      document.getElementById('cron-input').classList.toggle('hidden', val !== 'cron');
+    }
+
+    // Mobile Copilot
+    document.getElementById('copilot-fab').addEventListener('click', () => document.getElementById('mobile-copilot').classList.add('open'));
+    document.getElementById('mobile-copilot-close').addEventListener('click', () => document.getElementById('mobile-copilot').classList.remove('open'));
+
+    updateStepper();
+  </script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+id: data_analysis_only
+name: 数据分析工作流
+description: 仅执行 DataAnalyst 节点
+source_preset: data_analysis_only
+version: 1
+status: ACTIVE
+owner: system
+nodes:
+- node_index: 0
+  node_type: AGENT
+  node_name: 数据分析
+  agent_id: data-analyst
+  fail_strategy: FAIL_FAST

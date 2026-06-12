@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>审核发布 — EcoDream Omni v4.0</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            background: '#ffffff', foreground: '#1f1f1f', card: '#f7f7f8',
+            'card-foreground': '#1f1f1f', primary: '#7c3aed', 'primary-foreground': '#ffffff',
+            secondary: '#f3f4f6', 'secondary-foreground': '#374151',
+            muted: '#f7f7f8', 'muted-foreground': '#6b7280',
+            accent: '#f3f4f6', 'accent-foreground': '#1f1f1f',
+            destructive: '#dc2626', 'destructive-foreground': '#ffffff',
+            border: '#e5e7eb', input: '#e5e7eb', ring: '#7c3aed',
+            success: '#16a34a', warning: '#d97706', danger: '#dc2626', info: '#2563eb',
+          },
+          fontFamily: {
+            sans: ['"Inter"','"Noto Sans SC"','-apple-system','BlinkMacSystemFont','sans-serif'],
+          },
+          borderRadius: { lg: '14px', md: '10px', sm: '6px', xl: '20px' },
+        }
+      }
+    }
+  </script>
+  <style>
+    :root {
+      --bg-base:#fff; --bg-secondary:#f7f7f8; --bg-tertiary:#f3f4f6;
+      --accent-ai:#7c3aed; --accent-success:#16a34a; --accent-warning:#d97706; --accent-danger:#dc2626;
+      --text-primary:#1f1f1f; --text-secondary:#6b7280; --text-tertiary:#9ca3af;
+      --border-default:#e5e7eb; --border-hover:#d1d5db;
+      --glow-ai:0 0 20px rgba(124,58,237,0.15);
+    }
+    @keyframes fade-in { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes slide-in-right { from{opacity:0;transform:translateX(16px)} to{opacity:1;transform:translateX(0)} }
+    @keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
+    @keyframes pulse-glow { 0%,100%{box-shadow:0 0 8px rgba(124,58,237,0.06);border-color:rgba(124,58,237,0.2)} 50%{box-shadow:0 0 20px rgba(124,58,237,0.15);border-color:rgba(124,58,237,0.5)} }
+    .animate-fade-in{animation:fade-in .25s ease-out forwards}
+    .animate-slide-in-right{animation:slide-in-right .2s ease-out forwards}
+    .animate-shimmer{animation:shimmer 1.5s linear infinite;background:linear-gradient(90deg,transparent 0%,rgba(124,58,237,.04) 50%,transparent 100%);background-size:200% 100%}
+    .glass-panel{background:rgba(255,255,255,.8);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);border:1px solid rgba(0,0,0,.06)}
+    .ai-glow{box-shadow:var(--glow-ai)}
+    .card-hover{transition:all .2s ease-out;cursor:pointer}
+    .card-hover:hover{box-shadow:0 4px 12px rgba(0,0,0,.06);transform:translateY(-2px);border-color:var(--border-hover)}
+    .page-transition{animation:fade-in .25s ease-out}
+    .line-clamp-2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+    .line-clamp-3{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+    .scrollbar-hide{-ms-overflow-style:none;scrollbar-width:none}
+    .scrollbar-hide::-webkit-scrollbar{display:none}
+    .compliance-bar-bg{height:8px;border-radius:4px;background:var(--bg-tertiary);overflow:hidden}
+    .compliance-bar-fill{height:100%;border-radius:4px;transition:width .6s cubic-bezier(.16,1,.3,1)}
+
+    /* Modal */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;display:none;align-items:center;justify-content:center;padding:16px}
+    .modal-overlay.active{display:flex}
+    .modal-panel{background:#fff;border-radius:16px;border:1px solid var(--border-default);box-shadow:0 24px 60px rgba(0,0,0,.15);width:100%;max-width:672px;max-height:80vh;display:flex;flex-direction:column;overflow:hidden}
+
+    /* CMDK */
+    .cmdk-overlay{position:fixed;inset:0;background:rgba(0,0,0,.3);backdrop-filter:blur(4px);z-index:100;display:none;align-items:flex-start;justify-content:center;padding-top:15vh}
+    .cmdk-overlay.active{display:flex}
+    .cmdk-panel{width:640px;max-width:90vw;background:#fff;border-radius:16px;box-shadow:0 24px 60px rgba(0,0,0,.15);overflow:hidden}
+
+    /* Inline expand in Copilot */
+    .copilot-action-expand{max-height:0;overflow:hidden;transition:max-height .3s ease-out}
+    .copilot-action-expand.open{max-height:300px}
+
+    /* Toast */
+    .toast-enter{animation:fade-in .2s ease-out}
+
+    /* Responsive */
+    @media(max-width:1279px){.ai-copilot-panel{display:none}.ai-copilot-fab{display:flex}}
+    @media(min-width:1280px){.ai-copilot-fab{display:none}}
+    @media(max-width:1023px){.detail-right-col{display:none}.detail-left-col{width:100%}}
+    @media(max-width:767px){.icon-nav{width:0;overflow:hidden}.workspace-canvas{padding:12px}}
+
+    /* Toggle switch */
+    .toggle{width:36px;height:20px;border-radius:9999px;position:relative;transition:background .2s}
+    .toggle-dot{position:absolute;top:2px;width:16px;height:16px;background:#fff;border-radius:9999px;box-shadow:0 1px 2px rgba(0,0,0,.1);transition:left .2s}
+  </style>
+</head>
+<body class="bg-background text-foreground font-sans antialiased overflow-hidden">
+
+  <!-- ═══════════════════════════════════════════
+       Command+K Palette
+       ═══════════════════════════════════════════ -->
+  <div id="cmdk-overlay" class="cmdk-overlay" onclick="closeCmdK()">
+    <div class="cmdk-panel" onclick="event.stopPropagation()">
+      <div class="flex items-center gap-3 px-5 py-4 border-b border-border">
+        <i data-lucide="search" class="w-5 h-5 text-muted-foreground"></i>
+        <input type="text" placeholder="搜索内容、任务、命令... 试试 / 前缀触发 AI 命令" class="flex-1 bg-transparent outline-none text-base" />
+        <kbd class="hidden sm:inline-block px-2 py-0.5 rounded bg-secondary text-xs text-muted-foreground">ESC</kbd>
+      </div>
+      <div class="p-2 max-h-[50vh] overflow-y-auto">
+        <div class="px-3 py-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wide">AI 命令</div>
+        <button class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-secondary transition-colors text-left">
+          <span class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary"><i data-lucide="sparkles" class="w-4 h-4"></i></span>
+          <div><div class="text-sm font-medium">/生成封面</div><div class="text-xs text-muted-foreground">让 AI 为当前内容生成封面图</div></div>
+        </button>
+        <button class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-secondary transition-colors text-left">
+          <span class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary"><i data-lucide="check-circle" class="w-4 h-4"></i></span>
+          <div><div class="text-sm font-medium">/审核通过</div><div class="text-xs text-muted-foreground">一键通过当前内容审核</div></div>
+        </button>
+        <div class="px-3 py-1.5 mt-2 text-xs font-medium text-muted-foreground uppercase tracking-wide">页面</div>
+        <button class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-secondary transition-colors text-left">
+          <span class="w-8 h-8 rounded-lg bg-secondary flex items-center justify-center text-muted-foreground"><i data-lucide="shield-check" class="w-4 h-4"></i></span>
+          <div class="flex-1"><div class="text-sm font-medium">审核发布</div></div>
+          <span class="text-xs text-muted-foreground">/review</span>
+        </button>
+      </div>
+      <div class="px-5 py-3 border-t border-border bg-secondary/50 flex items-center gap-4 text-xs text-muted-foreground">
+        <span class="flex items-center gap-1"><kbd class="px-1.5 rounded bg-background border">↑</kbd> <kbd class="px-1.5 rounded bg-background border">↓</kbd> 导航</span>
+        <span class="flex items-center gap-1"><kbd class="px-1.5 rounded bg-background border">↵</kbd> 确认</span>
+        <span class="flex items-center gap-1"><kbd class="px-1.5 rounded bg-background border">esc</kbd> 关闭</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       Cover Picker Modal — 仅素材库 + 本地上传
+       AI 生成走 Copilot 驱动
+       ═══════════════════════════════════════════ -->
+  <div id="cover-modal" class="modal-overlay" onclick="closeCoverModal()">
+    <div class="modal-panel" onclick="event.stopPropagation()">
+      <div class="flex items-center justify-between px-5 py-4 border-b border-border">
+        <h2 class="text-base font-semibold">选择封面</h2>
+        <button onclick="closeCoverModal()" class="p-1 hover:bg-secondary rounded-lg transition-colors"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+      <div class="flex gap-1 bg-secondary rounded-lg p-0.5 m-4 mb-0 w-fit">
+        <button onclick="switchCoverTab('library')" id="cover-tab-library" class="cover-tab px-3 py-1 rounded-md text-sm font-medium bg-background text-foreground shadow-sm transition-colors"><i data-lucide="image" class="w-3.5 h-3.5 inline mr-1"></i>素材库</button>
+        <button onclick="switchCoverTab('upload')" id="cover-tab-upload" class="cover-tab px-3 py-1 rounded-md text-sm font-medium text-muted-foreground transition-colors"><i data-lucide="upload" class="w-3.5 h-3.5 inline mr-1"></i>本地上传</button>
+      </div>
+      <div class="flex-1 overflow-y-auto p-4">
+        <div id="cover-content-library">
+          <div class="flex items-center gap-2 mb-3"><span class="text-xs text-muted-foreground">裁剪比例：</span>
+            <div class="flex gap-1">
+              <button class="px-2 py-0.5 rounded text-xs font-medium bg-primary text-primary-foreground">3:4</button>
+              <button class="px-2 py-0.5 rounded text-xs font-medium bg-secondary text-secondary-foreground hover:bg-secondary/80">1:1</button>
+              <button class="px-2 py-0.5 rounded text-xs font-medium bg-secondary text-secondary-foreground hover:bg-secondary/80">4:3</button>
+            </div>
+          </div>
+          <div class="grid grid-cols-4 gap-3">
+            <button onclick="selectCover('https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=400&h=533&fit=crop')" class="group relative rounded-lg border border-border overflow-hidden hover:border-primary transition-colors aspect-[3/4]">
+              <img src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=400&h=533&fit=crop" class="w-full h-full object-cover" /><div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors"></div>
+            </button>
+            <button onclick="selectCover('https://images.unsplash.com/photo-1573865526739-10659fec78a5?w=400&h=533&fit=crop')" class="group relative rounded-lg border border-border overflow-hidden hover:border-primary transition-colors aspect-[3/4]">
+              <img src="https://images.unsplash.com/photo-1573865526739-10659fec78a5?w=400&h=533&fit=crop" class="w-full h-full object-cover" /><div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors"></div>
+            </button>
+            <button onclick="selectCover('https://images.unsplash.com/photo-1495360010541-f48722b34f7d?w=400&h=533&fit=crop')" class="group relative rounded-lg border border-border overflow-hidden hover:border-primary transition-colors aspect-[3/4]">
+              <img src="https://images.unsplash.com/photo-1495360010541-f48722b34f7d?w=400&h=533&fit=crop" class="w-full h-full object-cover" /><div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors"></div>
+            </button>
+            <button onclick="selectCover('https://images.unsplash.com/photo-1533738363-b7f9aef128ce?w=400&h=533&fit=crop')" class="group relative rounded-lg border border-border overflow-hidden hover:border-primary transition-colors aspect-[3/4]">
+              <img src="https://images.unsplash.com/photo-1533738363-b7f9aef128ce?w=400&h=533&fit=crop" class="w-full h-full object-cover" /><div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors"></div>
+            </button>
+          </div>
+        </div>
+        <div id="cover-content-upload" class="hidden">
+          <div class="flex flex-col items-center justify-center py-8">
+            <div class="w-full max-w-sm h-48 border-2 border-dashed border-border rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-primary hover:bg-secondary/30 transition-colors">
+              <i data-lucide="upload" class="w-8 h-8 text-muted-foreground mb-2"></i>
+              <p class="text-sm text-muted-foreground">点击或拖拽上传图片</p>
+              <p class="text-xs text-muted-foreground mt-1">支持 JPG、PNG、WebP</p>
+            </div>
+            <p class="text-xs text-muted-foreground mt-3">上传后将自动保存到素材库</p>
+          </div>
+        </div>
+      </div>
+      <div class="px-5 py-4 border-t border-border bg-secondary/30">
+        <div class="flex items-center gap-2 text-xs text-muted-foreground">
+          <i data-lucide="bot" class="w-3.5 h-3.5 text-primary"></i>
+          <span>需要 AI 生成封面？在右侧 Copilot 中点击「🎨 生成封面」即可</span>
+        </div>
+      </div>
+      <div class="flex justify-end gap-2 px-5 py-4 border-t border-border">
+        <button onclick="closeCoverModal()" class="px-4 py-2 rounded-lg border border-border text-sm hover:bg-secondary transition-colors">取消</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       Main Layout
+       ═══════════════════════════════════════════ -->
+  <div class="flex h-screen w-screen">
+
+    <!-- IconNav (52px) -->
+    <nav class="icon-nav w-[52px] min-w-[52px] bg-background border-r border-border flex flex-col items-center py-3 gap-1 z-30">
+      <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-[#a78bfa] flex items-center justify-center text-white font-bold text-sm mb-2">E</div>
+      <div class="flex-1 flex flex-col gap-1">
+        <a href="./dashboard.html" class="w-9 h-9 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors" title="工作台"><i data-lucide="home" class="w-[18px] h-[18px]"></i></a>
+        <a href="./generate.html" class="w-9 h-9 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors" title="内容生产"><i data-lucide="sparkles" class="w-[18px] h-[18px]"></i></a>
+        <a href="#" class="w-9 h-9 rounded-lg flex items-center justify-center bg-primary/10 text-primary relative" title="审核发布">
+          <i data-lucide="shield-check" class="w-[18px] h-[18px]"></i>
+          <span class="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-primary status-dot-running"></span>
+        </a>
+        <a href="#" class="w-9 h-9 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors" title="数据报表"><i data-lucide="bar-chart-3" class="w-[18px] h-[18px]"></i></a>
+        <a href="#" class="w-9 h-9 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors" title="账号矩阵"><i data-lucide="users" class="w-[18px] h-[18px]"></i></a>
+        <a href="#" class="w-9 h-9 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors" title="素材库"><i data-lucide="image" class="w-[18px] h-[18px]"></i></a>
+        <a href="#" class="w-9 h-9 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors" title="Agent 舰队"><i data-lucide="bot" class="w-[18px] h-[18px]"></i></a>
+        <a href="#" class="w-9 h-9 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors" title="模型中心"><i data-lucide="brain" class="w-[18px] h-[18px]"></i></a>
+        <a href="#" class="w-9 h-9 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors" title="工作流"><i data-lucide="workflow" class="w-[18px] h-[18px]"></i></a>
+        <a href="#" class="w-9 h-9 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors" title="平台规则"><i data-lucide="file-text" class="w-[18px] h-[18px]"></i></a>
+        <a href="#" class="w-9 h-9 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors" title="Playground"><i data-lucide="flask-conical" class="w-[18px] h-[18px]"></i></a>
+        <a href="#" class="w-9 h-9 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors" title="设置"><i data-lucide="settings" class="w-[18px] h-[18px]"></i></a>
+      </div>
+      <div class="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-xs font-medium text-muted-foreground">K</div>
+    </nav>
+
+    <!-- Workspace Canvas -->
+    <main class="workspace-canvas flex-1 flex flex-col min-w-0 bg-background overflow-hidden relative">
+
+      <!-- ═══════════════════════════════════════════
+           LIST VIEW (default)
+           ═══════════════════════════════════════════ -->
+      <div id="list-view" class="flex flex-col h-full">
+        <header class="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
+          <div class="flex items-center gap-3">
+            <div>
+              <h1 class="text-xl font-semibold tracking-tight">审核发布</h1>
+              <p class="text-xs text-muted-foreground mt-0.5">审核内容合规性、管理发布流程</p>
+            </div>
+            <span class="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">
+              <i data-lucide="bot" class="w-3 h-3"></i>3 条待人工审核
+            </span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="openCmdK()" class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg border border-border bg-background text-sm text-muted-foreground hover:border-hover transition-colors">
+              <i data-lucide="search" class="w-3.5 h-3.5"></i><span>Command+K</span>
+            </button>
+            <button id="batch-approve-btn" class="hidden items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-white text-sm font-medium hover:bg-[#6d28d9] transition-colors shadow-sm disabled:opacity-50" disabled>
+              <i data-lucide="check-circle" class="w-4 h-4"></i><span>批量通过</span><span id="batch-count" class="hidden ml-1 px-1.5 py-0.5 rounded bg-white/20 text-xs">0</span>
+            </button>
+          </div>
+        </header>
+        <div class="flex-1 overflow-y-auto p-6 space-y-6 page-transition">
+          <!-- Metric Cards -->
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="bg-card border border-border rounded-xl p-4 card-hover">
+              <div class="flex items-center justify-between mb-2"><span class="text-xs text-muted-foreground font-medium">待审</span><span class="w-2 h-2 rounded-full bg-warning status-dot-running"></span></div>
+              <div class="text-2xl font-bold">3</div><div class="text-xs text-muted-foreground mt-1">较昨日 +1</div>
+            </div>
+            <div class="bg-card border border-border rounded-xl p-4 card-hover">
+              <div class="flex items-center justify-between mb-2"><span class="text-xs text-muted-foreground font-medium">今日已通过</span><span class="w-2 h-2 rounded-full bg-success"></span></div>
+              <div class="text-2xl font-bold">12</div><div class="text-xs text-success mt-1">↑ 20%</div>
+            </div>
+            <div class="bg-card border border-border rounded-xl p-4 card-hover">
+              <div class="flex items-center justify-between mb-2"><span class="text-xs text-muted-foreground font-medium">平均合规分</span><i data-lucide="shield" class="w-3.5 h-3.5 text-muted-foreground"></i></div>
+              <div class="text-2xl font-bold">91.4</div><div class="text-xs text-muted-foreground mt-1">目标 ≥ 85</div>
+            </div>
+            <div class="bg-card border border-border rounded-xl p-4 card-hover">
+              <div class="flex items-center justify-between mb-2"><span class="text-xs text-muted-foreground font-medium">待发布</span><span class="w-2 h-2 rounded-full bg-info"></span></div>
+              <div class="text-2xl font-bold">5</div><div class="text-xs text-muted-foreground mt-1">含 2 条定时发布</div>
+            </div>
+          </div>
+          <!-- Tabs -->
+          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div class="flex gap-1 bg-secondary rounded-lg p-0.5">
+              <button onclick="switchTab('all')" id="tab-all" class="tab-btn px-4 py-1.5 rounded-md text-sm font-medium bg-background text-foreground shadow-sm transition-all">全部 <span class="text-muted-foreground ml-0.5">18</span></button>
+              <button onclick="switchTab('pending')" id="tab-pending" class="tab-btn px-4 py-1.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground transition-all">待审 <span class="text-muted-foreground ml-0.5">3</span></button>
+              <button onclick="switchTab('approved')" id="tab-approved" class="tab-btn px-4 py-1.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground transition-all">已通过 <span class="text-muted-foreground ml-0.5">12</span></button>
+              <button onclick="switchTab('revised')" id="tab-revised" class="tab-btn px-4 py-1.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground transition-all">已打回 <span class="text-muted-foreground ml-0.5">2</span></button>
+              <button onclick="switchTab('rejected')" id="tab-rejected" class="tab-btn px-4 py-1.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground transition-all">已驳回 <span class="text-muted-foreground ml-0.5">1</span></button>
+            </div>
+            <div class="flex items-center gap-2">
+              <select class="px-3 py-1.5 rounded-lg border border-border bg-background text-sm text-muted-foreground outline-none focus:ring-2 focus:ring-primary/20"><option>全部平台</option><option>小红书</option><option>抖音</option><option>视频号</option></select>
+              <select class="px-3 py-1.5 rounded-lg border border-border bg-background text-sm text-muted-foreground outline-none focus:ring-2 focus:ring-primary/20"><option>按时间倒序</option><option>按合规分</option><option>按优先级</option></select>
+            </div>
+          </div>
+          <!-- Review List -->
+          <div class="bg-card border border-border rounded-xl overflow-hidden">
+            <div class="hidden md:grid grid-cols-[40px_1fr_140px_100px_100px_140px] gap-3 px-4 py-3 border-b border-border bg-secondary/50 text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              <div><input type="checkbox" id="select-all" class="w-4 h-4 rounded border-border text-primary focus:ring-primary" onchange="toggleSelectAll()"></div>
+              <div>内容标题</div><div>账号</div><div>平台</div><div>合规分</div><div class="text-right">操作</div>
+            </div>
+            <div id="review-list" class="divide-y divide-border">
+              <!-- item 1 -->
+              <div class="group flex flex-col md:grid md:grid-cols-[40px_1fr_140px_100px_100px_140px] gap-3 px-4 py-4 hover:bg-secondary/30 transition-colors cursor-pointer items-start md:items-center" onclick="openDetail('task-001')">
+                <div onclick="event.stopPropagation()"><input type="checkbox" class="review-checkbox w-4 h-4 rounded border-border text-primary focus:ring-primary" data-id="task-001" onchange="updateSelection()"></div>
+                <div class="min-w-0 w-full">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span class="text-sm font-medium truncate">猫咪驱虫避坑指南，这3个误区90%的人都不知道</span>
+                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-warning/10 text-warning">待审</span>
+                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-info/10 text-info">定时发布</span>
+                  </div>
+                  <p class="text-xs text-muted-foreground line-clamp-2 mt-1">很多新手养猫人第一次给猫咪驱虫都会踩坑。今天分享3个最常见的误区……</p>
+                </div>
+                <div class="flex items-center gap-2 text-sm text-muted-foreground"><div class="w-6 h-6 rounded-full bg-gradient-to-br from-orange-300 to-orange-400 flex items-center justify-center text-white text-[10px] font-bold">艾</div><span class="truncate">小艾养猫记</span></div>
+                <div class="flex items-center gap-1.5 text-sm text-muted-foreground"><span class="w-2 h-2 rounded-full bg-red-500"></span><span>小红书</span></div>
+                <div class="flex items-center gap-2"><div class="flex-1 min-w-[60px]"><div class="compliance-bar-bg"><div class="compliance-bar-fill bg-success" style="width:96%"></div></div></div><span class="text-sm font-semibold text-success">96</span></div>
+                <div class="flex items-center justify-end gap-2 w-full md:w-auto"><button class="px-3 py-1.5 rounded-lg border border-border text-xs font-medium hover:bg-secondary transition-colors" onclick="event.stopPropagation(); openDetail('task-001')">审核</button></div>
+              </div>
+              <!-- item 2 -->
+              <div class="group flex flex-col md:grid md:grid-cols-[40px_1fr_140px_100px_100px_140px] gap-3 px-4 py-4 hover:bg-secondary/30 transition-colors cursor-pointer items-start md:items-center" onclick="openDetail('task-002')">
+                <div onclick="event.stopPropagation()"><input type="checkbox" class="review-checkbox w-4 h-4 rounded border-border text-primary focus:ring-primary" data-id="task-002" onchange="updateSelection()"></div>
+                <div class="min-w-0 w-full">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span class="text-sm font-medium truncate">第一次带猫体检，这份清单请收好</span>
+                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-warning/10 text-warning">待审</span>
+                  </div>
+                  <p class="text-xs text-muted-foreground line-clamp-2 mt-1">带猫咪第一次去体检需要准备什么？疫苗本、航空箱、还有这些检查项目一定要做……</p>
+                </div>
+                <div class="flex items-center gap-2 text-sm text-muted-foreground"><div class="w-6 h-6 rounded-full bg-gradient-to-br from-orange-300 to-orange-400 flex items-center justify-center text-white text-[10px] font-bold">艾</div><span class="truncate">小艾养猫记</span></div>
+                <div class="flex items-center gap-1.5 text-sm text-muted-foreground"><span class="w-2 h-2 rounded-full bg-red-500"></span><span>小红书</span></div>
+                <div class="flex items-center gap-2"><div class="flex-1 min-w-[60px]"><div class="compliance-bar-bg"><div class="compliance-bar-fill bg-success" style="width:92%"></div></div></div><span class="text-sm font-semibold text-success">92</span></div>
+                <div class="flex items-center justify-end gap-2 w-full md:w-auto"><button class="px-3 py-1.5 rounded-lg border border-border text-xs font-medium hover:bg-secondary transition-colors" onclick="event.stopPropagation(); openDetail('task-002')">审核</button></div>
+              </div>
+              <!-- item 3 low score -->
+              <div class="group flex flex-col md:grid md:grid-cols-[40px_1fr_140px_100px_100px_140px] gap-3 px-4 py-4 hover:bg-secondary/30 transition-colors cursor-pointer items-start md:items-center" onclick="openDetail('task-003')">
+                <div onclick="event.stopPropagation()"><input type="checkbox" class="review-checkbox w-4 h-4 rounded border-border text-primary focus:ring-primary" data-id="task-003" onchange="updateSelection()"></div>
+                <div class="min-w-0 w-full">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span class="text-sm font-medium truncate">2026年新手养猫必备清单（超全版）</span>
+                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-warning/10 text-warning">待审</span>
+                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-danger/10 text-danger">低合规</span>
+                  </div>
+                  <p class="text-xs text-muted-foreground line-clamp-2 mt-1">新手养猫需要准备哪些东西？从猫粮到猫砂，从玩具到药品……</p>
+                </div>
+                <div class="flex items-center gap-2 text-sm text-muted-foreground"><div class="w-6 h-6 rounded-full bg-gradient-to-br from-orange-300 to-orange-400 flex items-center justify-center text-white text-[10px] font-bold">艾</div><span class="truncate">小艾养猫记</span></div>
+                <div class="flex items-center gap-1.5 text-sm text-muted-foreground"><span class="w-2 h-2 rounded-full bg-red-500"></span><span>小红书</span></div>
+                <div class="flex items-center gap-2"><div class="flex-1 min-w-[60px]"><div class="compliance-bar-bg"><div class="compliance-bar-fill bg-warning" style="width:72%"></div></div></div><span class="text-sm font-semibold text-warning">72</span></div>
+                <div class="flex items-center justify-end gap-2 w-full md:w-auto"><button class="px-3 py-1.5 rounded-lg border border-border text-xs font-medium hover:bg-secondary transition-colors" onclick="event.stopPropagation(); openDetail('task-003')">审核</button></div>
+              </div>
+              <!-- item 4 approved -->
+              <div class="group flex flex-col md:grid md:grid-cols-[40px_1fr_140px_100px_100px_140px] gap-3 px-4 py-4 hover:bg-secondary/30 transition-colors cursor-pointer items-start md:items-center opacity-70" onclick="openDetail('task-004')">
+                <div onclick="event.stopPropagation()"><input type="checkbox" class="review-checkbox w-4 h-4 rounded border-border text-primary focus:ring-primary" data-id="task-004" onchange="updateSelection()"></div>
+                <div class="min-w-0 w-full">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span class="text-sm font-medium truncate">救助流浪猫的5个正确步骤，别再喂火腿肠了</span>
+                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-success/10 text-success">已通过</span>
+                  </div>
+                  <p class="text-xs text-muted-foreground line-clamp-2 mt-1">遇到流浪猫想帮忙？先别急着喂火腿肠。正确的救助流程应该是……</p>
+                </div>
+                <div class="flex items-center gap-2 text-sm text-muted-foreground"><div class="w-6 h-6 rounded-full bg-gradient-to-br from-blue-300 to-blue-400 flex items-center justify-center text-white text-[10px] font-bold">明</div><span class="truncate">阿明救助站</span></div>
+                <div class="flex items-center gap-1.5 text-sm text-muted-foreground"><span class="w-2 h-2 rounded-full bg-black"></span><span>抖音</span></div>
+                <div class="flex items-center gap-2"><div class="flex-1 min-w-[60px]"><div class="compliance-bar-bg"><div class="compliance-bar-fill bg-success" style="width:88%"></div></div></div><span class="text-sm font-semibold text-success">88</span></div>
+                <div class="flex items-center justify-end gap-2 w-full md:w-auto"><button class="px-3 py-1.5 rounded-lg border border-border text-xs font-medium hover:bg-secondary transition-colors" onclick="event.stopPropagation(); openDetail('task-004')">查看</button></div>
+              </div>
+              <!-- item 5 revised -->
+              <div class="group flex flex-col md:grid md:grid-cols-[40px_1fr_140px_100px_100px_140px] gap-3 px-4 py-4 hover:bg-secondary/30 transition-colors cursor-pointer items-start md:items-center" onclick="openDetail('task-005')">
+                <div onclick="event.stopPropagation()"><input type="checkbox" class="review-checkbox w-4 h-4 rounded border-border text-primary focus:ring-primary" data-id="task-005" onchange="updateSelection()"></div>
+                <div class="min-w-0 w-full">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span class="text-sm font-medium truncate">省钱养猫攻略：每月200块就够了</span>
+                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-warning/10 text-warning">已打回</span>
+                  </div>
+                  <p class="text-xs text-muted-foreground line-clamp-2 mt-1">学生党/打工人如何低成本养猫？猫粮平替、自制猫饭、平价好物推荐……</p>
+                </div>
+                <div class="flex items-center gap-2 text-sm text-muted-foreground"><div class="w-6 h-6 rounded-full bg-gradient-to-br from-green-300 to-green-400 flex items-center justify-center text-white text-[10px] font-bold">狗</div><span class="truncate">省钱狗爸</span></div>
+                <div class="flex items-center gap-1.5 text-sm text-muted-foreground"><span class="w-2 h-2 rounded-full bg-red-500"></span><span>小红书</span></div>
+                <div class="flex items-center gap-2"><div class="flex-1 min-w-[60px]"><div class="compliance-bar-bg"><div class="compliance-bar-fill bg-danger" style="width:58%"></div></div></div><span class="text-sm font-semibold text-danger">58</span></div>
+                <div class="flex items-center justify-end gap-2 w-full md:w-auto"><button class="px-3 py-1.5 rounded-lg border border-border text-xs font-medium hover:bg-secondary transition-colors" onclick="event.stopPropagation(); openDetail('task-005')">查看</button></div>
+              </div>
+            </div>
+          </div>
+          <!-- Pagination -->
+          <div class="flex items-center justify-between text-sm text-muted-foreground">
+            <span>共 18 条，第 1 / 2 页</span>
+            <div class="flex items-center gap-1"><button class="px-3 py-1.5 rounded-lg border border-border hover:bg-secondary transition-colors disabled:opacity-50" disabled>上一页</button><button class="px-3 py-1.5 rounded-lg border border-border hover:bg-secondary transition-colors">下一页</button></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════
+           DETAIL VIEW (immersive editor)
+           Copilot-Driven: 审核决策、AI封面生成均走 Copilot
+           ═══════════════════════════════════════════ -->
+      <div id="detail-view" class="hidden flex-col h-full">
+        <!-- Detail Header -->
+        <div class="shrink-0 border-b border-border bg-background px-6 py-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <button onclick="closeDetail()" class="flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm text-muted-foreground hover:bg-secondary transition-colors">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i>返回
+              </button>
+              <div>
+                <h1 id="detail-task-name" class="text-base font-semibold">猫咪驱虫避坑指南，这3个误区90%的人都不知道</h1>
+                <div class="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
+                  <span>小红书</span><span>·</span><span>小艾养猫记</span><span>·</span>
+                  <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-warning/10 text-warning">待审</span>
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="hidden sm:inline-flex items-center gap-1 px-2 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">
+                <i data-lucide="bot" class="w-3 h-3"></i>AI 合规分 96
+              </span>
+              <span id="save-indicator" class="hidden text-xs text-muted-foreground">保存中...</span>
+            </div>
+          </div>
+        </div>
+        <!-- Detail Body -->
+        <div class="flex-1 flex overflow-hidden">
+          <!-- Left Column: Editor -->
+          <div class="detail-left-col flex-1 overflow-y-auto p-6 bg-secondary/10 space-y-5 min-w-0 scrollbar-hide">
+
+            <!-- Cover Gallery -->
+            <div class="bg-card border border-border rounded-xl overflow-hidden">
+              <div class="flex items-center justify-between px-4 py-3 border-b border-border">
+                <div class="flex items-center gap-2 text-sm font-medium">
+                  <i data-lucide="image-plus" class="w-4 h-4 text-primary"></i>封面
+                  <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-secondary text-secondary-foreground">1/18</span>
+                  <span class="text-[10px] text-muted-foreground">(图片 1-18 张 · 标题 ≤20 字 · 正文 ≤1000 字)</span>
+                </div>
+              </div>
+              <div class="p-4 space-y-3">
+                <div class="grid grid-cols-4 gap-2">
+                  <div class="relative group aspect-square rounded-lg overflow-hidden border border-border">
+                    <img src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=400&h=400&fit=crop" class="w-full h-full object-cover" />
+                    <div class="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center gap-1">
+                      <button onclick="openCoverModal()" class="opacity-0 group-hover:opacity-100 px-2 py-1 bg-white/90 rounded text-xs hover:bg-white transition-opacity">更换</button>
+                    </div>
+                    <div class="absolute top-1 left-1 bg-primary text-white text-[10px] px-1 py-0.5 rounded">首图</div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button onclick="openCoverModal()" class="flex-1 h-10 border border-dashed border-border rounded-lg flex items-center justify-center gap-1.5 text-muted-foreground hover:border-primary hover:text-primary transition-colors text-xs">
+                    <i data-lucide="image-plus" class="w-4 h-4"></i>从素材库或本地上传
+                  </button>
+                  <button onclick="triggerCopilotGenerateCover()" class="flex-1 h-10 border border-dashed border-primary/40 rounded-lg flex items-center justify-center gap-1.5 text-primary hover:bg-primary/5 transition-colors text-xs">
+                    <i data-lucide="sparkles" class="w-4 h-4"></i>让 AI 生成封面
+                  </button>
+                </div>
+                <div class="text-[10px] text-muted-foreground">推荐比例：<span class="text-foreground">3:4</span>（竖图）/ <span class="text-foreground">1:1</span>（方图）/ <span class="text-foreground">4:3</span>（横图）</div>
+              </div>
+            </div>
+
+            <!-- Title -->
+            <div class="bg-card border border-border rounded-xl overflow-hidden">
+              <div class="flex items-center gap-2 px-4 py-3 border-b border-border text-sm font-medium">
+                <i data-lucide="file-text" class="w-4 h-4 text-primary"></i>标题
+              </div>
+              <div class="p-4 space-y-2">
+                <input type="text" value="猫咪驱虫避坑指南，这3个误区90%的人都不知道" class="w-full h-10 px-3 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-1 focus:ring-primary" />
+                <div class="flex items-center justify-between">
+                  <span class="text-[10px] text-muted-foreground">24/20 字（超出限制）</span>
+                  <span class="text-[10px] text-muted-foreground">小红书图文 标题限 20 字</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Body (Rich Text) -->
+            <div class="bg-card border border-border rounded-xl overflow-hidden">
+              <div class="flex items-center gap-2 px-4 py-3 border-b border-border text-sm font-medium">
+                <i data-lucide="file-text" class="w-4 h-4 text-primary"></i>正文
+              </div>
+              <div class="p-4">
+                <div class="min-h-[200px] px-3 py-3 rounded-lg border border-border bg-background text-sm leading-relaxed whitespace-pre-wrap focus:outline-none focus:ring-1 focus:ring-primary" contenteditable="true">
+很多新手养猫人第一次给猫咪驱虫都会踩坑。今天分享3个最常见的误区：
+
+🚫 误区一：认为室内猫不用驱虫
+真相：室内猫也会感染寄生虫，人鞋底、快递盒都可能带入虫卵。
+
+🚫 误区二：驱虫药越贵越好
+真相：要根据猫咪体重和年龄选择合适的成分，不是价格决定效果。
+
+🚫 误区三：驱虫后呕吐是药物中毒
+真相：少量寄生虫死亡后刺激肠胃，轻微呕吐属于正常反应。
+
+💡 建议：定期驱虫+选对成分+观察反应，三管齐下才安全。
+                </div>
+                <div class="mt-1.5 text-[10px] text-muted-foreground text-right">186/1000 字</div>
+              </div>
+            </div>
+
+            <!-- Tags & Meta -->
+            <div class="bg-card border border-border rounded-xl overflow-hidden">
+              <div class="flex items-center gap-2 px-4 py-3 border-b border-border text-sm font-medium">
+                <i data-lucide="hash" class="w-4 h-4 text-primary"></i>其他信息
+              </div>
+              <div class="p-4 space-y-4">
+                <div class="space-y-1.5">
+                  <label class="text-xs text-muted-foreground flex items-center gap-1"><i data-lucide="hash" class="w-3 h-3"></i>话题标签</label>
+                  <div class="flex flex-wrap gap-1.5 min-h-[2rem] p-1.5 rounded-lg border border-border bg-background">
+                    <span class="inline-flex items-center gap-0.5 text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">#驱虫<button class="hover:text-destructive"><i data-lucide="x" class="w-3 h-3"></i></button></span>
+                    <span class="inline-flex items-center gap-0.5 text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">#新手养猫<button class="hover:text-destructive"><i data-lucide="x" class="w-3 h-3"></i></button></span>
+                    <span class="inline-flex items-center gap-0.5 text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">#养猫攻略<button class="hover:text-destructive"><i data-lucide="x" class="w-3 h-3"></i></button></span>
+                    <input type="text" placeholder="添加话题..." class="flex-1 min-w-[4rem] text-sm bg-transparent outline-none placeholder:text-muted-foreground/50" />
+                  </div>
+                  <p class="text-[10px] text-muted-foreground">最多 10 个话题</p>
+                </div>
+                <div class="space-y-1.5">
+                  <label class="text-xs text-muted-foreground flex items-center gap-1"><i data-lucide="at-sign" class="w-3 h-3"></i>@用户</label>
+                  <input type="text" placeholder="输入用户名，空格分隔" class="w-full h-9 px-3 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-1 focus:ring-primary" />
+                </div>
+                <div class="space-y-1.5">
+                  <label class="text-xs text-muted-foreground flex items-center gap-1"><i data-lucide="map-pin" class="w-3 h-3"></i>标记地点</label>
+                  <input type="text" placeholder="输入地点..." class="w-full h-9 px-3 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-1 focus:ring-primary" />
+                </div>
+                <div class="flex items-center justify-between">
+                  <label class="text-xs text-muted-foreground flex items-center gap-1"><i data-lucide="eye" class="w-3 h-3"></i>公开可见</label>
+                  <button class="toggle bg-primary" onclick="this.classList.toggle('bg-primary');this.classList.toggle('bg-muted');this.querySelector('.toggle-dot').classList.toggle('left-[1.125rem]');this.querySelector('.toggle-dot').classList.toggle('left-0.5')">
+                    <span class="toggle-dot left-[1.125rem]"></span>
+                  </button>
+                </div>
+                <div class="space-y-1.5">
+                  <label class="text-xs text-muted-foreground">声明</label>
+                  <div class="flex gap-2">
+                    <button class="flex-1 h-8 rounded-lg text-xs font-medium bg-primary text-white">无需声明</button>
+                    <button class="flex-1 h-8 rounded-lg text-xs font-medium bg-secondary text-secondary-foreground hover:bg-secondary/80">合作</button>
+                    <button class="flex-1 h-8 rounded-lg text-xs font-medium bg-secondary text-secondary-foreground hover:bg-secondary/80">体验</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Topic Report -->
+            <div class="bg-card border border-border rounded-xl overflow-hidden">
+              <button onclick="this.nextElementSibling.classList.toggle('hidden');this.querySelector('.chevron').classList.toggle('rotate-90')" class="w-full flex items-center justify-between px-4 py-3 hover:bg-secondary/30 transition-colors">
+                <div class="flex items-center gap-2">
+                  <i data-lucide="file-text" class="w-4 h-4 text-primary"></i>
+                  <span class="text-sm font-medium">选题报告</span>
+                  <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-info/10 text-info">5A-Action</span>
+                  <span class="text-xs text-muted-foreground">选中: 驱虫避坑指南</span>
+                </div>
+                <i data-lucide="chevron-right" class="w-4 h-4 chevron transition-transform text-muted-foreground"></i>
+              </button>
+              <div class="hidden px-4 pb-4 space-y-3">
+                <div class="text-xs text-muted-foreground">人群契合度: <strong class="text-foreground">87/100</strong></div>
+                <div class="space-y-2">
+                  <div class="flex items-center justify-between p-2.5 rounded-lg bg-primary/10 border border-primary/20 text-sm">
+                    <div class="flex items-center gap-2"><span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-success/10 text-success">已采用</span><span class="font-medium">驱虫避坑指南</span></div>
+                    <div class="flex items-center gap-3 text-xs text-muted-foreground"><span>预估互动: 45</span><span class="flex gap-1"><span class="bg-secondary px-1 rounded">驱虫</span><span class="bg-secondary px-1 rounded">新手</span></span></div>
+                  </div>
+                  <div class="flex items-center justify-between p-2.5 rounded-lg bg-secondary/50 text-sm">
+                    <span class="font-medium">猫咪疫苗时间表</span>
+                    <div class="flex items-center gap-3 text-xs text-muted-foreground"><span>预估互动: 32</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Agent Summary -->
+            <div class="bg-card border border-border rounded-xl overflow-hidden">
+              <div class="flex items-center justify-between px-4 py-3 border-b border-border">
+                <div class="flex items-center gap-2 text-sm font-medium"><i data-lucide="award" class="w-4 h-4 text-primary"></i>Agent 摘要</div>
+                <button class="px-3 py-1.5 rounded-lg border border-border text-xs font-medium hover:bg-secondary transition-colors"><i data-lucide="sparkles" class="w-3.5 h-3.5 inline mr-1"></i>再次生成</button>
+              </div>
+              <div class="p-4 space-y-4">
+                <div class="space-y-1.5">
+                  <div class="flex items-center gap-1.5 text-xs font-medium"><i data-lucide="shield" class="w-3.5 h-3.5"></i><span>合规审核</span></div>
+                  <div class="p-2 rounded-lg bg-success/10 text-success text-xs flex items-center gap-1.5"><i data-lucide="shield-check" class="w-3.5 h-3.5"></i><span>✅ L1-L4 全部通过</span></div>
+                </div>
+                <div class="space-y-1.5">
+                  <div class="flex items-center gap-1.5 text-xs font-medium"><i data-lucide="bar-chart-3" class="w-3.5 h-3.5"></i><span>互动预演</span></div>
+                  <div class="grid grid-cols-3 gap-2">
+                    <div class="flex items-center gap-1.5 p-1.5 rounded-lg bg-secondary/50"><i data-lucide="thumbs-up" class="w-3.5 h-3.5 text-muted-foreground"></i><div class="text-[10px]"><div class="text-muted-foreground">点赞</div><div class="font-medium">25-60</div></div></div>
+                    <div class="flex items-center gap-1.5 p-1.5 rounded-lg bg-secondary/50"><i data-lucide="message-circle" class="w-3.5 h-3.5 text-muted-foreground"></i><div class="text-[10px]"><div class="text-muted-foreground">评论</div><div class="font-medium">8-15</div></div></div>
+                    <div class="flex items-center gap-1.5 p-1.5 rounded-lg bg-secondary/50"><i data-lucide="star" class="w-3.5 h-3.5 text-muted-foreground"></i><div class="text-[10px]"><div class="text-muted-foreground">收藏</div><div class="font-medium">12-25</div></div></div>
+                  </div>
+                  <div class="flex items-center gap-3 text-[10px] text-muted-foreground">
+                    <span class="flex items-center gap-1"><i data-lucide="trending-up" class="w-3 h-3"></i>爆文概率: 12%</span>
+                    <span class="flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i>最佳: 18:00</span>
+                  </div>
+                </div>
+                <div class="space-y-1.5">
+                  <div class="flex items-center gap-1.5 text-xs font-medium"><i data-lucide="award" class="w-3.5 h-3.5"></i><span>质量分</span><span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-success/10 text-success">88</span></div>
+                  <div class="space-y-2">
+                    <div class="space-y-1"><div class="flex justify-between text-xs"><span class="text-muted-foreground">标题吸引力</span><span class="font-medium">85</span></div><div class="h-1.5 bg-secondary rounded-full overflow-hidden"><div class="h-full bg-success rounded-full" style="width:85%"></div></div></div>
+                    <div class="space-y-1"><div class="flex justify-between text-xs"><span class="text-muted-foreground">正文完整性</span><span class="font-medium">90</span></div><div class="h-1.5 bg-secondary rounded-full overflow-hidden"><div class="h-full bg-success rounded-full" style="width:90%"></div></div></div>
+                    <div class="space-y-1"><div class="flex justify-between text-xs"><span class="text-muted-foreground">标签相关度</span><span class="font-medium">92</span></div><div class="h-1.5 bg-secondary rounded-full overflow-hidden"><div class="h-full bg-success rounded-full" style="width:92%"></div></div></div>
+                    <div class="space-y-1"><div class="flex justify-between text-xs"><span class="text-muted-foreground">可读性</span><span class="font-medium">88</span></div><div class="h-1.5 bg-secondary rounded-full overflow-hidden"><div class="h-full bg-success rounded-full" style="width:88%"></div></div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Preview + History ONLY (Decision moved to Copilot) -->
+          <div class="detail-right-col w-[420px] border-l border-border overflow-y-auto p-5 space-y-5 bg-background shrink-0 flex flex-col scrollbar-hide">
+            <!-- Platform Preview -->
+            <div>
+              <div class="flex items-center gap-2 mb-3 text-sm font-medium"><i data-lucide="smartphone" class="w-4 h-4 text-primary"></i>平台预览</div>
+              <div class="bg-white rounded-xl border border-border overflow-hidden shadow-sm">
+                <div class="relative bg-secondary">
+                  <div class="aspect-[3/4] relative">
+                    <img src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=400&h=533&fit=crop" class="w-full h-full object-cover" />
+                    <div class="absolute bottom-2 left-0 right-0 flex justify-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-white"></span></div>
+                    <div class="absolute top-2 right-2 bg-black/40 text-white text-[10px] px-1.5 py-0.5 rounded-full">1/1</div>
+                  </div>
+                  <div class="absolute top-2 left-2">
+                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-black/50 text-white border-0">小红书</span>
+                  </div>
+                </div>
+                <div class="p-3 space-y-2.5">
+                  <h3 class="text-sm font-semibold leading-snug">猫咪驱虫避坑指南，这3个误区90%的人都不知道</h3>
+                  <div class="text-xs text-muted-foreground whitespace-pre-wrap leading-relaxed">很多新手养猫人第一次给猫咪驱虫都会踩坑。今天分享3个最常见的误区：
+
+🚫 误区一：认为室内猫不用驱虫
+真相：室内猫也会感染寄生虫……
+                  </div>
+                  <div class="flex flex-wrap gap-1.5">
+                    <span class="flex items-center gap-0.5 text-xs text-primary"><i data-lucide="hash" class="w-3 h-3"></i>驱虫</span>
+                    <span class="flex items-center gap-0.5 text-xs text-primary"><i data-lucide="hash" class="w-3 h-3"></i>新手养猫</span>
+                  </div>
+                  <div class="flex items-center justify-between pt-1">
+                    <div class="flex items-center gap-1.5">
+                      <div class="w-5 h-5 rounded-full bg-gradient-to-br from-orange-300 to-orange-400 flex items-center justify-center text-white text-[8px] font-bold">艾</div>
+                      <span class="text-xs text-muted-foreground">小艾养猫记</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-xs text-muted-foreground"><span>❤️ 0</span><span>⭐ 0</span><span>💬 0</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Review History -->
+            <div class="bg-card border border-border rounded-xl overflow-hidden">
+              <div class="px-4 py-3 border-b border-border text-sm font-medium">审核历史</div>
+              <div class="p-4 pt-3 space-y-3">
+                <div class="flex items-start gap-2 text-xs">
+                  <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-success/10 text-success shrink-0">通过</span>
+                  <div class="space-y-0.5"><span class="text-muted-foreground">AI 合规检测</span><span class="text-muted-foreground mx-1">·</span><span class="text-muted-foreground">2026-06-04 14:32</span></div>
+                </div>
+                <div class="flex items-start gap-2 text-xs">
+                  <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-secondary text-muted-foreground shrink-0">生成</span>
+                  <div class="space-y-0.5"><span class="text-muted-foreground">ContentForge Agent</span><span class="text-muted-foreground mx-1">·</span><span class="text-muted-foreground">2026-06-04 14:28</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Hint: Decision in Copilot -->
+            <div class="bg-primary/[0.03] border border-primary/20 rounded-xl p-4">
+              <div class="flex items-start gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5"><i data-lucide="bot" class="w-4 h-4 text-primary"></i></div>
+                <div class="text-sm">
+                  <p class="font-medium text-foreground mb-1">审核决策已移交 Copilot</p>
+                  <p class="text-muted-foreground">请在右侧 AI Copilot 面板中查看审核建议并执行「通过 / 打回 / 驳回」操作。</p>
+                  <p class="text-muted-foreground mt-1">Copilot 已根据合规分 96 分、质量分 88 分给出建议。</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- ═══════════════════════════════════════════
+         AI Copilot Panel (320px) — Copilot-Driven
+         ═══════════════════════════════════════════ -->
+    <aside class="ai-copilot-panel w-[320px] min-w-[320px] bg-card border-l border-border flex flex-col z-30">
+      <!-- Header -->
+      <div class="flex items-center gap-2 px-4 py-3 border-b border-border">
+        <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-[#a78bfa] flex items-center justify-center"><i data-lucide="brain" class="w-4 h-4 text-white"></i></div>
+        <div><div class="text-sm font-semibold">EcoDream AI</div><div class="text-[10px] text-muted-foreground flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-success"></span>在线</div></div>
+      </div>
+
+      <!-- Context Bar -->
+      <div id="copilot-context" class="px-4 py-2.5 border-b border-border bg-secondary/30">
+        <div class="flex items-start gap-2">
+          <i data-lucide="map-pin" class="w-3.5 h-3.5 text-primary mt-0.5 shrink-0"></i>
+          <div class="min-w-0">
+            <div id="context-page" class="text-xs font-medium text-foreground">审核发布</div>
+            <div id="context-detail" class="text-[11px] text-muted-foreground truncate">3 条待审内容，建议优先处理合规分 &lt; 80 的</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════
+           COPILOT CONTENT: LIST MODE (default)
+           ═══════════════════════════════════════════ -->
+      <div id="copilot-list-mode" class="flex-1 overflow-y-auto px-4 py-3 space-y-4 scrollbar-hide">
+        <div class="flex gap-2.5">
+          <div class="w-6 h-6 rounded-lg bg-gradient-to-br from-primary to-[#a78bfa] flex items-center justify-center shrink-0 mt-0.5"><i data-lucide="bot" class="w-3.5 h-3.5 text-white"></i></div>
+          <div class="space-y-1.5">
+            <div class="bg-secondary rounded-xl rounded-tl-sm px-3.5 py-2.5 text-sm leading-relaxed">
+              欢迎回来！今天有 <strong>3 条</strong>内容待审核。我注意到「2026年新手养猫必备清单」合规分只有 <strong>72 分</strong>，建议优先处理。
+            </div>
+            <div class="text-[10px] text-muted-foreground pl-1">刚刚</div>
+          </div>
+        </div>
+        <!-- Action Card: Title optimization -->
+        <div class="ml-9 bg-white border border-border rounded-xl overflow-hidden shadow-sm">
+          <div class="px-3.5 py-2.5 border-b border-border">
+            <div class="flex items-center gap-1.5 text-xs font-medium text-primary mb-1"><i data-lucide="lightbulb" class="w-3.5 h-3.5"></i>AI 建议优化</div>
+            <div class="text-sm text-foreground">标题加入具体数字可提升点击率</div>
+          </div>
+          <div class="px-3.5 py-2 bg-secondary/50 border-b border-border">
+            <div class="text-xs text-muted-foreground mb-1">原标题</div>
+            <div class="text-sm line-through text-muted-foreground">2026年新手养猫必备清单（超全版）</div>
+            <div class="text-xs text-muted-foreground mt-2 mb-1">优化后</div>
+            <div class="text-sm font-medium text-primary">2026年新手养猫必备清单：这12件东西缺一不可</div>
+          </div>
+          <div class="flex items-center gap-2 px-3.5 py-2">
+            <button class="flex-1 px-3 py-1.5 rounded-lg bg-primary text-white text-xs font-medium hover:bg-[#6d28d9] transition-colors">应用修改</button>
+            <button class="px-3 py-1.5 rounded-lg border border-border text-xs font-medium hover:bg-secondary transition-colors">再优化</button>
+            <button class="px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:bg-secondary transition-colors">忽略</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════
+           COPILOT CONTENT: DETAIL MODE (hidden by default)
+           Copilot-Driven: 审核决策、生成封面 均在此完成
+           ═══════════════════════════════════════════ -->
+      <div id="copilot-detail-mode" class="hidden flex-1 overflow-y-auto px-4 py-3 space-y-4 scrollbar-hide">
+        <!-- Welcome message for detail -->
+        <div class="flex gap-2.5">
+          <div class="w-6 h-6 rounded-lg bg-gradient-to-br from-primary to-[#a78bfa] flex items-center justify-center shrink-0 mt-0.5"><i data-lucide="bot" class="w-3.5 h-3.5 text-white"></i></div>
+          <div class="space-y-1.5">
+            <div class="bg-secondary rounded-xl rounded-tl-sm px-3.5 py-2.5 text-sm leading-relaxed">
+              正在审核 <strong>「猫咪驱虫避坑指南」</strong>。<br><br>
+              合规分 <strong>96</strong> 分，质量分 <strong>88</strong> 分，L1-L4 全部通过。<br><br>
+              我建议：<span class="text-success font-medium">直接通过</span>，预计可获得 25-60 互动量。你也可以选择打回修改或驳回。
+            </div>
+            <div class="text-[10px] text-muted-foreground pl-1">刚刚</div>
+          </div>
+        </div>
+
+        <!-- Action Card: Review Decision (PRIMARY) -->
+        <div class="ml-2 bg-white border border-primary/20 rounded-xl overflow-hidden shadow-sm">
+          <div class="px-3.5 py-2.5 border-b border-border bg-primary/[0.03]">
+            <div class="flex items-center gap-1.5 text-xs font-medium text-primary"><i data-lucide="gavel" class="w-3.5 h-3.5"></i>审核决策</div>
+          </div>
+          <div class="p-3.5 space-y-2.5">
+            <p class="text-xs text-muted-foreground">基于合规分析，Copilot 建议：</p>
+            <button onclick="executeDecision('approve')" class="w-full px-3 py-2 rounded-lg bg-success text-white text-sm font-medium hover:bg-[#15803d] transition-colors flex items-center justify-center gap-1.5">
+              <i data-lucide="check-circle" class="w-4 h-4"></i>✅ 审核通过
+            </button>
+            <div class="flex gap-2">
+              <button onclick="executeDecision('revise')" class="flex-1 px-3 py-2 rounded-lg border border-border text-sm font-medium hover:bg-secondary transition-colors flex items-center justify-center gap-1.5">
+                <i data-lucide="rotate-ccw" class="w-4 h-4"></i>打回修改
+              </button>
+              <button onclick="executeDecision('reject')" class="flex-1 px-3 py-2 rounded-lg border border-border text-sm text-muted-foreground hover:bg-secondary transition-colors flex items-center justify-center gap-1.5">
+                <i data-lucide="x-circle" class="w-4 h-4"></i>驳回
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Card: Generate Cover -->
+        <div class="ml-2 bg-white border border-border rounded-xl overflow-hidden shadow-sm">
+          <div class="px-3.5 py-2.5 border-b border-border">
+            <div class="flex items-center gap-1.5 text-xs font-medium text-primary mb-1"><i data-lucide="image" class="w-3.5 h-3.5"></i>🎨 生成封面</div>
+            <div class="text-sm text-foreground">让 AI 根据内容生成封面图</div>
+          </div>
+          <div class="p-3.5 space-y-2.5">
+            <input id="cover-prompt" type="text" placeholder="描述你想要的封面风格，例如：温馨可爱的橘猫在草地上" class="w-full px-3 py-2 rounded-lg border border-border bg-background text-sm outline-none focus:ring-2 focus:ring-primary/20" />
+            <div class="flex gap-2">
+              <button onclick="generateCover()" class="flex-1 px-3 py-2 rounded-lg bg-primary text-white text-xs font-medium hover:bg-[#6d28d9] transition-colors flex items-center justify-center gap-1">
+                <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>生成封面
+              </button>
+              <button onclick="generateCoverRandom()" class="px-3 py-2 rounded-lg border border-border text-xs hover:bg-secondary transition-colors" title="随机生成">
+                <i data-lucide="shuffle" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+            <!-- Generated cover results -->
+            <div id="cover-results" class="hidden grid grid-cols-2 gap-2 pt-1">
+              <button class="relative aspect-[3/4] rounded-lg border border-border overflow-hidden hover:border-primary transition-colors group">
+                <img src="https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=300&h=400&fit=crop" class="w-full h-full object-cover" />
+                <div class="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center"><span class="opacity-0 group-hover:opacity-100 text-white text-xs font-medium">使用此图</span></div>
+              </button>
+              <button class="relative aspect-[3/4] rounded-lg border border-border overflow-hidden hover:border-primary transition-colors group">
+                <img src="https://images.unsplash.com/photo-1573865526739-10659fec78a5?w=300&h=400&fit=crop" class="w-full h-full object-cover" />
+                <div class="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center"><span class="opacity-0 group-hover:opacity-100 text-white text-xs font-medium">使用此图</span></div>
+              </button>
+            </div>
+            <div id="cover-generating" class="hidden flex items-center gap-2 text-xs text-muted-foreground">
+              <div class="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+              AI 正在生成封面，约需 5-10 秒...
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Card: AI Suggestions (secondary) -->
+        <div class="ml-2 bg-white border border-border rounded-xl overflow-hidden shadow-sm">
+          <div class="px-3.5 py-2.5 border-b border-border">
+            <div class="flex items-center gap-1.5 text-xs font-medium text-primary mb-1"><i data-lucide="lightbulb" class="w-3.5 h-3.5"></i>AI 修改建议</div>
+            <div class="text-sm text-foreground">标题加入具体数字可提升点击率</div>
+          </div>
+          <div class="px-3.5 py-2 bg-secondary/50 border-b border-border">
+            <div class="text-xs text-muted-foreground mb-1">原标题</div>
+            <div class="text-sm line-through text-muted-foreground">2026年新手养猫必备清单（超全版）</div>
+            <div class="text-xs text-muted-foreground mt-2 mb-1">优化后</div>
+            <div class="text-sm font-medium text-primary">2026年新手养猫必备清单：这12件东西缺一不可</div>
+          </div>
+          <div class="flex items-center gap-2 px-3.5 py-2">
+            <button class="flex-1 px-3 py-1.5 rounded-lg bg-primary text-white text-xs font-medium hover:bg-[#6d28d9] transition-colors">应用修改</button>
+            <button class="px-3 py-1.5 rounded-lg border border-border text-xs font-medium hover:bg-secondary transition-colors">再优化</button>
+            <button class="px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:bg-secondary transition-colors">忽略</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions (context-aware) -->
+      <div class="px-4 py-2 border-t border-border">
+        <div id="quick-actions-list" class="flex flex-wrap gap-1.5">
+          <button class="px-2.5 py-1 rounded-full bg-secondary text-xs text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors">📊 分析合规趋势</button>
+          <button class="px-2.5 py-1 rounded-full bg-secondary text-xs text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors">✅ 批量通过</button>
+          <button class="px-2.5 py-1 rounded-full bg-secondary text-xs text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors">⚠️ 查看风险项</button>
+        </div>
+        <div id="quick-actions-detail" class="hidden flex flex-wrap gap-1.5">
+          <button class="px-2.5 py-1 rounded-full bg-primary/10 text-xs text-primary hover:bg-primary/20 transition-colors">✅ 通过</button>
+          <button class="px-2.5 py-1 rounded-full bg-secondary text-xs text-muted-foreground hover:bg-warning/10 hover:text-warning transition-colors">🔄 打回</button>
+          <button class="px-2.5 py-1 rounded-full bg-secondary text-xs text-muted-foreground hover:bg-danger/10 hover:text-danger transition-colors">❌ 驳回</button>
+          <button class="px-2.5 py-1 rounded-full bg-secondary text-xs text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors">🎨 生成封面</button>
+        </div>
+      </div>
+
+      <!-- Input Box -->
+      <div class="px-4 py-3 border-t border-border">
+        <div class="flex items-center gap-2 px-3 py-2 rounded-xl border border-border bg-background focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all">
+          <input type="text" id="copilot-input" placeholder="输入指令或问题..." class="flex-1 bg-transparent outline-none text-sm" />
+          <button class="w-7 h-7 rounded-lg bg-primary flex items-center justify-center text-white hover:bg-[#6d28d9] transition-colors"><i data-lucide="arrow-up" class="w-4 h-4"></i></button>
+        </div>
+        <div class="flex items-center justify-between mt-1.5 px-1">
+          <span class="text-[10px] text-muted-foreground">Enter 发送 · Shift+Enter 换行</span>
+          <span class="text-[10px] text-muted-foreground">Powered by EcoDream AI</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Mobile Copilot FAB -->
+    <button class="ai-copilot-fab fixed bottom-6 right-6 w-12 h-12 rounded-full bg-primary text-white shadow-lg items-center justify-center z-40 hover:bg-[#6d28d9] transition-colors">
+      <i data-lucide="bot" class="w-5 h-5"></i>
+    </button>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       Toast Notification
+       ═══════════════════════════════════════════ -->
+  <div id="toast" class="fixed top-6 left-1/2 -translate-x-1/2 z-[200] hidden">
+    <div class="toast-enter px-4 py-2.5 rounded-xl shadow-lg border text-sm font-medium flex items-center gap-2" id="toast-inner">
+      <span id="toast-icon"></span>
+      <span id="toast-message"></span>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════
+       JavaScript
+       ═══════════════════════════════════════════ -->
+  <script>
+    lucide.createIcons();
+
+    // Command+K
+    function openCmdK(){document.getElementById('cmdk-overlay').classList.add('active')}
+    function closeCmdK(){document.getElementById('cmdk-overlay').classList.remove('active')}
+    document.addEventListener('keydown',(e)=>{
+      if((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();openCmdK()}
+      if(e.key==='Escape'){closeCmdK();closeCoverModal()}
+    });
+
+    // Toast
+    function showToast(message,type='success'){
+      const toast=document.getElementById('toast');
+      const inner=document.getElementById('toast-inner');
+      const msg=document.getElementById('toast-message');
+      const icon=document.getElementById('toast-icon');
+      msg.textContent=message;
+      if(type==='success'){inner.className='toast-enter px-4 py-2.5 rounded-xl shadow-lg border border-success/20 bg-success/10 text-success text-sm font-medium flex items-center gap-2';icon.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-circle"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>';}
+      else if(type==='warning'){inner.className='toast-enter px-4 py-2.5 rounded-xl shadow-lg border border-warning/20 bg-warning/10 text-warning text-sm font-medium flex items-center gap-2';icon.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-alert-triangle"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>';}
+      else{inner.className='toast-enter px-4 py-2.5 rounded-xl shadow-lg border border-destructive/20 bg-destructive/10 text-destructive text-sm font-medium flex items-center gap-2';icon.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x-circle"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>';}
+      toast.classList.remove('hidden');
+      setTimeout(()=>toast.classList.add('hidden'),3000);
+    }
+
+    // Cover Modal
+    function openCoverModal(){document.getElementById('cover-modal').classList.add('active')}
+    function closeCoverModal(){document.getElementById('cover-modal').classList.remove('active')}
+    function switchCoverTab(tab){
+      ['library','upload'].forEach(t=>{
+        document.getElementById('cover-content-'+t).classList.add('hidden');
+        const btn=document.getElementById('cover-tab-'+t);
+        if(t===tab){btn.classList.add('bg-background','text-foreground','shadow-sm');btn.classList.remove('text-muted-foreground');}
+        else{btn.classList.remove('bg-background','text-foreground','shadow-sm');btn.classList.add('text-muted-foreground');}
+      });
+      document.getElementById('cover-content-'+tab).classList.remove('hidden');
+    }
+    function selectCover(url){showToast('封面已更换');closeCoverModal();}
+
+    // Tab Switching
+    function switchTab(tab){
+      ['all','pending','approved','revised','rejected'].forEach(t=>{
+        const btn=document.getElementById('tab-'+t);
+        if(t===tab){btn.classList.remove('text-muted-foreground','hover:text-foreground');btn.classList.add('bg-background','text-foreground','shadow-sm');}
+        else{btn.classList.add('text-muted-foreground','hover:text-foreground');btn.classList.remove('bg-background','text-foreground','shadow-sm');}
+      });
+    }
+
+    // Selection
+    function toggleSelectAll(){
+      const checked=document.getElementById('select-all').checked;
+      document.querySelectorAll('.review-checkbox').forEach(cb=>cb.checked=checked);
+      updateSelection();
+    }
+    function updateSelection(){
+      const checked=document.querySelectorAll('.review-checkbox:checked');
+      const batchBtn=document.getElementById('batch-approve-btn');
+      const batchCount=document.getElementById('batch-count');
+      if(checked.length>0){batchBtn.classList.remove('hidden');batchBtn.classList.add('flex');batchBtn.disabled=false;batchCount.classList.remove('hidden');batchCount.textContent=checked.length;}
+      else{batchBtn.classList.add('hidden');batchBtn.classList.remove('flex');batchCount.classList.add('hidden');}
+    }
+
+    // ═══════════════════════════════════════════
+    // List <-> Detail transition (Copilot-Driven)
+    // ═══════════════════════════════════════════
+    function openDetail(taskId){
+      document.getElementById('list-view').classList.add('hidden');
+      document.getElementById('detail-view').classList.remove('hidden');
+      document.getElementById('detail-view').classList.add('flex');
+
+      // Switch Copilot mode
+      document.getElementById('copilot-list-mode').classList.add('hidden');
+      document.getElementById('copilot-detail-mode').classList.remove('hidden');
+      document.getElementById('quick-actions-list').classList.add('hidden');
+      document.getElementById('quick-actions-detail').classList.remove('hidden');
+
+      const mock={
+        'task-001':{name:'猫咪驱虫避坑指南，这3个误区90%的人都不知道',score:96},
+        'task-002':{name:'第一次带猫体检，这份清单请收好',score:92},
+        'task-003':{name:'2026年新手养猫必备清单（超全版）',score:72},
+        'task-004':{name:'救助流浪猫的5个正确步骤',score:88},
+        'task-005':{name:'省钱养猫攻略：每月200块就够了',score:58},
+      };
+      const data=mock[taskId];
+      if(data){
+        document.getElementById('detail-task-name').textContent=data.name;
+        document.getElementById('context-page').textContent='审核详情';
+        document.getElementById('context-detail').textContent='正在审核「'+data.name.substring(0,12)+'...」，合规分 '+data.score+' 分。请在下方执行审核决策。';
+      }
+      document.querySelector('.detail-left-col').scrollTop=0;
+    }
+    function closeDetail(){
+      document.getElementById('detail-view').classList.add('hidden');
+      document.getElementById('detail-view').classList.remove('flex');
+      document.getElementById('list-view').classList.remove('hidden');
+
+      // Switch Copilot back to list mode
+      document.getElementById('copilot-list-mode').classList.remove('hidden');
+      document.getElementById('copilot-detail-mode').classList.add('hidden');
+      document.getElementById('quick-actions-list').classList.remove('hidden');
+      document.getElementById('quick-actions-detail').classList.add('hidden');
+
+      document.getElementById('context-page').textContent='审核发布';
+      document.getElementById('context-detail').textContent='3 条待审内容，建议优先处理合规分 < 80 的';
+    }
+
+    // Copilot-Driven: Review Decision
+    function executeDecision(decision){
+      if(decision==='approve'){
+        showToast('✅ 审核已通过！内容进入待发布队列','success');
+      }else if(decision==='revise'){
+        const reason=prompt('请输入打回修改原因：');
+        if(reason) showToast('🔄 已打回修改，原因：'+reason,'warning');
+      }else if(decision==='reject'){
+        const reason=prompt('请输入驳回原因：');
+        if(reason) showToast('❌ 已驳回，原因：'+reason,'danger');
+      }
+    }
+
+    // Copilot-Driven: Generate Cover
+    function triggerCopilotGenerateCover(){
+      // Scroll Copilot input into focus and prefill
+      const input=document.getElementById('copilot-input');
+      input.focus();
+      input.placeholder='描述你想要的封面风格，例如：温馨可爱的橘猫在草地上';
+      // Also expand the generate cover card if it exists (already visible in detail mode)
+    }
+    function generateCover(){
+      const prompt=document.getElementById('cover-prompt').value;
+      if(!prompt.trim()){showToast('请输入封面描述','warning');return;}
+      document.getElementById('cover-generating').classList.remove('hidden');
+      document.getElementById('cover-results').classList.add('hidden');
+      setTimeout(()=>{
+        document.getElementById('cover-generating').classList.add('hidden');
+        document.getElementById('cover-results').classList.remove('hidden');
+        showToast('🎨 AI 已生成 2 张封面，点击即可应用','success');
+      },2500);
+    }
+    function generateCoverRandom(){
+      document.getElementById('cover-prompt').value='一只可爱的橘猫在阳光下打盹，温馨治愈风格';
+      generateCover();
+    }
+  </script>
+</body>
+</html>

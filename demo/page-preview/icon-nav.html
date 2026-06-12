@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EcoDream Omni v4.0 — IconNav 精简预览</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../../apps/frontend/src/index.css">
+  <style>
+    :root {
+      --bg-base: #FFFFFF;
+      --bg-surface: #F7F7F8;
+      --text-primary: #1F1F1F;
+      --text-secondary: #6B7280;
+      --text-tertiary: #9CA3AF;
+      --border-default: #E5E7EB;
+      --border-hover: #D1D5DB;
+      --accent-ai: #7C3AED;
+      --accent-ai-hover: #6D28D9;
+      --radius-lg: 14px;
+      --radius-md: 10px;
+    }
+    body { background: var(--bg-base); color: var(--text-primary); font-family: 'Inter', 'Noto Sans SC', -apple-system, sans-serif; }
+
+    /* IconNav */
+    .icon-nav {
+      width: 52px;
+      height: 100vh;
+      background: var(--bg-surface);
+      border-right: 1px solid var(--border-default);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 12px 0;
+      transition: width 0.2s ease-out;
+      overflow: hidden;
+      flex-shrink: 0;
+      z-index: 100;
+    }
+    .icon-nav:hover { width: 200px; }
+
+    .nav-item {
+      position: relative;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      transition: all 0.15s ease-out;
+      cursor: pointer;
+      border-radius: 0;
+    }
+    .nav-item:hover {
+      color: var(--accent-ai);
+      background: rgba(124, 58, 237, 0.06);
+    }
+    .nav-item.active {
+      color: var(--accent-ai);
+    }
+    .nav-item.active::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 3px;
+      height: 20px;
+      background: var(--accent-ai);
+      border-radius: 0 4px 4px 0;
+    }
+    .nav-item .nav-label {
+      font-size: 12px;
+      font-weight: 500;
+      white-space: nowrap;
+      opacity: 0;
+      transition: opacity 0.2s ease-out;
+    }
+    .icon-nav:hover .nav-item .nav-label {
+      opacity: 1;
+    }
+    .nav-item:hover .nav-label {
+      color: var(--accent-ai);
+    }
+
+    /* AI pulse dot */
+    .ai-pulse {
+      position: absolute;
+      top: 6px;
+      right: 10px;
+      width: 7px;
+      height: 7px;
+      background: var(--accent-ai);
+      border-radius: 50%;
+      animation: pulse-dot 2s ease-in-out infinite;
+      box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.4);
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; box-shadow: 0 0 4px rgba(124, 58, 237, 0.4); }
+      50% { opacity: 0.6; box-shadow: 0 0 10px rgba(124, 58, 237, 0.7); }
+    }
+
+    /* Workspace canvas */
+    .workspace-canvas {
+      flex: 1;
+      background: var(--bg-base);
+      padding: 24px 32px;
+      overflow-y: auto;
+    }
+
+    /* Copilot panel */
+    .copilot-panel {
+      width: 320px;
+      background: var(--bg-surface);
+      border-left: 1px solid var(--border-default);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+
+    /* Responsive */
+    @media (max-width: 1279px) {
+      .copilot-panel { display: none; }
+    }
+    @media (max-width: 767px) {
+      .icon-nav {
+        width: 100%;
+        height: auto;
+        flex-direction: row;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        border-right: none;
+        border-top: 1px solid var(--border-default);
+        padding: 6px 0;
+        justify-content: space-around;
+        z-index: 200;
+      }
+      .icon-nav:hover { width: 100%; }
+      .icon-nav .nav-logo,
+      .icon-nav .nav-label,
+      .icon-nav .user-avatar { display: none !important; }
+      .nav-item {
+        width: auto;
+        padding: 6px 8px;
+        justify-content: center;
+      }
+      .nav-item.active::before { display: none; }
+      .workspace-canvas { padding-bottom: 64px; }
+    }
+
+    /* Card hover */
+    .card-hover {
+      transition: all 0.2s ease-out;
+      cursor: pointer;
+    }
+    .card-hover:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+      transform: translateY(-1px);
+      border-color: var(--border-hover);
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #9CA3AF; }
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <!-- Desktop/Tablet Layout -->
+  <div class="hidden md:flex h-screen">
+    <!-- IconNav -->
+    <nav class="icon-nav" aria-label="主导航">
+      <!-- Logo -->
+      <div class="nav-logo mb-3 flex items-center gap-2 px-3 w-full">
+        <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-sm flex-shrink-0" style="background: linear-gradient(135deg, #7C3AED, #A78BFA);">
+          E
+        </div>
+        <span class="text-sm font-semibold opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap" style="color: var(--text-primary);">
+          EcoDream
+        </span>
+      </div>
+
+      <!-- Nav Items (12 items) -->
+      <div class="flex-1 w-full space-y-0.5">
+        <!-- 1. 工作台 -->
+        <a href="#" class="nav-item active" style="color: var(--accent-ai);">
+          <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          <span class="nav-label">工作台</span>
+        </a>
+
+        <!-- 2. 内容生产 -->
+        <a href="#" class="nav-item" style="color: var(--text-secondary);">
+          <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 3v18m-9-9h18"/><circle cx="12" cy="12" r="3"/></svg>
+          <span class="nav-label">内容生产</span>
+        </a>
+
+        <!-- 3. 审核发布 -->
+        <a href="#" class="nav-item" style="color: var(--text-secondary);">
+          <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span class="nav-label">审核发布</span>
+        </a>
+
+        <!-- 4. 数据报表 -->
+        <a href="#" class="nav-item" style="color: var(--text-secondary);">
+          <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-4"/></svg>
+          <span class="nav-label">数据报表</span>
+        </a>
+
+        <!-- 5. 账号矩阵 -->
+        <a href="#" class="nav-item" style="color: var(--text-secondary);">
+          <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span class="nav-label">账号矩阵</span>
+        </a>
+
+        <!-- 6. 素材库 -->
+        <a href="#" class="nav-item" style="color: var(--text-secondary);">
+          <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          <span class="nav-label">素材库</span>
+        </a>
+
+        <!-- 7. Agent 舰队 -->
+        <a href="#" class="nav-item" style="color: var(--text-secondary);">
+          <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <span class="nav-label">Agent 舰队</span>
+          <span class="ai-pulse" title="6 个 Agent 运行中"></span>
+        </a>
+
+        <!-- 8. 模型中心 -->
+        <a href="#" class="nav-item" style="color: var(--text-secondary);">
+          <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          <span class="nav-label">模型中心</span>
+        </a>
+
+        <!-- 9. 工作流 -->
+        <a href="#" class="nav-item" style="color: var(--text-secondary);">
+          <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
+          <span class="nav-label">工作流</span>
+        </a>
+
+        <!-- 10. 平台规则 -->
+        <a href="#" class="nav-item" style="color: var(--text-secondary);">
+          <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          <span class="nav-label">平台规则</span>
+        </a>
+
+        <!-- 11. Playground -->
+        <a href="#" class="nav-item" style="color: var(--text-secondary);">
+          <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10 2h4"/><path d="M12 14v.01"/><path d="M12 2v8"/><path d="M9 21h6"/><path d="M19 9a7 7 0 1 0-14 0"/></svg>
+          <span class="nav-label">Playground</span>
+        </a>
+
+        <!-- 12. 设置 -->
+        <a href="#" class="nav-item" style="color: var(--text-secondary);">
+          <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.68 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.32 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <span class="nav-label">设置</span>
+        </a>
+      </div>
+
+      <!-- User avatar -->
+      <div class="user-avatar mt-auto w-full pb-2">
+        <button class="w-full flex items-center gap-3 px-3 py-2.5 transition-all" style="color: var(--text-tertiary);">
+          <div class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] flex-shrink-0" style="background: rgba(124,58,237,0.1); color: #7C3AED;">
+            U
+          </div>
+          <span class="text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+            管理员
+          </span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- Workspace Canvas -->
+    <main class="workspace-canvas">
+      <div class="max-w-5xl mx-auto">
+        <h1 class="text-2xl font-bold mb-2" style="color: var(--text-primary);">IconNav 精简预览</h1>
+        <p class="text-sm mb-6" style="color: var(--text-secondary);">15 项 → 12 项，按设计规范重新排序 | 浅色主题 | 响应式适配</p>
+
+        <!-- 变更对照表 -->
+        <div class="rounded-xl p-5 mb-6 border card-hover" style="background: var(--bg-surface); border-color: var(--border-default);">
+          <h2 class="text-base font-semibold mb-3" style="color: var(--text-primary);">📋 精简对照表</h2>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr style="border-bottom: 1px solid var(--border-default);">
+                  <th class="text-left py-2 px-2 font-medium" style="color: var(--text-tertiary);">顺序</th>
+                  <th class="text-left py-2 px-2 font-medium" style="color: var(--text-tertiary);">图标</th>
+                  <th class="text-left py-2 px-2 font-medium" style="color: var(--text-tertiary);">标签</th>
+                  <th class="text-left py-2 px-2 font-medium" style="color: var(--text-tertiary);">路由</th>
+                  <th class="text-left py-2 px-2 font-medium" style="color: var(--text-tertiary);">处理</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style="border-bottom: 1px solid var(--border-default);"><td class="py-2 px-2">1</td><td class="py-2 px-2">🏠</td><td class="py-2 px-2 font-medium" style="color: var(--accent-ai);">工作台</td><td class="py-2 px-2 font-mono text-xs">/</td><td class="py-2 px-2"><span class="px-2 py-0.5 rounded-full text-xs" style="background: rgba(22,163,74,0.08); color: #16A34A;">保留</span></td></tr>
+                <tr style="border-bottom: 1px solid var(--border-default);"><td class="py-2 px-2">2</td><td class="py-2 px-2">✨</td><td class="py-2 px-2">内容生产</td><td class="py-2 px-2 font-mono text-xs">/generate</td><td class="py-2 px-2"><span class="px-2 py-0.5 rounded-full text-xs" style="background: rgba(22,163,74,0.08); color: #16A34A;">保留</span></td></tr>
+                <tr style="border-bottom: 1px solid var(--border-default);"><td class="py-2 px-2">3</td><td class="py-2 px-2">🛡️</td><td class="py-2 px-2">审核发布</td><td class="py-2 px-2 font-mono text-xs">/review</td><td class="py-2 px-2"><span class="px-2 py-0.5 rounded-full text-xs" style="background: rgba(22,163,74,0.08); color: #16A34A;">保留</span></td></tr>
+                <tr style="border-bottom: 1px solid var(--border-default);"><td class="py-2 px-2">4</td><td class="py-2 px-2">📊</td><td class="py-2 px-2">数据报表</td><td class="py-2 px-2 font-mono text-xs">/analytics</td><td class="py-2 px-2"><span class="px-2 py-0.5 rounded-full text-xs" style="background: rgba(22,163,74,0.08); color: #16A34A;">保留</span></td></tr>
+                <tr style="border-bottom: 1px solid var(--border-default);"><td class="py-2 px-2">5</td><td class="py-2 px-2">👤</td><td class="py-2 px-2">账号矩阵</td><td class="py-2 px-2 font-mono text-xs">/accounts</td><td class="py-2 px-2"><span class="px-2 py-0.5 rounded-full text-xs" style="background: rgba(217,119,6,0.08); color: #D97706;">合并人设库</span></td></tr>
+                <tr style="border-bottom: 1px solid var(--border-default);"><td class="py-2 px-2">6</td><td class="py-2 px-2">🖼️</td><td class="py-2 px-2">素材库</td><td class="py-2 px-2 font-mono text-xs">/assets</td><td class="py-2 px-2"><span class="px-2 py-0.5 rounded-full text-xs" style="background: rgba(22,163,74,0.08); color: #16A34A;">保留</span></td></tr>
+                <tr style="border-bottom: 1px solid var(--border-default);"><td class="py-2 px-2">7</td><td class="py-2 px-2">🤖</td><td class="py-2 px-2">Agent 舰队</td><td class="py-2 px-2 font-mono text-xs">/agents</td><td class="py-2 px-2"><span class="px-2 py-0.5 rounded-full text-xs" style="background: rgba(22,163,74,0.08); color: #16A34A;">保留</span></td></tr>
+                <tr style="border-bottom: 1px solid var(--border-default);"><td class="py-2 px-2">8</td><td class="py-2 px-2">🧠</td><td class="py-2 px-2">模型中心</td><td class="py-2 px-2 font-mono text-xs">/models</td><td class="py-2 px-2"><span class="px-2 py-0.5 rounded-full text-xs" style="background: rgba(22,163,74,0.08); color: #16A34A;">保留</span></td></tr>
+                <tr style="border-bottom: 1px solid var(--border-default);"><td class="py-2 px-2">9</td><td class="py-2 px-2">⚙️</td><td class="py-2 px-2">工作流</td><td class="py-2 px-2 font-mono text-xs">/workflows</td><td class="py-2 px-2"><span class="px-2 py-0.5 rounded-full text-xs" style="background: rgba(37,99,235,0.08); color: #2563EB;">新增</span></td></tr>
+                <tr style="border-bottom: 1px solid var(--border-default);"><td class="py-2 px-2">10</td><td class="py-2 px-2">📋</td><td class="py-2 px-2">平台规则</td><td class="py-2 px-2 font-mono text-xs">/rules</td><td class="py-2 px-2"><span class="px-2 py-0.5 rounded-full text-xs" style="background: rgba(217,119,6,0.08); color: #D97706;">合并品牌库+规则引擎</span></td></tr>
+                <tr style="border-bottom: 1px solid var(--border-default);"><td class="py-2 px-2">11</td><td class="py-2 px-2">🧪</td><td class="py-2 px-2">Playground</td><td class="py-2 px-2 font-mono text-xs">/playground</td><td class="py-2 px-2"><span class="px-2 py-0.5 rounded-full text-xs" style="background: rgba(22,163,74,0.08); color: #16A34A;">保留</span></td></tr>
+                <tr><td class="py-2 px-2">12</td><td class="py-2 px-2">🔧</td><td class="py-2 px-2">设置</td><td class="py-2 px-2 font-mono text-xs">/settings</td><td class="py-2 px-2"><span class="px-2 py-0.5 rounded-full text-xs" style="background: rgba(22,163,74,0.08); color: #16A34A;">保留</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 移除项说明 -->
+        <div class="rounded-xl p-5 mb-6 border" style="background: rgba(220,38,38,0.03); border-color: rgba(220,38,38,0.15);">
+          <h2 class="text-base font-semibold mb-3" style="color: var(--text-primary);">🗑️ 移除/合并项说明</h2>
+          <div class="space-y-2 text-sm" style="color: var(--text-secondary);">
+            <div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full" style="background: #DC2626;"></span><span><strong>人设库</strong> `/personas` → 合并入<strong>账号矩阵</strong>页面内 Tab</span></div>
+            <div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full" style="background: #DC2626;"></span><span><strong>品牌库</strong> `/brand-knowledge` → 合并入<strong>平台规则</strong>页面内 Tab</span></div>
+            <div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full" style="background: #DC2626;"></span><span><strong>趋势侦察</strong> `/trend-scout` → 合并入<strong>数据报表</strong>页面内 Tab</span></div>
+            <div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full" style="background: #DC2626;"></span><span><strong>规则引擎</strong> `/platform-rules` + <strong>格式规范</strong> `/platform-rules/schema` → 合并为<strong>平台规则</strong> `/rules`</span></div>
+          </div>
+        </div>
+
+        <!-- AI 体验 -->
+        <div class="rounded-xl p-5 mb-6 border card-hover" style="background: var(--bg-surface); border-color: var(--border-default);">
+          <h2 class="text-base font-semibold mb-3" style="color: var(--text-primary);">🤖 AI 原生体验点</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm" style="color: var(--text-secondary);">
+            <div class="p-3 rounded-lg" style="background: rgba(124,58,237,0.04);">
+              <p class="font-medium mb-1" style="color: var(--accent-ai);">Hover AI 高亮</p>
+              <p>鼠标悬停时标签文字变为紫罗兰色（#7C3AED），背景出现淡紫色光晕</p>
+            </div>
+            <div class="p-3 rounded-lg" style="background: rgba(124,58,237,0.04);">
+              <p class="font-medium mb-1" style="color: var(--accent-ai);">AI 活动脉冲</p>
+              <p>Agent 舰队图标右上角显示紫色脉冲圆点（如当前 6 个 Agent 运行中）</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 交互状态 -->
+        <div class="rounded-xl p-5 mb-6 border card-hover" style="background: var(--bg-surface); border-color: var(--border-default);">
+          <h2 class="text-base font-semibold mb-3" style="color: var(--text-primary);">🎨 交互状态展示</h2>
+          <div class="flex flex-wrap gap-4 text-sm">
+            <div class="flex items-center gap-2 px-3 py-2 rounded-lg" style="background: var(--bg-base); border: 1px solid var(--border-default);">
+              <span class="w-5 h-5 flex items-center justify-center" style="color: var(--accent-ai);">🏠</span>
+              <span style="color: var(--accent-ai);">Active（左侧紫条 + 紫色文字）</span>
+            </div>
+            <div class="flex items-center gap-2 px-3 py-2 rounded-lg" style="background: var(--bg-base); border: 1px solid var(--border-default);">
+              <span class="w-5 h-5 flex items-center justify-center" style="color: var(--text-secondary);">✨</span>
+              <span style="color: var(--text-secondary);">Default（灰色文字）</span>
+            </div>
+            <div class="flex items-center gap-2 px-3 py-2 rounded-lg" style="background: rgba(124,58,237,0.06); border: 1px solid rgba(124,58,237,0.2);">
+              <span class="w-5 h-5 flex items-center justify-center" style="color: var(--accent-ai);">🤖</span>
+              <span style="color: var(--accent-ai);">Hover（紫罗兰色高亮）</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 响应式 -->
+        <div class="rounded-xl p-5 mb-6 border card-hover" style="background: var(--bg-surface); border-color: var(--border-default);">
+          <h2 class="text-base font-semibold mb-3" style="color: var(--text-primary);">📱 响应式断点</h2>
+          <div class="grid grid-cols-3 gap-4 text-sm text-center">
+            <div class="p-3 rounded-lg" style="background: var(--bg-base); border: 1px solid var(--border-default);">
+              <p class="text-lg mb-1">🖥️</p>
+              <p class="font-medium" style="color: var(--text-primary);">Desktop</p>
+              <p style="color: var(--text-tertiary);">≥1280px</p>
+              <p class="text-xs mt-1" style="color: var(--text-secondary);">左侧 IconNav 52px，Hover 展开 200px</p>
+            </div>
+            <div class="p-3 rounded-lg" style="background: var(--bg-base); border: 1px solid var(--border-default);">
+              <p class="text-lg mb-1">📱</p>
+              <p class="font-medium" style="color: var(--text-primary);">Tablet</p>
+              <p style="color: var(--text-tertiary);">768~1279px</p>
+              <p class="text-xs mt-1" style="color: var(--text-secondary);">IconNav 保持，Copilot 可折叠</p>
+            </div>
+            <div class="p-3 rounded-lg" style="background: var(--bg-base); border: 1px solid var(--border-default);">
+              <p class="text-lg mb-1">📲</p>
+              <p class="font-medium" style="color: var(--text-primary);">Mobile</p>
+              <p style="color: var(--text-tertiary);">&lt;768px</p>
+              <p class="text-xs mt-1" style="color: var(--text-secondary);">底部 Tab 导航（5 项主功能）</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 自查清单 -->
+        <div class="rounded-xl p-5 border" style="background: var(--bg-surface); border-color: var(--border-default);">
+          <h2 class="text-base font-semibold mb-3" style="color: var(--text-primary);">✅ 自查清单</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm" style="color: var(--text-secondary);">
+            <div class="flex items-center gap-2"><span class="w-4 h-4 rounded-full flex items-center justify-center text-xs text-white" style="background: #16A34A;">✓</span> 12 项 IconNav 与开发计划 §1.2 对照表一致</div>
+            <div class="flex items-center gap-2"><span class="w-4 h-4 rounded-full flex items-center justify-center text-xs text-white" style="background: #16A34A;">✓</span> 颜色 Token 与 index.css 一致</div>
+            <div class="flex items-center gap-2"><span class="w-4 h-4 rounded-full flex items-center justify-center text-xs text-white" style="background: #16A34A;">✓</span> Hover 时标签变为 #7C3AED 紫色</div>
+            <div class="flex items-center gap-2"><span class="w-4 h-4 rounded-full flex items-center justify-center text-xs text-white" style="background: #16A34A;">✓</span> Active 状态左侧 3px 紫条</div>
+            <div class="flex items-center gap-2"><span class="w-4 h-4 rounded-full flex items-center justify-center text-xs text-white" style="background: #16A34A;">✓</span> AI 脉冲圆点动画正常</div>
+            <div class="flex items-center gap-2"><span class="w-4 h-4 rounded-full flex items-center justify-center text-xs text-white" style="background: #16A34A;">✓</span> 响应式：Desktop/Tablet/Mobile</div>
+            <div class="flex items-center gap-2"><span class="w-4 h-4 rounded-full flex items-center justify-center text-xs text-white" style="background: #16A34A;">✓</span> 移除项说明清晰（人设库/品牌库/趋势侦察/规则引擎）</div>
+            <div class="flex items-center gap-2"><span class="w-4 h-4 rounded-full flex items-center justify-center text-xs text-white" style="background: #16A34A;">✓</span> 真实中文 mock 数据</div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- AI Copilot Panel -->
+    <aside class="copilot-panel hidden xl:flex">
+      <div class="p-4 border-b" style="border-color: var(--border-default);">
+        <div class="flex items-center justify-between">
+          <span class="text-sm font-semibold" style="color: var(--text-primary);">🤖 AI Copilot</span>
+          <span class="text-xs" style="color: var(--text-tertiary);">—</span>
+        </div>
+      </div>
+      <div class="flex-1 p-4 overflow-y-auto">
+        <div class="p-3 rounded-lg mb-3" style="background: var(--bg-base); border: 1px solid var(--border-default);">
+          <p class="text-xs mb-1" style="color: var(--text-tertiary);">💡 当前任务</p>
+          <p class="text-sm" style="color: var(--text-primary);">IconNav 精简审核</p>
+          <div class="flex gap-2 mt-2">
+            <span class="px-2 py-0.5 rounded text-xs" style="background: rgba(124,58,237,0.08); color: #7C3AED;">12 项导航</span>
+            <span class="px-2 py-0.5 rounded text-xs" style="background: rgba(124,58,237,0.08); color: #7C3AED;">4 项合并</span>
+          </div>
+        </div>
+        <div class="p-3 rounded-lg border-l-2" style="background: var(--bg-base); border-color: var(--border-default); border-left-color: #7C3AED;">
+          <p class="text-sm" style="color: var(--text-secondary);">🤖 Agent 舰队有 6 个 Agent 正在运行，建议关注性能...</p>
+        </div>
+      </div>
+      <div class="p-3 border-t" style="border-color: var(--border-default);">
+        <div class="p-2 rounded-lg border flex items-center gap-2" style="background: var(--bg-base); border-color: var(--border-default);">
+          <span class="text-xs" style="color: var(--text-tertiary);">告诉 AI 你的需求...</span>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Mobile: Bottom Tab Nav -->
+  <div class="md:hidden fixed bottom-0 left-0 right-0 z-[200] flex justify-around items-center py-2 border-t" style="background: var(--bg-surface); border-color: var(--border-default);">
+    <a href="#" class="flex flex-col items-center gap-0.5 p-1" style="color: var(--accent-ai);">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span class="text-[10px] font-medium">工作台</span>
+    </a>
+    <a href="#" class="flex flex-col items-center gap-0.5 p-1" style="color: var(--text-tertiary);">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 3v18m-9-9h18"/><circle cx="12" cy="12" r="3"/></svg>
+      <span class="text-[10px]">内容</span>
+    </a>
+    <a href="#" class="flex flex-col items-center gap-0.5 p-1" style="color: var(--text-tertiary);">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-4"/></svg>
+      <span class="text-[10px]">数据</span>
+    </a>
+    <a href="#" class="flex flex-col items-center gap-0.5 p-1 relative" style="color: var(--text-tertiary);">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      <span class="text-[10px]">Agent</span>
+      <span class="ai-pulse" style="top: 2px; right: 2px; width: 6px; height: 6px;"></span>
+    </a>
+    <a href="#" class="flex flex-col items-center gap-0.5 p-1" style="color: var(--text-tertiary);">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.68 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.32 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      <span class="text-[10px]">设置</span>
+    </a>
+  </div>
+
+  <!-- Mobile content padding -->
+  <div class="md:hidden p-4 pb-20">
+    <p class="text-sm font-medium mb-2" style="color: var(--text-primary);">IconNav 精简预览</p>
+    <p class="text-xs" style="color: var(--text-secondary);">请在桌面端查看完整预览。移动端显示底部 Tab 导航（5 项）。</p>
+  </div>
+
+</body>
+</html>

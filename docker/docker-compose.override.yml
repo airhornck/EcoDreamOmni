@@ -1,0 +1,10 @@
+# 开发覆盖：挂载本地代码，无需重建镜像 + 可选国内镜像加速
+services:
+  backend:
+    build:
+      args: {}
+    volumes:
+      - ../apps/backend/src:/app/src
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://ecodream:ecodream@postgres:5432/ecodream
+      - REDIS_URL=redis://redis:6379/0

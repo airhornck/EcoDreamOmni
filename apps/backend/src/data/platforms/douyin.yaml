@@ -1,0 +1,55 @@
+platform: douyin
+name: 抖音社区自律公约
+rules:
+  - layer: l1
+    name: 兽药广告审查号缺失
+    condition_json:
+      type: vetdrug_ad
+      requires_ad_review_number: true
+    action: block
+    priority: 100
+    enabled: true
+    description: 抖音发布兽药广告必须标注广告审查批准文号
+
+  - layer: l1
+    name: 活体宠物药品混售
+    condition_json:
+      type: keyword
+      pattern: "买驱虫药送猫|购药领养|药品+宠物捆绑"
+    action: block
+    priority: 100
+    enabled: true
+    description: 禁止将兽药销售与活体宠物交易捆绑
+
+  - layer: l2
+    name: 功效对比贬低竞品
+    condition_json:
+      type: keyword
+      pattern: "比XX好|比其他牌子强|别家没效果|只有我家"
+    action: warn
+    priority: 50
+    enabled: true
+    description: 禁止通过贬低竞品来宣传自身产品功效
+
+  - layer: l3
+    name: 蓝V账号内容标注
+    condition_json:
+      type: account_type
+      account_type: blue_v
+      requires_label: "合作/推广"
+    action: flag
+    priority: 40
+    enabled: true
+    description: 蓝V账号发布商业内容必须标注合作/推广
+
+  - layer: l4
+    name: 大促期间审核加严
+    condition_json:
+      type: date_range
+      start: "2026-11-01"
+      end: "2026-11-15"
+      restriction: "全量人工复核"
+    action: adapt
+    priority: 20
+    enabled: true
+    description: 双11期间兽药相关内容全量进入人工复核

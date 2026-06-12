@@ -1,0 +1,6 @@
+.env*
+*.dump
+*.sql
+demo_output/
+picture/
+vendor/

@@ -1,0 +1,10 @@
+[CodeGraph daemon] Listening on \\.\pipe\codegraph-dcad4c4899cb09c3 (pid 17136, v0.9.7). Idle timeout 300000ms.
+[CodeGraph MCP] File watcher active — graph will auto-sync on changes
+[CodeGraph daemon] socket error: write EPIPE
+[CodeGraph daemon] socket error: write EPIPE
+[CodeGraph daemon] socket error: write EPIPE
+[CodeGraph MCP] Caught up 692 file(s) changed since last run
+[CodeGraph daemon] Listening on \\.\pipe\codegraph-dcad4c4899cb09c3 (pid 15952, v0.9.7). Idle timeout 300000ms.
+[CodeGraph MCP] File watcher active — graph will auto-sync on changes
+[CodeGraph daemon] Listening on \\.\pipe\codegraph-dcad4c4899cb09c3 (pid 21308, v0.9.7). Idle timeout 300000ms.
+[CodeGraph MCP] File watcher active — graph will auto-sync on changes

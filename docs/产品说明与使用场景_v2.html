@@ -1,0 +1,1736 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EcoDream Omni - 素人号矩阵AI平台 · 产品说明与使用场景 V2.7.2</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter','Noto Sans SC','sans-serif'] },
+                    colors: {
+                        brand: { 50:'#f0f9ff',100:'#e0f2fe',200:'#bae6fd',300:'#7dd3fc',400:'#38bdf8',500:'#0ea5e9',600:'#0284c7',700:'#0369a1',800:'#075985',900:'#0c4a6e' },
+                        accent: { 500:'#8b5cf6',600:'#7c3aed' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .gradient-text { background: linear-gradient(135deg,#0ea5e9 0%,#7c3aed 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+        .glass-card { background:rgba(255,255,255,0.7); backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,0.3); }
+        .stage-pill { transition:all .3s ease; }
+        .stage-pill:hover { transform:translateY(-2px); box-shadow:0 4px 12px rgba(0,0,0,0.1); }
+        .flow-card { transition:all .3s ease; border-left:4px solid transparent; }
+        .flow-card:hover { border-left-color:#0ea5e9; background:#fafafa; }
+        .tab-active { border-bottom:2px solid #0ea5e9; color:#0ea5e9; font-weight:600; }
+        .mermaid-container { background:#fafafa; border-radius:1rem; padding:2rem; }
+        .status-p0 { background:#fee2e2; color:#991b1b; }
+        .status-p1 { background:#fef3c7; color:#92400e; }
+        .status-done { background:#dbeafe; color:#1e40af; }
+        .status-partial { background:#f3e8ff; color:#6b21a8; }
+        .phase-tag { font-size:.65rem; letter-spacing:.05em; text-transform:uppercase; }
+        .cover-table th { background:#f8fafc; font-weight:600; text-align:left; padding:.75rem 1rem; border-bottom:2px solid #e2e8f0; }
+        .cover-table td { padding:.75rem 1rem; border-bottom:1px solid #e2e8f0; vertical-align:top; }
+        .cover-table tr:hover td { background:#f8fafc; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased">
+
+<!-- Navigation -->
+<nav class="fixed top-0 w-full bg-white/80 backdrop-blur-md border-b border-slate-200 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16 items-center">
+            <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-500 to-accent-600 flex items-center justify-center text-white font-bold text-sm">E</div>
+                <span class="font-bold text-xl tracking-tight text-slate-900">EcoDream <span class="text-brand-600">Omni</span></span>
+            </div>
+            <div class="hidden md:flex space-x-8 text-sm font-medium text-slate-600">
+                <a href="#alignment" class="hover:text-brand-600 transition">PRD对齐</a>
+                <a href="#guide" class="hover:text-brand-600 transition">使用说明</a>
+                <a href="#workflow" class="hover:text-brand-600 transition">业务流程</a>
+                <a href="#operations" class="hover:text-brand-600 transition">节点操作</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Hero -->
+<section class="pt-32 pb-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-brand-50 via-white to-white">
+    <div class="max-w-7xl mx-auto text-center">
+        <div class="inline-flex items-center px-3 py-1 rounded-full bg-brand-100 text-brand-700 text-sm font-medium mb-6">
+            <span class="w-2 h-2 rounded-full bg-brand-500 mr-2 animate-pulse"></span>
+            PRD V2.3–V2.7.1 对齐版 · 产品说明 V2
+        </div>
+        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
+            <span class="gradient-text">素人号矩阵AI平台</span>
+        </h1>
+        <p class="text-xl text-slate-600 max-w-3xl mx-auto mb-8 leading-relaxed">
+            从选题洞察到合规发布，从品牌知识注入到时间线驱动种草，构建覆盖内容全生命周期的 <span class="font-semibold text-slate-900">Agent 驱动工作流</span>
+        </p>
+        <div class="flex flex-wrap justify-center gap-3 mb-12">
+            <span class="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-sm font-medium">AIPL/5A 方法论</span>
+            <span class="px-3 py-1 bg-violet-50 text-violet-700 rounded-full text-sm font-medium">品牌资料库注入</span>
+            <span class="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-sm font-medium">时间线驱动发布</span>
+            <span class="px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-sm font-medium">单人审核</span>
+            <span class="px-3 py-1 bg-red-50 text-red-700 rounded-full text-sm font-medium">四层合规</span>
+        </div>
+    </div>
+</section>
+
+<!-- PRD Alignment Section -->
+<section id="alignment" class="py-16 px-4 sm:px-6 lg:px-8 bg-white">
+    <div class="max-w-7xl mx-auto">
+        <div class="text-center mb-10">
+            <h2 class="text-3xl font-bold text-slate-900 mb-3">原始需求与 PRD 覆盖对照</h2>
+            <p class="text-lg text-slate-600">基于《EcoDream_Omni_PRD_v2_对齐核心方案.md》与 v5.0 方案真源逐项核对</p>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full cover-table text-sm">
+                    <thead>
+                        <tr>
+                            <th class="w-12 text-center">#</th>
+                            <th class="w-64">原始需求</th>
+                            <th class="w-40">PRD 对应章节</th>
+                            <th class="w-28">覆盖状态</th>
+                            <th>说明与差异</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="text-center font-bold text-slate-500">1</td>
+                            <td><b>选题报告 + 图片配置编辑 + 人工干预</b><br><span class="text-slate-500 text-xs">选题结论生成报告；内容生成时图片可人工配置编辑</span></td>
+                            <td>§2.1 TrendScout<br>§1.1 AssetPool/ImageForge<br>§2.6 结构预检闭环<br>§V2.5 Workflow Cockpit</td>
+                            <td><span class="status-badge status-done">已覆盖</span></td>
+                            <td>
+                                <b>选题报告</b>：TrendScout 生成结构化趋势报告（<code>POST /trend-scout/reports</code>），含热点条目、标题模式、AIPL 阶段标注，支持查看与导出。<br>
+                                <b>图片配置编辑</b>：AssetPool（素材库）支持运营上传真实图片 + AI 生成封面；ImageForge 提供图片配置编辑界面，运营可人工调整封面模板、叠加文字、选择素材，最终注入 ContentForge 生成流。<br>
+                                <b>人工干预</b>：Human-in-the-Loop 审核台支持「打回修改」，指定回退节点（如 ContentForge/ImageForge）后修改变量重新生成；Workflow Cockpit 提供可视化节点干预。
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-center font-bold text-slate-500">2</td>
+                            <td><b>单人审核</b><br><span class="text-slate-500 text-xs">内容发布前的人工审核</span></td>
+                            <td>§Human-in-the-Loop<br>§7.3.2 专家组评审（演进建议）</td>
+                            <td><span class="status-badge status-done">已覆盖</span></td>
+                            <td>
+                                <b>按原始需求实现「单人审核」</b>。Human-in-the-Loop 审核台支持运营对图文内容进行通过/驳回/打回修改三种决策，作为发布前的强制拦截节点。<br>
+                                <span class="text-slate-500">备注：PRD V2.3 专家组评审建议升级为「双人复核」（内容审核员 + 发布确认员），作为 Phase 2 合规增强演进方向，当前 MVP 按原始需求保留单人审核模式。</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-center font-bold text-slate-500">3</td>
+                            <td><b>素材库（爬取真实图片，猫、狗）</b><br><span class="text-slate-500 text-xs">准备猫狗真实图片素材库</span></td>
+                            <td>§1.1 AssetPool Function<br>§2.1 TrendScout</td>
+                            <td><span class="status-badge status-p1">已修正</span></td>
+                            <td>
+                                PRD 将素材库定位为 <b>「三源混合模式」</b>：运营上传自有素材为主（确保品牌调性一致）+ AI 生图用于封面创意（降低设计成本）+ 可选外部授权图库导入。<br>
+                                <b>关键修正</b>：<span class="text-red-600 font-medium">禁止自动爬取平台真实图片</span>。自动爬虫列为 Phase 2+ 可选能力，须单独法务评审。MVP 阶段 AssetPool 仅支持运营主动上传与 AI 生成，不内置猫/狗图片爬取。
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-center font-bold text-slate-500">4</td>
+                            <td><b>AIPL 替换成 5A 模型 + 人群定向</b><br><span class="text-slate-500 text-xs">用5A替代AIPL，结合人群标签定向选题与内容</span></td>
+                            <td>§2.2 MarketingMethodology<br>§基础功能层 TimelineLibrary</td>
+                            <td><span class="status-badge status-partial">部分覆盖</span></td>
+                            <td>
+                                PRD 中 <b>AIPL 仍是 MVP 主框架</b>（AWARENESS/INTEREST/PURCHASE/LOYALTY），但 API 设计已预留扩展：<code>GET /methodologies</code> 支持 AIPL/5A 等多框架列表。<br>
+                                基础功能层 TimelineLibrary 已引入 <code>recommended_5a_stage</code> 字段，说明 5A 作为扩展框架在数据层已兼容。<br>
+                                <b>人群定向</b>：通过 PersonaPool（人设池）的受众标签 + BrandKnowledge 的品类知识 + PoolPredictor 特征工程实现定向，但尚未达到「5A 人群包」级别的精准投放。
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-center font-bold text-slate-500">5</td>
+                            <td><b>工作流模板的可视化配置</b><br><span class="text-slate-500 text-xs">可视化拖拽配置工作流</span></td>
+                            <td>§V2.5 Workflow Engine<br>§V2.5 Workflow Cockpit</td>
+                            <td><span class="status-badge status-done">已覆盖</span></td>
+                            <td>
+                                V2.5 增补四大模块补齐缺口：<b>Workflow Engine</b>（工作流编排，支持 DAG 定义）+ <b>Workflow Cockpit</b>（可视化节点编排、任务看板、执行监控）。<br>
+                                MVP 工作流通过「预设模板 + 可视化节点编排」实现；Prompt 仅用于 Agent 节点内的内容生成指令，不用于控制流逻辑。支持节点回退、上下文保留、死信队列（DLQ）。
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-center font-bold text-slate-500">6</td>
+                            <td><b>品牌资料库（品牌+品类）注入生成流</b><br><span class="text-slate-500 text-xs">建立品牌资料库并注入内容生成</span></td>
+                            <td>§1.2 BrandKnowledge Function</td>
+                            <td><span class="status-badge status-done">已覆盖</span></td>
+                            <td>
+                                <b>BrandKnowledge</b> 作为系统「品牌知识真源」已完整实现。覆盖：品牌故事、Slogan、品类知识、产品 SKU、卖点、禁用语、FAQ。<br>
+                                <b>注入链路</b>：ContentForge 生成时通过 RAG 上下文注入 BrandKnowledge；ComplianceGuard 审核时做品牌一致性校验；TimelineLibrary 时间线事件可关联品牌产品。<br>
+                                API：<code>POST /brand-knowledge/entries</code> 知识条目 CRUD，支持向量索引检索。
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-center font-bold text-slate-500">7</td>
+                            <td><b>素人账号内容的「整体呼应与前后互动」管理</b><br><span class="text-slate-500 text-xs">多账号内容间的呼应与互动策略</span></td>
+                            <td>§PersonaStory<br>§ContentSeries<br>§CommentHub<br>§PersonaPool</td>
+                            <td><span class="status-badge status-done">已覆盖</span></td>
+                            <td>
+                                通过 <b>PersonaStory + ContentSeries + CommentHub + PersonaPool</b> 组合实现闭环：<br>
+                                1) <b>PersonaStory（人设故事剧本）</b>：为每个素人账号定义时间轴驱动的故事线（如「新手养猫第1-12周的真实记录」），ContentForge 生成时注入 <code>persona_story_context</code>（当前故事节点/前情回顾/下期预告/情绪基调），确保单篇内容在宏观故事线中不自洽断裂。<br>
+                                2) <b>ContentSeries（内容层面呼应）</b>：支持系列内容规划，同系列内多帖在标题结构、关键词、CTA 上保持一致性；注入 <code>content_series_context</code>。<br>
+                                3) <b>CommentHub（互动层面呼应）</b>：作为 <b>TaskHub 独立任务类型</b>创建「互动剧本任务」，编排矩阵内账号间评论互动，可独立配置触发条件与频率上限。<br>
+                                4) <b>PersonaPool</b>：多账号共享同一 Persona 时保持语言风格呼应。<br>
+                                <b>注入点</b>：ContentForge 生成阶段（PersonaStory + ContentSeries）→ TaskHub 独立任务（CommentHub）。
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-center font-bold text-slate-500">8</td>
+                            <td><b>素人种草的「时间线管理与注入」</b><br><span class="text-slate-500 text-xs">依据上市品种时间线做品类发布</span></td>
+                            <td>§1.4 TimelineLibrary Function</td>
+                            <td><span class="status-badge status-done">已覆盖</span></td>
+                            <td>
+                                <b>TimelineLibrary</b> 作为「营销时间真源」完整覆盖。功能包括：<br>
+                                1) 产品上市时间线、季节营销节点、平台大促日历维护；<br>
+                                2) <code>GET /timeline-library/recommendations</code> 当前日期交叉比对时间线 → 自动推荐选题；<br>
+                                3) <code>POST /timeline-library/events/{id}/link-products</code> 品牌产品关联时间线事件（如驱虫季自动关联驱虫产品）；<br>
+                                4) CronJob 绑定：时间线事件自动绑定 CronHub 定时任务，驱动 Publisher 在最佳时间窗发布。
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="px-6 py-4 bg-slate-50 border-t border-slate-200 text-xs text-slate-500">
+                <i class="fas fa-info-circle mr-1"></i>
+                <b>图例说明</b>：
+                <span class="status-badge status-done ml-2 mr-1">已覆盖</span> PRD 已完整实现该需求；
+                <span class="status-badge status-p1 ml-2 mr-1">已升级/已修正</span> PRD 覆盖但产品设计有调整；
+                <span class="status-badge status-partial ml-2 mr-1">部分覆盖</span> PRD 部分实现或列为 Phase 2；
+                <span class="status-badge status-p0 ml-2 mr-1">未明确覆盖</span> PRD 中无直接对应模块，需后续补充规划。
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- User Guide Section -->
+<section id="guide" class="py-16 px-4 sm:px-6 lg:px-8 bg-slate-50">
+    <div class="max-w-7xl mx-auto">
+        <div class="text-center mb-10">
+            <h2 class="text-3xl font-bold text-slate-900 mb-3">用户使用说明</h2>
+            <p class="text-lg text-slate-600">从知识基建到发布闭环，六步上手素人号矩阵运营</p>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="border-b border-slate-200">
+                <div class="flex overflow-x-auto">
+                    <button onclick="switchTab('step1')" id="tab-step1" class="tab-btn tab-active px-5 py-4 text-sm font-medium whitespace-nowrap transition">1. 知识基建与素材准备</button>
+                    <button onclick="switchTab('step2')" id="tab-step2" class="tab-btn px-5 py-4 text-sm font-medium text-slate-500 whitespace-nowrap transition hover:text-slate-700">2. 账号与人设配置</button>
+                    <button onclick="switchTab('step3')" id="tab-step3" class="tab-btn px-5 py-4 text-sm font-medium text-slate-500 whitespace-nowrap transition hover:text-slate-700">3. 选题与任务创建</button>
+                    <button onclick="switchTab('step4')" id="tab-step4" class="tab-btn px-5 py-4 text-sm font-medium text-slate-500 whitespace-nowrap transition hover:text-slate-700">4. 工作流自动执行</button>
+                    <button onclick="switchTab('step5')" id="tab-step5" class="tab-btn px-5 py-4 text-sm font-medium text-slate-500 whitespace-nowrap transition hover:text-slate-700">5. 人工审核与发布</button>
+                    <button onclick="switchTab('step6')" id="tab-step6" class="tab-btn px-5 py-4 text-sm font-medium text-slate-500 whitespace-nowrap transition hover:text-slate-700">6. 数据回流与优化</button>
+                </div>
+            </div>
+            <div class="p-8">
+                <!-- Step 1: 知识基建与素材准备 -->
+                <div id="content-step1" class="tab-content">
+                    <div class="grid md:grid-cols-2 gap-8 items-start">
+                        <div>
+                            <h3 class="text-xl font-bold text-slate-900 mb-4">六大基础功能（Function）初始化</h3>
+                            <p class="text-sm text-slate-600 mb-4">在创建任何内容之前，需先完成六大基础功能的数据沉淀。这些库是整个系统的「底层真源」，所有 Agent 生成与审核均通过标准化接口调用，禁止直接操作数据库。<b>基础功能配置为一次性操作，完成后后续每次内容生产自动引用。</b></p>
+                            <div class="space-y-4">
+                                <div class="flex items-start">
+                                    <div class="w-8 h-8 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">1</div>
+                                    <div>
+                                        <p class="font-medium text-slate-900">品牌资料库（BrandKnowledge）</p>
+                                        <p class="text-sm text-slate-600">录入品牌故事、Slogan、品类知识、产品 SKU（如驱虫药/猫粮/洗护）、核心卖点、禁用语清单、FAQ。支持向量索引与批量 CSV 导入，ContentForge 生成时自动 RAG 注入。</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start">
+                                    <div class="w-8 h-8 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">2</div>
+                                    <div>
+                                        <p class="font-medium text-slate-900">素材库（AssetPool）</p>
+                                        <p class="text-sm text-slate-600">三源混合：运营上传真实产品图/场景图（主，≥70%）、授权图库 API 导入（辅）、ImageForge AI 生成封面（补）。每张素材强制记录版权来源（自有/授权/AI生成），打标签关联 BrandKnowledge 产品。</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start">
+                                    <div class="w-8 h-8 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">3</div>
+                                    <div>
+                                        <p class="font-medium text-slate-900">时间线库（TimelineLibrary）</p>
+                                        <p class="text-sm text-slate-600">维护产品上市时间线、季节营销节点、平台大促日历。将时间线事件与 BrandKnowledge 产品关联（如驱虫季关联驱虫药 SKU），驱动 TrendScout 选题推荐与 CronHub 定时发布。</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start">
+                                    <div class="w-8 h-8 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">4</div>
+                                    <div>
+                                        <p class="font-medium text-slate-900">兽药批文库（VetDrugDB）<span class="text-xs bg-pink-50 text-pink-600 px-1.5 py-0.5 rounded ml-1">行业真源</span></p>
+                                        <p class="text-sm text-slate-600">录入兽药批文号、有效成分、适应症、用法用量、批准机构、有效期。所有功效宣称必须以 VetDrugDB 为唯一依据，ComplianceGuard 审核时自动校验「宣称 vs 批文」一致性。</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start">
+                                    <div class="w-8 h-8 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">5</div>
+                                    <div>
+                                        <p class="font-medium text-slate-900">平台规则库（PlatformRule）<span class="text-xs bg-pink-50 text-pink-600 px-1.5 py-0.5 rounded ml-1">风控真源</span></p>
+                                        <p class="text-sm text-slate-600">分层维护：L1 法律红线（广告法/兽药管理条例）、L2 平台静态规则（小红书/抖音/视频号差异）、L3 账号状态规则（新号/老号差异化策略）、L4 动态风控（临时风控/节日策略）。ComplianceGuard 与 Publisher 均引用此库。</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start">
+                                    <div class="w-8 h-8 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">6</div>
+                                    <div>
+                                        <p class="font-medium text-slate-900">人设剧本库（PersonaStory）<span class="text-xs bg-pink-50 text-pink-600 px-1.5 py-0.5 rounded ml-1">叙事真源</span></p>
+                                        <p class="text-sm text-slate-600">为每个 Persona 定义时间轴驱动的故事剧本（如「新手养猫第1-12周的真实记录」）。配置每期主题、情感曲线、关键事件节点、前情回顾、下期预告。ContentForge 生成时自动注入 <code>persona_story_context</code>，确保内容在宏观故事线中不自洽断裂。</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-slate-50 rounded-xl p-6 border border-slate-200">
+                            <div class="text-xs font-mono text-slate-500 mb-2">BrandKnowledge 知识条目示例</div>
+                            <pre class="text-xs bg-slate-900 text-slate-50 p-4 rounded-lg overflow-x-auto"><code>{
+  "entry_type": "product",
+  "product_name": "瑞德医生驱虫药（猫用）",
+  "category": "驱虫护理",
+  "selling_points": ["内外同驱", "幼猫可用", "28天周期"],
+  "forbidden_words": ["治疗", "治愈", "替代兽医"],
+  "linked_assets": ["asset_cat_001", "asset_cat_002"],
+  "linked_timeline": ["deworm_season_2025"]
+}</code></pre>
+                            <div class="mt-4 text-xs text-slate-500">
+                                <i class="fas fa-lightbulb text-amber-500 mr-1"></i>
+                                提示：素材库不内置爬取功能。如需批量导入外部图片，请通过运营上传或授权图库 API 导入。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: 账号与人设配置 -->
+                <div id="content-step2" class="tab-content hidden">
+                    <div class="grid md:grid-cols-2 gap-8 items-start">
+                        <div>
+                            <h3 class="text-xl font-bold text-slate-900 mb-4">账号池与人设池配置</h3>
+                            <div class="space-y-4">
+                                <div class="flex items-start">
+                                    <div class="w-8 h-8 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">1</div>
+                                    <div>
+                                        <p class="font-medium text-slate-900">导入账号矩阵</p>
+                                        <p class="text-sm text-slate-600">在 AccountPool 中批量导入小红书账号，配置设备指纹、IP 代理与每日发布配额。系统自动计算账号健康分；新号自动进入 warming 策略（低频率阶梯）。</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start">
+                                    <div class="w-8 h-8 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">2</div>
+                                    <div>
+                                        <p class="font-medium text-slate-900">创建 Persona（人设）</p>
+                                        <p class="text-sm text-slate-600">在 PersonaPool 中定义人设档案：身份背景（如「养猫 3 年的上班族」）、语言风格、专业领域、禁忌话题。支持 AI 辅助生成草案，但须运营确认。</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start">
+                                    <div class="w-8 h-8 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">3</div>
+                                    <div>
+                                        <p class="font-medium text-slate-900">创建 PersonaStory 故事剧本 <span class="text-xs bg-pink-50 text-pink-600 px-1.5 py-0.5 rounded">v2.7.2 新增</span></p>
+                                        <p class="text-sm text-slate-600">在 Story Cockpit 中为该 Persona 创建时间轴驱动的故事剧本（如「新手养猫第1-12周的真实记录」）。配置节点序列：每期主题、情绪基调（低落/平稳/高涨/爆发）、关键事件、前情回顾、下期预告。支持拖拽调整节点顺序、预设情感曲线模板（低谷逆袭/渐进成长/悬疑揭秘）、一键复制剧本绑定到其他 Persona。</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start">
+                                    <div class="w-8 h-8 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">4</div>
+                                    <div>
+                                        <p class="font-medium text-slate-900">绑定 AIPL/5A 阶段偏好</p>
+                                        <p class="text-sm text-slate-600">为每个 Persona 绑定主推方法论阶段（如「AWARENESS 认知期」或「ASK 询问期」），MarketingMethodology 在生成内容时自动匹配对应模板与 KPI 目标。</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start">
+                                    <div class="w-8 h-8 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">5</div>
+                                    <div>
+                                        <p class="font-medium text-slate-900">配置 LLM 模型</p>
+                                        <p class="text-sm text-slate-600">在 LLM Cockpit 中注册模型（厂家 + 模型名 + APIKey），设定全局默认模型；按需为特定 Agent/Skill 指定覆盖模型（如 ContentForge→GPT-4o，ComplianceGuard→DeepSeek）。节点未指定则继承全局默认。</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-slate-50 rounded-xl p-6 border border-slate-200">
+                            <div class="text-xs font-mono text-slate-500 mb-2">Persona 人设档案示例</div>
+                            <pre class="text-xs bg-slate-900 text-slate-50 p-4 rounded-lg overflow-x-auto"><code>{
+  "persona_id": "cat_mom_v1",
+  "name": "小橘的铲屎官",
+  "bio": "养猫3年，专注新手养猫避坑",
+  "voice_style": "口语化、亲切、带emoji",
+  "expertise": ["猫咪驱虫", "猫粮选择"],
+  "methodology_stage": "AWARENESS",
+  "daily_quota": 2,
+  "content_series": ["新手养猫100问"]
+}</code></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: 选题与任务创建 -->
+                <div id="content-step3" class="tab-content hidden">
+                    <div class="grid md:grid-cols-2 gap-8 items-start">
+                        <div>
+                            <h3 class="text-xl font-bold text-slate-900 mb-4">智能选题与任务创建</h3>
+                            <div class="space-y-4">
+                                <div class="flex items-start">
+                                    <div class="w-8 h-8 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">1</div>
+                                    <div>
+                                        <p class="font-medium text-slate-900">时间线驱动选题推荐</p>
+                                        <p class="text-sm text-slate-600">系统根据 TimelineLibrary 当前日期自动推荐选题：如进入「驱虫季」则推荐「猫咪驱虫避坑」系列；进入「618 大促前」则推荐「囤货清单」选题。运营可一键采纳或手动调整。</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start">
+                                    <div class="w-8 h-8 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">2</div>
+                                    <div>
+                                        <p class="font-medium text-slate-900">TrendScout 趋势报告</p>
+                                        <p class="text-sm text-slate-600">输入关键词（如「幼猫驱虫」），系统自动生成结构化趋势报告：热点条目列表、标题模式分析、话题簇、AIPL/5A 阶段标注。报告可查看、导出、作为选题依据。</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start">
+                                    <div class="w-8 h-8 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">3</div>
+                                    <div>
+                                        <p class="font-medium text-slate-900">创建任务并选择工作流</p>
+                                        <p class="text-sm text-slate-600">进入 TaskHub，选择预设模板（「标准内容生产」含完整七阶段，或「轻量快速发布」跳过预演）。在 Workflow Cockpit 中可视化查看节点拓扑。任务类型包括：内容生产任务、互动剧本任务。</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start">
+                                    <div class="w-8 h-8 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">4</div>
+                                    <div>
+                                        <p class="font-medium text-slate-900">填写 Prompt 变量与图片配置</p>
+                                        <p class="text-sm text-slate-600">在 Prompt Registry 白名单变量中填入内容参数：{{topic}}、{{style}}、{{target_audience}}。在 ImageForge 面板中选择封面素材（从 AssetPool 选取或 AI 生成），人工调整封面文字、配色、布局。</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start">
+                                    <div class="w-8 h-8 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">5</div>
+                                    <div>
+                                        <p class="font-medium text-slate-900">绑定人设故事剧本（PersonaStory）</p>
+                                        <p class="text-sm text-slate-600">为当前任务选择或创建 PersonaStory（如「新手养猫第1-12周的真实记录」）。系统自动注入当前故事节点上下文（前情回顾/本期主题/下期预告/情绪基调），确保内容在宏观故事线中保持连贯。</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-slate-50 rounded-xl p-6 border border-slate-200">
+                            <div class="text-xs font-mono text-slate-500 mb-2">TrendScout 趋势报告输出示例</div>
+                            <div class="bg-white rounded-lg border border-slate-200 p-4 space-y-2 text-sm">
+                                <div class="font-medium text-slate-800">关键词：幼猫驱虫</div>
+                                <div class="text-xs text-slate-500">生成时间：2025-06-20 | AIPL 阶段：AWARENESS</div>
+                                <div class="border-t border-slate-100 pt-2">
+                                    <div class="text-xs font-medium text-slate-600 mb-1">TOP 3 热点标题模式</div>
+                                    <div class="text-xs text-slate-700">1. 数字+痛点：「3个驱虫误区90%的人都不知道」</div>
+                                    <div class="text-xs text-slate-700">2. 场景+悬念：「接猫回家的第7天，我差点踩了这个坑」</div>
+                                    <div class="text-xs text-slate-700">3. 对比+结论：「内驱 vs 外驱，新手一文看懂」</div>
+                                </div>
+                                <div class="border-t border-slate-100 pt-2">
+                                    <div class="text-xs font-medium text-slate-600 mb-1">推荐 5A 阶段</div>
+                                    <span class="inline-block px-2 py-0.5 bg-blue-50 text-blue-700 rounded text-xs">ASK（询问期）</span>
+                                    <span class="inline-block px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-xs ml-1">受众：新手猫主人</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 4: 工作流自动执行 -->
+                <div id="content-step4" class="tab-content hidden">
+                    <div class="grid md:grid-cols-2 gap-8 items-start">
+                        <div>
+                            <h3 class="text-xl font-bold text-slate-900 mb-4">Agent 工作流自动执行</h3>
+                            <div class="space-y-4">
+                                <div class="flex items-start">
+                                    <div class="w-8 h-8 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">1</div>
+                                    <div>
+                                        <p class="font-medium text-slate-900">MarketingMethodology 结构分析</p>
+                                        <p class="text-sm text-slate-600">自动匹配 AIPL/5A 阶段模板：确定 hook 结构（数字+痛点）、body 结构（干货清单）、cta 结构（互动引导）、disclaimer 结构（合规声明）。同步注入 BrandKnowledge 品牌卖点与禁用语清单。</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start">
+                                    <div class="w-8 h-8 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">2</div>
+                                    <div>
+                                        <p class="font-medium text-slate-900">ContentForge 内容生成</p>
+                                        <p class="text-sm text-slate-600">按结构模板生成标题+正文，注入 Persona Voice（人设语言风格）、BrandKnowledge RAG 上下文、<b>PersonaStory 故事剧本上下文</b>（当前故事节点/前情回顾/下期预告/情绪基调）。图片配置按 ImageForge 预设执行（素材选取/AI生成/人工模板叠加）。</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start">
+                                    <div class="w-8 h-8 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">3</div>
+                                    <div>
+                                        <p class="font-medium text-slate-900">PoolPredictor 互动预演</p>
+                                        <p class="text-sm text-slate-600">输出点赞/评论/收藏的预测区间（如 25–60/5–15/8–20）与置信度。冷启动阶段展示「参考区间」文案；达标样本（N≥30）后展示覆盖率考核。</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start">
+                                    <div class="w-8 h-8 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">4</div>
+                                    <div>
+                                        <p class="font-medium text-slate-900">ComplianceGuard 四层合规审核</p>
+                                        <p class="text-sm text-slate-600">逐层扫描：L1 法律红线（绝对拦截处方药/诊断承诺）→ L2 平台规则（静态关键词）→ L3 账号状态（新号低频率限制）→ L4 动态风控（节日/时段策略）。命中即记录证据链。</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-slate-50 rounded-xl p-6 border border-slate-200">
+                            <div class="text-xs font-mono text-slate-500 mb-2">工作流节点状态实时看板</div>
+                            <div class="space-y-2">
+                                <div class="flex items-center bg-white p-3 rounded border border-green-200"><i class="fas fa-check-circle text-green-500 mr-3"></i><span class="text-sm font-medium">MarketingMethodology</span><span class="ml-auto text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded">SUCCESS</span></div>
+                                <div class="flex items-center bg-white p-3 rounded border border-green-200"><i class="fas fa-check-circle text-green-500 mr-3"></i><span class="text-sm font-medium">ContentForge</span><span class="ml-auto text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded">SUCCESS</span></div>
+                                <div class="flex items-center bg-white p-3 rounded border border-yellow-200"><i class="fas fa-spinner fa-spin text-yellow-500 mr-3"></i><span class="text-sm font-medium">PoolPredictor</span><span class="ml-auto text-xs text-yellow-600 bg-yellow-50 px-2 py-0.5 rounded">RUNNING</span></div>
+                                <div class="flex items-center bg-white p-3 rounded border border-slate-200 opacity-50"><i class="fas fa-circle text-slate-300 mr-3"></i><span class="text-sm font-medium">ComplianceGuard</span><span class="ml-auto text-xs text-slate-500 bg-slate-100 px-2 py-0.5 rounded">PENDING</span></div>
+                                <div class="flex items-center bg-white p-3 rounded border border-slate-200 opacity-50"><i class="fas fa-circle text-slate-300 mr-3"></i><span class="text-sm font-medium">Human Approval</span><span class="ml-auto text-xs text-slate-500 bg-slate-100 px-2 py-0.5 rounded">WAITING</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 5: 人工审核与发布 -->
+                <div id="content-step5" class="tab-content hidden">
+                    <div class="grid md:grid-cols-2 gap-8 items-start">
+                        <div>
+                            <h3 class="text-xl font-bold text-slate-900 mb-4">人工审核台与单人审核发布</h3>
+                            <div class="space-y-4">
+                                <div class="flex items-start">
+                                    <div class="w-8 h-8 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">1</div>
+                                    <div>
+                                        <p class="font-medium text-slate-900">进入审核队列</p>
+                                        <p class="text-sm text-slate-600">工作流执行至 Publisher 前强制进入 Human-in-the-Loop。审核台左侧展示图文预览（含封面图），右侧展示 Agent 输出摘要（合规结果/预演区间/结构质量分/品牌一致性校验）。</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start">
+                                    <div class="w-8 h-8 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">2</div>
+                                    <div>
+                                        <p class="font-medium text-slate-900">三种审核决策</p>
+                                        <p class="text-sm text-slate-600"><span class="text-green-600 font-medium">通过</span>：进入发布队列（可选立即/定时）；<span class="text-red-600 font-medium">驳回</span>：任务失败，记录理由进 DLQ；<span class="text-amber-600 font-medium">打回修改</span>：指定回退节点（如 ImageForge 换封面、ContentForge 改标题）并修改变量，保留上下文重新执行。</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start">
+                                    <div class="w-8 h-8 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">3</div>
+                                    <div>
+                                        <p class="font-medium text-slate-900">单人审核发布（Publisher）</p>
+                                        <p class="text-sm text-slate-600">由同一位运营完成内容审核与发布确认。审核记录自动归档，留存 ≥2 年。发布前调用 PlatformRule L3/L4 预检时段合规性与账号日配额。</p>
+                                        <p class="text-xs text-slate-500 mt-1"><i class="fas fa-info-circle mr-1"></i>备注：PRD 建议 Phase 2 演进为「双人复核」（审核员 + 发布确认员双角色），当前 MVP 按原始需求保留单人审核。</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-slate-50 rounded-xl p-6 border border-slate-200">
+                            <div class="text-xs font-mono text-slate-500 mb-2">审核台界面示意</div>
+                            <div class="bg-white rounded-lg border border-slate-200 overflow-hidden">
+                                <div class="bg-slate-100 px-4 py-2 text-xs font-medium text-slate-600 border-b">待审核：小橘的铲屎官-驱虫避坑</div>
+                                <div class="p-4">
+                                    <div class="text-sm text-slate-800 mb-2 font-medium">「猫咪驱虫避坑指南，这3个误区90%的人都不知道」</div>
+                                    <div class="w-full h-24 bg-slate-100 rounded mb-3 flex items-center justify-center text-xs text-slate-400">封面预览：asset_cat_001 + AI标题叠加</div>
+                                    <div class="grid grid-cols-3 gap-2 mb-3 text-center">
+                                        <div class="bg-slate-50 rounded p-2"><div class="text-xs text-slate-500">点赞</div><div class="font-bold text-brand-600">25-60</div></div>
+                                        <div class="bg-slate-50 rounded p-2"><div class="text-xs text-slate-500">评论</div><div class="font-bold text-brand-600">5-15</div></div>
+                                        <div class="bg-slate-50 rounded p-2"><div class="text-xs text-slate-500">收藏</div><div class="font-bold text-brand-600">8-20</div></div>
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <button class="flex-1 bg-green-600 text-white text-xs py-2 rounded hover:bg-green-700">通过并发布</button>
+                                        <button class="flex-1 bg-amber-500 text-white text-xs py-2 rounded hover:bg-amber-600">打回修改</button>
+                                        <button class="flex-1 bg-red-500 text-white text-xs py-2 rounded hover:bg-red-600">驳回</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 6: 数据回流与优化 -->
+                <div id="content-step6" class="tab-content hidden">
+                    <div class="grid md:grid-cols-2 gap-8 items-start">
+                        <div>
+                            <h3 class="text-xl font-bold text-slate-900 mb-4">数据回流与模型校准</h3>
+                            <div class="space-y-4">
+                                <div class="flex items-start">
+                                    <div class="w-8 h-8 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">1</div>
+                                    <div>
+                                        <p class="font-medium text-slate-900">数据导入</p>
+                                        <p class="text-sm text-slate-600">发布后 T+24h~T+48h，运营通过 CSV/表单导入实际互动数据（点赞/评论/收藏）。连接器为辅，失败自动降级为手动导入，不阻塞后续发帖。</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start">
+                                    <div class="w-8 h-8 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">2</div>
+                                    <div>
+                                        <p class="font-medium text-slate-900">昨日战报生成</p>
+                                        <p class="text-sm text-slate-600">DataAnalyst 自动聚合：发布篇数、预测区间命中率（覆盖率，仅在 N≥30 子集考核）、平均互动量、环比变化。CES 仅作可选派生指标。</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start">
+                                    <div class="w-8 h-8 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">3</div>
+                                    <div>
+                                        <p class="font-medium text-slate-900">异步模型校准</p>
+                                        <p class="text-sm text-slate-600">Celery 批任务检查 MAPE 与漂移。超阈值写入「待重训」队列，由人工或定时任务触发训练脚本。禁止秒级在线学习承诺。</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-start">
+                                    <div class="w-8 h-8 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">4</div>
+                                    <div>
+                                        <p class="font-medium text-slate-900">Prompt 与素材效果追踪</p>
+                                        <p class="text-sm text-slate-600">Prompt Registry 统计各版本任务完成率、人工干预率、质量评分；AssetPool 追踪各素材的使用次数与互动表现，辅助运营迭代。</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-slate-50 rounded-xl p-6 border border-slate-200">
+                            <div class="text-xs font-mono text-slate-500 mb-2">DataAnalyst 24h 战报示例</div>
+                            <div class="bg-white rounded-lg border border-slate-200 p-4 space-y-3">
+                                <div class="flex justify-between items-center"><span class="text-sm text-slate-600">发布篇数</span><span class="font-bold text-slate-900">12</span></div>
+                                <div class="flex justify-between items-center"><span class="text-sm text-slate-600">区间覆盖率</span><span class="font-bold text-brand-600">72%</span><span class="text-xs text-slate-400">(N=35≥30)</span></div>
+                                <div class="flex justify-between items-center"><span class="text-sm text-slate-600">平均点赞</span><span class="font-bold text-slate-900">43</span><span class="text-xs text-green-600">↑12%</span></div>
+                                <div class="flex justify-between items-center"><span class="text-sm text-slate-600">MAPE</span><span class="font-bold text-slate-900">18.5%</span></div>
+                                <div class="pt-2 border-t border-slate-100">
+                                    <div class="text-xs text-slate-500 mb-1">归因分析 TOP3</div>
+                                    <div class="text-xs text-slate-700">1. 标题含数字 (+)</div>
+                                    <div class="text-xs text-slate-700">2. 发布时段 20:00 (+)</div>
+                                    <div class="text-xs text-slate-700">3. 标签数 >5 (-)</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Workflow Section -->
+<section id="workflow" class="py-16 px-4 sm:px-6 lg:px-8 bg-white">
+    <div class="max-w-7xl mx-auto">
+        <div class="text-center mb-10">
+            <h2 class="text-3xl font-bold text-slate-900 mb-3">完整业务流程图</h2>
+            <p class="text-lg text-slate-600">标准内容生产工作流：从知识基建到发布闭环的全链路（含新增基础功能节点）</p>
+        </div>
+
+        <!-- Prerequisite Module -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-8">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center"><i class="fas fa-wrench"></i></div>
+                <div>
+                    <div class="text-sm font-bold text-slate-900">前置条件 · 基础功能配置（一次性配置，非主流程）</div>
+                    <div class="text-xs text-slate-500">BrandKnowledge + AssetPool + TimelineLibrary · 所有 Agent 的真源依赖</div>
+                </div>
+            </div>
+            <div class="grid md:grid-cols-3 gap-4 text-sm">
+                <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
+                    <div class="flex items-center gap-2 mb-2">
+                        <div class="w-6 h-6 rounded bg-blue-100 text-blue-600 flex items-center justify-center text-xs"><i class="fas fa-book"></i></div>
+                        <span class="font-medium text-slate-900">BrandKnowledge</span>
+                    </div>
+                    <p class="text-xs text-slate-600">录入品牌故事、品类知识、产品 SKU、卖点、禁用语、FAQ。ContentForge/ComplianceGuard 通过 RAG 注入。</p>
+                </div>
+                <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
+                    <div class="flex items-center gap-2 mb-2">
+                        <div class="w-6 h-6 rounded bg-violet-100 text-violet-600 flex items-center justify-center text-xs"><i class="fas fa-images"></i></div>
+                        <span class="font-medium text-slate-900">AssetPool</span>
+                    </div>
+                    <p class="text-xs text-slate-600">运营上传真实图片 / AI 生成封面 / 授权图库导入；打标签关联产品。ImageForge 生成时调用。</p>
+                </div>
+                <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
+                    <div class="flex items-center gap-2 mb-2">
+                        <div class="w-6 h-6 rounded bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs"><i class="fas fa-calendar-days"></i></div>
+                        <span class="font-medium text-slate-900">TimelineLibrary</span>
+                    </div>
+                    <p class="text-xs text-slate-600">维护上市时间线、季节节点、大促日历；关联产品；驱动 TrendScout 选题推荐与 CronHub 定时发布。</p>
+                </div>
+                <div class="bg-pink-50 rounded-lg p-4 border border-pink-100">
+                    <div class="flex items-center gap-2 mb-2">
+                        <div class="w-6 h-6 rounded bg-pink-100 text-pink-600 flex items-center justify-center text-xs"><i class="fas fa-shield-dog"></i></div>
+                        <span class="font-medium text-slate-900">VetDrugDB <span class="text-xs text-pink-500 font-normal">行业真源</span></span>
+                    </div>
+                    <p class="text-xs text-slate-600">录入兽药批文号、有效成分、适应症、用法用量、有效期。功效宣称必须以批文为唯一依据，ComplianceGuard 自动校验。</p>
+                </div>
+                <div class="bg-pink-50 rounded-lg p-4 border border-pink-100">
+                    <div class="flex items-center gap-2 mb-2">
+                        <div class="w-6 h-6 rounded bg-pink-100 text-pink-600 flex items-center justify-center text-xs"><i class="fas fa-gavel"></i></div>
+                        <span class="font-medium text-slate-900">PlatformRule <span class="text-xs text-pink-500 font-normal">风控真源</span></span>
+                    </div>
+                    <p class="text-xs text-slate-600">L1 法律红线 / L2 平台静态规则 / L3 账号状态 / L4 动态风控。ComplianceGuard 与 Publisher 均引用此库。</p>
+                </div>
+                <div class="bg-pink-50 rounded-lg p-4 border border-pink-100">
+                    <div class="flex items-center gap-2 mb-2">
+                        <div class="w-6 h-6 rounded bg-pink-100 text-pink-600 flex items-center justify-center text-xs"><i class="fas fa-scroll"></i></div>
+                        <span class="font-medium text-slate-900">PersonaStory <span class="text-xs text-pink-500 font-normal">叙事真源</span></span>
+                    </div>
+                    <p class="text-xs text-slate-600">时间轴驱动的故事剧本：节点主题、情感曲线、前情回顾、下期预告。ContentForge 生成时自动注入上下文。</p>
+                </div>
+            </div>
+            <div class="mt-3 flex items-center gap-2 text-xs text-slate-500">
+                <i class="fas fa-info-circle text-slate-400"></i>
+                <span>基础功能是系统真源，所有 Agent 与 Skill 均通过标准化接口调用，禁止直接操作数据库。配置完成后，后续每次内容生产自动引用，无需重复操作。</span>
+            </div>
+        </div>
+
+        <!-- Phase Navigation Bar -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-8">
+            <div class="flex flex-wrap justify-center gap-2">
+                <div class="stage-pill bg-blue-50 border border-blue-200 rounded-xl px-3 py-2 text-center cursor-pointer" onclick="highlightPhase('phase1')"><div class="text-xs text-blue-600 font-bold">PHASE 1</div><div class="text-sm font-semibold">选题洞察</div></div>
+                <div class="flex items-center text-slate-300"><i class="fas fa-chevron-right text-xs"></i></div>
+                <div class="stage-pill bg-blue-50 border border-blue-200 rounded-xl px-3 py-2 text-center cursor-pointer" onclick="highlightPhase('phase2')"><div class="text-xs text-blue-600 font-bold">PHASE 2</div><div class="text-sm font-semibold">结构分析</div></div>
+                <div class="flex items-center text-slate-300"><i class="fas fa-chevron-right text-xs"></i></div>
+                <div class="stage-pill bg-violet-50 border border-violet-200 rounded-xl px-3 py-2 text-center cursor-pointer" onclick="highlightPhase('phase3')"><div class="text-xs text-violet-600 font-bold">PHASE 3</div><div class="text-sm font-semibold">内容生成</div></div>
+                <div class="flex items-center text-slate-300"><i class="fas fa-chevron-right text-xs"></i></div>
+                <div class="stage-pill bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-2 text-center cursor-pointer" onclick="highlightPhase('phase4')"><div class="text-xs text-emerald-600 font-bold">PHASE 4</div><div class="text-sm font-semibold">互动预演</div></div>
+                <div class="flex items-center text-slate-300"><i class="fas fa-chevron-right text-xs"></i></div>
+                <div class="stage-pill bg-red-50 border border-red-200 rounded-xl px-3 py-2 text-center cursor-pointer" onclick="highlightPhase('phase5')"><div class="text-xs text-red-600 font-bold">PHASE 5</div><div class="text-sm font-semibold">合规审核</div></div>
+                <div class="flex items-center text-slate-300"><i class="fas fa-chevron-right text-xs"></i></div>
+                <div class="stage-pill bg-amber-50 border border-amber-300 rounded-xl px-3 py-2 text-center cursor-pointer" onclick="highlightPhase('phase6')"><div class="text-xs text-amber-600 font-bold">PHASE 6</div><div class="text-sm font-semibold">人工审核</div></div>
+                <div class="flex items-center text-slate-300"><i class="fas fa-chevron-right text-xs"></i></div>
+                <div class="stage-pill bg-indigo-50 border border-indigo-200 rounded-xl px-3 py-2 text-center cursor-pointer" onclick="highlightPhase('phase7')"><div class="text-xs text-indigo-600 font-bold">PHASE 7</div><div class="text-sm font-semibold">定时发布</div></div>
+                <div class="flex items-center text-slate-300"><i class="fas fa-chevron-right text-xs"></i></div>
+                <div class="stage-pill bg-slate-100 border border-slate-300 rounded-xl px-3 py-2 text-center cursor-pointer" onclick="highlightPhase('phase8')"><div class="text-xs text-slate-600 font-bold">PHASE 8</div><div class="text-sm font-semibold">数据回流</div></div>
+            </div>
+        </div>
+
+        <!-- Detailed Vertical Flow -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 mb-8">
+            <div class="relative pl-4 md:pl-0">
+                <div class="hidden md:block absolute left-8 top-0 bottom-0 w-0.5 bg-gradient-to-b from-blue-400 via-blue-400 via-violet-400 via-emerald-400 via-red-400 via-amber-400 via-indigo-400 via-pink-400 to-slate-400"></div>
+
+                <!-- Phase 1: 选题洞察 -->
+                <div id="phase1" class="flow-card relative md:pl-20 pb-8">
+                    <div class="hidden md:flex absolute left-6 top-6 w-4 h-4 rounded-full bg-blue-500 border-4 border-white shadow ring-2 ring-blue-100 z-10"></div>
+                    <div class="bg-blue-50 rounded-xl p-6 border border-blue-100">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center"><i class="fas fa-binoculars"></i></div>
+                                <div>
+                                    <div class="text-sm font-bold text-slate-900">选题洞察</div>
+                                    <div class="text-xs text-slate-500">TrendScout · TimelineLibrary 驱动 + 运营手动触发</div>
+                                </div>
+                            </div>
+                            <span class="phase-tag bg-blue-100 text-blue-700 px-2 py-1 rounded">内容生产期</span>
+                        </div>
+                        <div class="grid md:grid-cols-3 gap-4 text-sm">
+                            <div class="bg-white rounded-lg p-3 border border-blue-100">
+                                <div class="text-xs text-slate-500 mb-1">输入</div>
+                                <div class="text-slate-700">时间线当前日期 + 关键词 + AIPL/5A 阶段过滤 + 账号领域约束</div>
+                            </div>
+                            <div class="bg-white rounded-lg p-3 border border-blue-100">
+                                <div class="text-xs text-slate-500 mb-1">动作</div>
+                                <div class="text-slate-700">时间线交叉比对推荐选题 + Mock 数据源检索 / 手动导入热点</div>
+                            </div>
+                            <div class="bg-white rounded-lg p-3 border border-blue-100">
+                                <div class="text-xs text-slate-500 mb-1">输出</div>
+                                <div class="text-slate-700">结构化趋势报告（热点条目/标题模式/话题簇/阶段标注）</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phase 2: 结构分析 -->
+                <div id="phase2" class="flow-card relative md:pl-20 pb-8">
+                    <div class="hidden md:flex absolute left-6 top-6 w-4 h-4 rounded-full bg-blue-400 border-4 border-white shadow ring-2 ring-blue-100 z-10"></div>
+                    <div class="bg-blue-50/50 rounded-xl p-6 border border-blue-100">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center"><i class="fas fa-sitemap"></i></div>
+                                <div>
+                                    <div class="text-sm font-bold text-slate-900">结构分析</div>
+                                    <div class="text-xs text-slate-500">MarketingMethodology · AIPL/5A 阶段模板匹配</div>
+                                </div>
+                            </div>
+                            <span class="phase-tag bg-blue-100 text-blue-700 px-2 py-1 rounded">内容生产期</span>
+                        </div>
+                        <div class="grid md:grid-cols-3 gap-4 text-sm">
+                            <div class="bg-white rounded-lg p-3 border border-blue-100">
+                                <div class="text-xs text-slate-500 mb-1">输入</div>
+                                <div class="text-slate-700">TrendScout 输出 + Persona 人设 + 选题关键词 + BrandKnowledge 上下文</div>
+                            </div>
+                            <div class="bg-white rounded-lg p-3 border border-blue-100">
+                                <div class="text-xs text-slate-500 mb-1">动作</div>
+                                <div class="text-slate-700">匹配阶段模板（hook/body/cta/disclaimer）+ 注入品牌卖点与禁用语</div>
+                            </div>
+                            <div class="bg-white rounded-lg p-3 border border-blue-100">
+                                <div class="text-xs text-slate-500 mb-1">输出</div>
+                                <div class="text-slate-700">内容结构模板 + 合规标签清单 + KPI 目标配置 + 推荐 5A 阶段</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phase 3: 内容生成 -->
+                <div id="phase3" class="flow-card relative md:pl-20 pb-8">
+                    <div class="hidden md:flex absolute left-6 top-6 w-4 h-4 rounded-full bg-violet-500 border-4 border-white shadow ring-2 ring-violet-100 z-10"></div>
+                    <div class="bg-violet-50 rounded-xl p-6 border border-violet-100">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-violet-100 text-violet-600 flex items-center justify-center"><i class="fas fa-feather"></i></div>
+                                <div>
+                                    <div class="text-sm font-bold text-slate-900">内容生成</div>
+                                    <div class="text-xs text-slate-500">ContentForge + ImageForge · PersonaStory + ContentSeries 注入</div>
+                                </div>
+                            </div>
+                            <span class="phase-tag bg-violet-100 text-violet-700 px-2 py-1 rounded">内容生产期</span>
+                        </div>
+                        <div class="grid md:grid-cols-3 gap-4 text-sm">
+                            <div class="bg-white rounded-lg p-3 border border-violet-100">
+                                <div class="text-xs text-slate-500 mb-1">输入</div>
+                                <div class="text-slate-700">结构模板 + Prompt 变量 + Persona Voice + BrandKnowledge RAG + <b>PersonaStory 故事上下文</b> + ContentSeries 系列上下文</div>
+                            </div>
+                            <div class="bg-white rounded-lg p-3 border border-violet-100">
+                                <div class="text-xs text-slate-500 mb-1">动作</div>
+                                <div class="text-slate-700">LLM 生成标题+正文（注入故事节点/前情回顾/情绪基调 + 系列主题/前帖摘要/后帖预告）→ ImageForge 封面配置 → S0 Schema 校验</div>
+                            </div>
+                            <div class="bg-white rounded-lg p-3 border border-violet-100">
+                                <div class="text-xs text-slate-500 mb-1">输出</div>
+                                <div class="text-slate-700">完整图文内容 + 结构质量分 + 封面配置 + PersonaStory 节点标记 + ContentSeries 关联标记 + Token 成本</div>
+                            </div>
+                        </div>
+                        <div class="mt-3 flex items-center gap-2 text-xs text-slate-500">
+                            <i class="fas fa-shield-alt text-violet-500"></i>
+                            <span>PersonaStory 确保内容在宏观人设故事线中不自洽断裂；ContentSeries 确保同系列多帖结构一致；图片配置支持运营人工干预</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phase 4: 互动预演 -->
+                <div id="phase4" class="flow-card relative md:pl-20 pb-8">
+                    <div class="hidden md:flex absolute left-6 top-6 w-4 h-4 rounded-full bg-emerald-500 border-4 border-white shadow ring-2 ring-emerald-100 z-10"></div>
+                    <div class="bg-emerald-50 rounded-xl p-6 border border-emerald-100">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center"><i class="fas fa-bullseye"></i></div>
+                                <div>
+                                    <div class="text-sm font-bold text-slate-900">互动预演</div>
+                                    <div class="text-xs text-slate-500">PoolPredictor · QuantileRegressor 区间预测</div>
+                                </div>
+                            </div>
+                            <span class="phase-tag bg-emerald-100 text-emerald-700 px-2 py-1 rounded">决策辅助期</span>
+                        </div>
+                        <div class="grid md:grid-cols-3 gap-4 text-sm">
+                            <div class="bg-white rounded-lg p-3 border border-emerald-100">
+                                <div class="text-xs text-slate-500 mb-1">输入</div>
+                                <div class="text-slate-700">内容特征向量（18维）+ BrandKnowledge 品牌阶段 + TimelineLibrary 时间线节点 + 时段竞争系数</div>
+                            </div>
+                            <div class="bg-white rounded-lg p-3 border border-emerald-100">
+                                <div class="text-xs text-slate-500 mb-1">动作</div>
+                                <div class="text-slate-700">冷启动先验宽区间 / 探索期 XGBoost 分位数回归</div>
+                            </div>
+                            <div class="bg-white rounded-lg p-3 border border-emerald-100">
+                                <div class="text-xs text-slate-500 mb-1">输出</div>
+                                <div class="text-slate-700">点赞/评论/收藏 lower/median/upper + interval_mode + 启发式优化清单</div>
+                            </div>
+                        </div>
+                        <div class="mt-3 flex items-center gap-2 text-xs text-slate-500">
+                            <i class="fas fa-exclamation-triangle text-emerald-500"></i>
+                            <span>禁止输出 L0-L5 流量池层级；冷启动阶段展示「参考区间」文案</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phase 5: 合规审核 -->
+                <div id="phase5" class="flow-card relative md:pl-20 pb-8">
+                    <div class="hidden md:flex absolute left-6 top-6 w-4 h-4 rounded-full bg-red-500 border-4 border-white shadow ring-2 ring-red-100 z-10"></div>
+                    <div class="bg-red-50 rounded-xl p-6 border border-red-100">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-red-100 text-red-600 flex items-center justify-center"><i class="fas fa-gavel"></i></div>
+                                <div>
+                                    <div class="text-sm font-bold text-slate-900">合规审核</div>
+                                    <div class="text-xs text-slate-500">ComplianceGuard · PlatformRule L1-L4</div>
+                                </div>
+                            </div>
+                            <span class="phase-tag bg-red-100 text-red-700 px-2 py-1 rounded">风控期</span>
+                        </div>
+                        <div class="grid md:grid-cols-4 gap-3 text-sm mb-3">
+                            <div class="bg-white rounded-lg p-3 border border-red-100 text-center">
+                                <div class="text-xs font-bold text-red-600 mb-1">L1</div>
+                                <div class="text-xs text-slate-600">法律红线</div>
+                                <div class="text-xs text-slate-400">绝对拦截</div>
+                            </div>
+                            <div class="bg-white rounded-lg p-3 border border-red-100 text-center">
+                                <div class="text-xs font-bold text-red-600 mb-1">L2</div>
+                                <div class="text-xs text-slate-600">平台规则</div>
+                                <div class="text-xs text-slate-400">静态关键词</div>
+                            </div>
+                            <div class="bg-white rounded-lg p-3 border border-red-100 text-center">
+                                <div class="text-xs font-bold text-red-600 mb-1">L3</div>
+                                <div class="text-xs text-slate-600">账号状态</div>
+                                <div class="text-xs text-slate-400">新号/老号差异</div>
+                            </div>
+                            <div class="bg-white rounded-lg p-3 border border-red-100 text-center">
+                                <div class="text-xs font-bold text-red-600 mb-1">L4</div>
+                                <div class="text-xs text-slate-600">动态风控</div>
+                                <div class="text-xs text-slate-400">节日/时段策略</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 text-xs text-slate-500">
+                            <i class="fas fa-database text-red-500"></i>
+                            <span>命中规则后自动记录证据链，留存 ≥2 年；违规归因分析写入 PlatformRule Engine</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Exception Branch: Intercepted -->
+                <div class="flow-card relative md:pl-20 pb-4">
+                    <div class="hidden md:block absolute left-6 top-0 bottom-0 w-0.5 bg-red-200"></div>
+                    <div class="hidden md:flex absolute left-4 top-4 w-3 h-3 rounded-full bg-red-400 border-2 border-white z-10"></div>
+                    <div class="ml-8 md:ml-12 bg-red-50/50 rounded-lg p-4 border border-red-200 border-dashed">
+                        <div class="flex items-center gap-2 text-sm text-red-700 mb-1"><i class="fas fa-ban"></i><span class="font-semibold">异常分支：合规拦截</span></div>
+                        <div class="text-xs text-slate-600">若命中 L1/L2 → 任务立即失败，进入 DLQ（死信队列），记录完整证据链；<br>若命中 L3/L4 → 触发警告，运营确认后可选择继续或终止。</div>
+                    </div>
+                </div>
+
+                <!-- Phase 6: 人工审核 -->
+                <div id="phase6" class="flow-card relative md:pl-20 pb-8">
+                    <div class="hidden md:flex absolute left-6 top-6 w-4 h-4 rounded-full bg-amber-500 border-4 border-white shadow ring-2 ring-amber-100 z-10"></div>
+                    <div class="bg-amber-50 rounded-xl p-6 border-2 border-amber-300">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center"><i class="fas fa-user-check"></i></div>
+                                <div>
+                                    <div class="text-sm font-bold text-slate-900">人工审核</div>
+                                    <div class="text-xs text-slate-500">Human-in-the-Loop · 强制拦截节点（不可跳过）</div>
+                                </div>
+                            </div>
+                            <span class="phase-tag bg-amber-100 text-amber-700 px-2 py-1 rounded">风控期</span>
+                        </div>
+                        <div class="grid md:grid-cols-3 gap-4 text-sm">
+                            <div class="bg-white rounded-lg p-3 border border-amber-200">
+                                <div class="text-xs text-slate-500 mb-1">审核视图</div>
+                                <div class="text-slate-700">左侧图文预览（含封面图）+ 右侧 Agent 输出摘要（合规/预演/质量分/品牌一致性）</div>
+                            </div>
+                            <div class="bg-white rounded-lg p-3 border border-amber-200">
+                                <div class="text-xs text-slate-500 mb-1">决策选项</div>
+                                <div class="text-slate-700"><span class="text-green-600 font-medium">通过</span> / <span class="text-red-600 font-medium">驳回</span> / <span class="text-amber-600 font-medium">打回修改</span>（指定回退节点，含 ImageForge）</div>
+                            </div>
+                            <div class="bg-white rounded-lg p-3 border border-amber-200">
+                                <div class="text-xs text-slate-500 mb-1">单人审核发布</div>
+                                <div class="text-slate-700">同一位运营完成内容审核与发布确认。记录留存 ≥2 年。Phase 2 可演进为双人复核。</div>
+                            </div>
+                        </div>
+                        <div class="mt-3 flex items-center gap-2 text-xs text-slate-500">
+                            <i class="fas fa-balance-scale text-amber-500"></i>
+                            <span>符合《生成式人工智能服务管理暂行办法》人工审核要求；超时默认 24h 自动驳回</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Exception Branch: Rejected -->
+                <div class="flow-card relative md:pl-20 pb-4">
+                    <div class="hidden md:block absolute left-6 top-0 bottom-0 w-0.5 bg-amber-200"></div>
+                    <div class="hidden md:flex absolute left-4 top-4 w-3 h-3 rounded-full bg-amber-400 border-2 border-white z-10"></div>
+                    <div class="ml-8 md:ml-12 bg-amber-50/50 rounded-lg p-4 border border-amber-200 border-dashed">
+                        <div class="flex items-center gap-2 text-sm text-amber-700 mb-1"><i class="fas fa-rotate-left"></i><span class="font-semibold">循环分支：打回修改</span></div>
+                        <div class="text-xs text-slate-600">运营选择「打回」→ 指定回退节点（如 ContentForge 改文案 / ImageForge 换封面）→ 修改变量后重新执行下游节点 → 保留上下文不丢失。<br>驳回则任务进入 DLQ，记录驳回理由供后续 NLP 聚类分析（Phase 2）。</div>
+                    </div>
+                </div>
+
+                <!-- Phase 7: 定时发布 -->
+                <div id="phase7" class="flow-card relative md:pl-20 pb-8">
+                    <div class="hidden md:flex absolute left-6 top-6 w-4 h-4 rounded-full bg-indigo-500 border-4 border-white shadow ring-2 ring-indigo-100 z-10"></div>
+                    <div class="bg-indigo-50 rounded-xl p-6 border border-indigo-100">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center"><i class="fas fa-paper-plane"></i></div>
+                                <div>
+                                    <div class="text-sm font-bold text-slate-900">定时发布</div>
+                                    <div class="text-xs text-slate-500">Publisher · PlatformRule 时段预检 + CronHub 绑定</div>
+                                </div>
+                            </div>
+                            <span class="phase-tag bg-indigo-100 text-indigo-700 px-2 py-1 rounded">发布期</span>
+                        </div>
+                        <div class="grid md:grid-cols-3 gap-4 text-sm">
+                            <div class="bg-white rounded-lg p-3 border border-indigo-100">
+                                <div class="text-xs text-slate-500 mb-1">发布前预检</div>
+                                <div class="text-slate-700">调用 PlatformRule L3/L4：时段合规性 + 频率阶梯 + 账号日配额校验</div>
+                            </div>
+                            <div class="bg-white rounded-lg p-3 border border-indigo-100">
+                                <div class="text-xs text-slate-500 mb-1">发布策略</div>
+                                <div class="text-slate-700">错峰调度 + 排版随机化 + 频率阶梯（新号 warming 策略）；时间线事件自动绑定 CronHub</div>
+                            </div>
+                            <div class="bg-white rounded-lg p-3 border border-indigo-100">
+                                <div class="text-xs text-slate-500 mb-1">失败处理</div>
+                                <div class="text-slate-700">进入 Publisher 重试队列，CronHub 每 30min drain，超 3 次进 DLQ</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phase 8: 数据回流 -->
+                <div id="phase9" class="flow-card relative md:pl-20">
+                    <div class="hidden md:flex absolute left-6 top-6 w-4 h-4 rounded-full bg-slate-400 border-4 border-white shadow ring-2 ring-slate-100 z-10"></div>
+                    <div class="bg-slate-100 rounded-xl p-6 border border-slate-200">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-slate-200 text-slate-600 flex items-center justify-center"><i class="fas fa-rotate-left"></i></div>
+                                <div>
+                                    <div class="text-sm font-bold text-slate-900">数据回流与校准</div>
+                                    <div class="text-xs text-slate-500">DataAnalyst · T+24h~T+48h 异步闭环</div>
+                                </div>
+                            </div>
+                            <span class="phase-tag bg-slate-200 text-slate-700 px-2 py-1 rounded">回流期</span>
+                        </div>
+                        <div class="grid md:grid-cols-4 gap-3 text-sm">
+                            <div class="bg-white rounded-lg p-3 border border-slate-200">
+                                <div class="text-xs text-slate-500 mb-1">① 数据采集</div>
+                                <div class="text-slate-700">运营 CSV/表单导入为主；连接器只读拉取为辅（可降级）</div>
+                            </div>
+                            <div class="bg-white rounded-lg p-3 border border-slate-200">
+                                <div class="text-xs text-slate-500 mb-1">② 战报生成</div>
+                                <div class="text-slate-700">覆盖率（N≥30 子集）、MAPE、平均互动量、环比变化</div>
+                            </div>
+                            <div class="bg-white rounded-lg p-3 border border-slate-200">
+                                <div class="text-xs text-slate-500 mb-1">③ 异步校准</div>
+                                <div class="text-slate-700">Celery 批任务检查漂移 → 超阈值写入「待重训」队列</div>
+                            </div>
+                            <div class="bg-white rounded-lg p-3 border border-slate-200">
+                                <div class="text-xs text-slate-500 mb-1">④ Prompt/素材追踪</div>
+                                <div class="text-slate-700">Prompt Registry 效果统计 + AssetPool 素材表现追踪</div>
+                            </div>
+                        </div>
+                        <div class="mt-3 flex items-center gap-2 text-xs text-slate-500">
+                            <i class="fas fa-info-circle text-slate-400"></i>
+                            <span>覆盖率 KPI 仅在「有效标注样本 ≥ N_min（默认 30）」子集上考核；冷启动宽区间阶段标注为「参考不考核」</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mermaid System Diagram -->
+        <div class="mermaid-container border border-slate-200">
+            <div class="text-center mb-4">
+                <h3 class="text-lg font-bold text-slate-900">系统级流程图（含基础功能、异常分支与数据闭环）</h3>
+                <p class="text-sm text-slate-500">Mermaid 渲染 · 包含六大基础功能（BrandKnowledge/AssetPool/TimelineLibrary/VetDrugDB/PlatformRule/PersonaStory）注入节点</p>
+            </div>
+            <div class="mermaid">
+graph TD
+    subgraph 前置条件[前置条件 · 六大基础功能 · 一次性配置]
+        BK[BrandKnowledge<br/>品牌知识真源]
+        AP[AssetPool<br/>素材库真源]
+        TL[TimelineLibrary<br/>时间线真源]
+        VD[VetDrugDB<br/>兽药批文真源]
+        PR[PlatformRule<br/>平台规则真源]
+        PS[PersonaStory<br/>人设剧本真源]
+    end
+
+    A([运营创建任务<br/>TaskHub]) --> B{选择工作流模板}
+    B -->|标准生产| C[TrendScout<br/>热点侦察 + 时间线选题]
+    B -->|轻量快速| D[ContentForge<br/>直接生成]
+
+    TL -.-> C
+    BK -.-> C
+    C --> E[MarketingMethodology<br/>AIPL/5A 结构分析]
+    BK -.-> E
+    E --> F[ContentForge<br/>框架+正文生成]
+    BK -.-> F
+    PS -.-> F
+    CS[ContentSeries<br/>系列上下文] -.-> F
+    D --> F
+
+    F --> G[ImageForge<br/>封面配置与人工干预]
+    AP -.-> G
+    G --> H[PoolPredictor<br/>互动量区间预演]
+    H -->|失败| I[记录日志<br/>继续下游]
+    H -->|成功| J[展示预测区间<br/>点赞/评论/收藏]
+
+    J --> K[ComplianceGuard<br/>四层合规审核]
+    I --> K
+    VD -.-> K
+    PR -.-> K
+    K -->|命中L1/L2| L[拦截并记录证据链<br/>留存≥2年]
+    K -->|命中L3/L4| M[警告+运营确认]
+    K -->|通过| N[Human-in-the-Loop<br/>单人审核台]
+    L --> O([任务失败进入DLQ])
+    M --> N
+
+    N -->|驳回| O
+    N -->|打回修改| P[回退至指定节点<br/>保留上下文]
+    P --> F
+    P --> G
+    N -->|通过+单人审核| Q[Publisher<br/>错峰发布]
+    PR -.-> Q
+
+    Q --> R([平台发布成功])
+    Q -->|失败| S[Publisher重试队列<br/>CronHub 30min检查]
+    S -->|超3次| O
+
+    R --> T[T+24h 数据回流<br/>CSV/连接器导入]
+    T --> U[DataAnalyst<br/>24h战报生成]
+    U --> V{MAPE>阈值?}
+    V -->|是| W[Celery异步校准<br/>写入待重训队列]
+    V -->|否| X[正常归档]
+    W --> Y[人工触发重训<br/>或定时任务]
+
+    U --> Z[Prompt Registry<br/>效果追踪]
+    U --> AA[AssetPool<br/>素材表现追踪]
+    Z --> AB[质量评分/干预率<br/>反馈至Prompt优化]
+    AB -.->|闭环| A
+
+    subgraph 独立任务[独立任务 · TaskHub]
+        CH[CommentHub<br/>互动剧本任务]
+        CH --> IC[账号间评论互动<br/>如A评论B]
+    end
+
+    style BK fill:#f1f5f9,stroke:#64748b,stroke-width:2px
+    style AP fill:#f1f5f9,stroke:#64748b,stroke-width:2px
+    style TL fill:#f1f5f9,stroke:#64748b,stroke-width:2px
+    style VD fill:#fdf2f8,stroke:#db2777,stroke-width:2px
+    style PR fill:#fdf2f8,stroke:#db2777,stroke-width:2px
+    style PS fill:#fdf2f8,stroke:#db2777,stroke-width:2px
+    style N fill:#fef3c7,stroke:#f59e0b,stroke-width:3px
+    style Q fill:#dbeafe,stroke:#3b82f6,stroke-width:2px
+    style CH fill:#fce7f3,stroke:#ec4899,stroke-width:2px
+    style L fill:#fee2e2,stroke:#ef4444,stroke-width:2px
+    style R fill:#d1fae5,stroke:#10b981,stroke-width:2px
+    style O fill:#f3f4f6,stroke:#6b7280,stroke-width:2px,stroke-dasharray: 5 5
+    style P fill:#fef3c7,stroke:#f59e0b,stroke-width:2px,stroke-dasharray: 5 5
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Architecture Section -->
+<section id="architecture" class="py-16 px-4 sm:px-6 lg:px-8 bg-white">
+    <div class="max-w-7xl mx-auto">
+        <div class="text-center mb-10">
+            <h2 class="text-3xl font-bold text-slate-900 mb-3">页面功能架构图</h2>
+            <p class="text-lg text-slate-600">基于 PRD V2.3–V2.7.1 与前端路由基线，完整的导航分组与页面功能结构</p>
+        </div>
+
+        <!-- Architecture Overview -->
+        <div class="mermaid-container border border-slate-200 mb-10">
+            <div class="text-center mb-4">
+                <h3 class="text-lg font-bold text-slate-900">前端页面导航架构总览</h3>
+                <p class="text-sm text-slate-500">Mermaid 渲染 · 8 大功能域 × 20+ 页面 × 80+ 子功能</p>
+            </div>
+            <div class="mermaid">
+graph LR
+    LOGIN[登录页<br/>Login]
+    LOGIN --> DASH[驾驶舱<br/>Dashboard]
+
+    DASH --> CP[内容生产]
+    DASH --> RP[风控发布]
+    DASH --> DI[数据智能]
+    DASH --> BF[基础功能]
+    DASH --> AG[Agent治理]
+    DASH --> OS[编排调度]
+    DASH --> SET[系统配置]
+
+    CP --> TH[任务中心<br/>TaskHub]
+    CP --> CF[内容工坊<br/>ContentForge]
+    CP --> TS[趋势侦察<br/>TrendScout]
+    CP --> PD[预测中心<br/>Predictions]
+
+    RP --> CG[合规审查<br/>Compliance]
+    RP --> HI[审核台<br/>Human-in-Loop]
+    RP --> PB[发布中心<br/>Publisher]
+
+    DI --> DA[数据分析师<br/>DataAnalyst]
+    DI --> AP[账号池<br/>AccountPool]
+    DI --> PS[人设池<br/>Personas]
+
+    BF --> BK[品牌资料库<br/>BrandKnowledge]
+    BF --> AST[素材库<br/>AssetPool]
+    BF --> TL[时间线库<br/>TimelineLibrary]
+    BF --> VD[兽药批文库<br/>VetDrugDB]
+    BF --> PR[平台规则<br/>PlatformRules]
+    BF --> PST[人设剧本库<br/>PersonaStory]
+
+    AG --> SH[技能中心<br/>SkillHub]
+    AG --> AO[Agent编排<br/>AgentOrchestra]
+    AG --> LC[LLM驾驶舱<br/>LLMCockpit]
+
+    OS --> WC[工作流驾驶舱<br/>WorkflowCockpit]
+    OS --> CC[Cron驾驶舱<br/>CronCockpit]
+
+    SET --> ST[系统设置<br/>Settings]
+
+    style LOGIN fill:#f1f5f9,stroke:#64748b,stroke-width:2px
+    style DASH fill:#dbeafe,stroke:#3b82f6,stroke-width:2px
+    style CP fill:#f0fdf4,stroke:#22c55e,stroke-width:2px
+    style RP fill:#fef2f2,stroke:#ef4444,stroke-width:2px
+    style DI fill:#faf5ff,stroke:#a855f7,stroke-width:2px
+    style BF fill:#fff7ed,stroke:#f97316,stroke-width:2px
+    style AG fill:#ecfeff,stroke:#06b6d4,stroke-width:2px
+    style OS fill:#f5f3ff,stroke:#8b5cf6,stroke-width:2px
+    style SET fill:#f8fafc,stroke:#94a3b8,stroke-width:2px
+            </div>
+        </div>
+
+        <!-- Detailed Page Structure -->
+        <div class="grid md:grid-cols-2 xl:grid-cols-4 gap-6">
+            <!-- Domain 1: 驾驶舱 -->
+            <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+                <div class="bg-blue-50 px-5 py-4 border-b border-blue-100">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center"><i class="fas fa-gauge-high"></i></div>
+                        <div>
+                            <div class="font-bold text-slate-900 text-sm">驾驶舱</div>
+                            <div class="text-xs text-slate-500">Dashboard</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-4 space-y-3 text-sm">
+                    <div>
+                        <div class="font-medium text-slate-900 text-xs mb-1">/dashboard</div>
+                        <ul class="space-y-1 text-xs text-slate-600">
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-blue-400 mt-1.5 flex-shrink-0"></span>今日概览（待生成/已发布/互动增长/健康分）</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-blue-400 mt-1.5 flex-shrink-0"></span>Agent 舰队概览</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-blue-400 mt-1.5 flex-shrink-0"></span>快捷操作导航</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-blue-400 mt-1.5 flex-shrink-0"></span>流量预演面板（互动量区间）</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-blue-400 mt-1.5 flex-shrink-0"></span>智能选题推荐</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-blue-400 mt-1.5 flex-shrink-0"></span>昨日战报（覆盖率/MAPE/归因）</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-blue-400 mt-1.5 flex-shrink-0"></span>活动日志</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Domain 2: 内容生产 -->
+            <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+                <div class="bg-green-50 px-5 py-4 border-b border-green-100">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-lg bg-green-100 text-green-600 flex items-center justify-center"><i class="fas fa-pen-nib"></i></div>
+                        <div>
+                            <div class="font-bold text-slate-900 text-sm">内容生产</div>
+                            <div class="text-xs text-slate-500">Content Production</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-4 space-y-4 text-sm">
+                    <div>
+                        <div class="font-medium text-slate-900 text-xs mb-1">/task-hub</div>
+                        <ul class="space-y-1 text-xs text-slate-600">
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-green-400 mt-1.5 flex-shrink-0"></span>任务创建与生命周期管理</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-green-400 mt-1.5 flex-shrink-0"></span>任务状态机（待执行/执行中/审核中/已发布）</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-green-400 mt-1.5 flex-shrink-0"></span>队列管理与批量操作</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-green-400 mt-1.5 flex-shrink-0"></span>ContentSeries 系列规划</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-pink-400 mt-1.5 flex-shrink-0"></span>CommentHub 互动剧本任务（独立任务类型）</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <div class="font-medium text-slate-900 text-xs mb-1">/content-forge</div>
+                        <ul class="space-y-1 text-xs text-slate-600">
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-green-400 mt-1.5 flex-shrink-0"></span>内容生成（标题+正文）</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-green-400 mt-1.5 flex-shrink-0"></span>ImageForge 封面配置（素材选取/AI生成/人工叠加）</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-green-400 mt-1.5 flex-shrink-0"></span>Prompt 变量白名单管理</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-green-400 mt-1.5 flex-shrink-0"></span>BrandKnowledge RAG 上下文注入</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-green-400 mt-1.5 flex-shrink-0"></span>Persona Voice 人设语音注入</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-pink-400 mt-1.5 flex-shrink-0"></span>PersonaStory 故事剧本上下文注入</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <div class="font-medium text-slate-900 text-xs mb-1">/trend-scout</div>
+                        <ul class="space-y-1 text-xs text-slate-600">
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-green-400 mt-1.5 flex-shrink-0"></span>趋势报告创建与查询</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-green-400 mt-1.5 flex-shrink-0"></span>热点条目列表（标题模式/话题簇）</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-green-400 mt-1.5 flex-shrink-0"></span>AIPL/5A 阶段过滤</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-green-400 mt-1.5 flex-shrink-0"></span>TimelineLibrary 时间线选题推荐</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <div class="font-medium text-slate-900 text-xs mb-1">/predictions</div>
+                        <ul class="space-y-1 text-xs text-slate-600">
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-green-400 mt-1.5 flex-shrink-0"></span>互动量区间预演（点赞/评论/收藏）</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-green-400 mt-1.5 flex-shrink-0"></span>区间覆盖率与置信度</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-green-400 mt-1.5 flex-shrink-0"></span>启发式优化清单</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Domain 3: 风控与发布 -->
+            <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+                <div class="bg-red-50 px-5 py-4 border-b border-red-100">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-lg bg-red-100 text-red-600 flex items-center justify-center"><i class="fas fa-shield-halved"></i></div>
+                        <div>
+                            <div class="font-bold text-slate-900 text-sm">风控与发布</div>
+                            <div class="text-xs text-slate-500">Risk Control & Publish</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-4 space-y-4 text-sm">
+                    <div>
+                        <div class="font-medium text-slate-900 text-xs mb-1">/compliance</div>
+                        <ul class="space-y-1 text-xs text-slate-600">
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-red-400 mt-1.5 flex-shrink-0"></span>四层合规扫描结果（L1-L4）</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-red-400 mt-1.5 flex-shrink-0"></span>证据链查看与归档</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-red-400 mt-1.5 flex-shrink-0"></span>违规归因分析</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-red-400 mt-1.5 flex-shrink-0"></span>历史审核记录检索</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <div class="font-medium text-slate-900 text-xs mb-1">/human-in-the-loop</div>
+                        <ul class="space-y-1 text-xs text-slate-600">
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-red-400 mt-1.5 flex-shrink-0"></span>审核队列（待审核/已审核/已驳回）</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-red-400 mt-1.5 flex-shrink-0"></span>图文预览 + Agent 输出摘要</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-red-400 mt-1.5 flex-shrink-0"></span>三种决策：通过 / 驳回 / 打回修改</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-red-400 mt-1.5 flex-shrink-0"></span>单人审核签名与记录归档</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <div class="font-medium text-slate-900 text-xs mb-1">/publisher</div>
+                        <ul class="space-y-1 text-xs text-slate-600">
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-red-400 mt-1.5 flex-shrink-0"></span>发布计划管理（立即/定时）</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-red-400 mt-1.5 flex-shrink-0"></span>CronHub 定时任务绑定</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-red-400 mt-1.5 flex-shrink-0"></span>发布队列与重试状态</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-red-400 mt-1.5 flex-shrink-0"></span>DLQ（死信队列）查看与处置</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Domain 4: 数据智能 -->
+            <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+                <div class="bg-purple-50 px-5 py-4 border-b border-purple-100">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center"><i class="fas fa-chart-line"></i></div>
+                        <div>
+                            <div class="font-bold text-slate-900 text-sm">数据智能</div>
+                            <div class="text-xs text-slate-500">Data Intelligence</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-4 space-y-4 text-sm">
+                    <div>
+                        <div class="font-medium text-slate-900 text-xs mb-1">/data-analyst</div>
+                        <ul class="space-y-1 text-xs text-slate-600">
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-purple-400 mt-1.5 flex-shrink-0"></span>24h 战报聚合（发布篇数/覆盖率/MAPE）</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-purple-400 mt-1.5 flex-shrink-0"></span>归因分析 TOP3 特征</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-purple-400 mt-1.5 flex-shrink-0"></span>实际互动数据导入（CSV/表单）</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-purple-400 mt-1.5 flex-shrink-0"></span>异步校准触发与待重训队列</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <div class="font-medium text-slate-900 text-xs mb-1">/account-pool</div>
+                        <ul class="space-y-1 text-xs text-slate-600">
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-purple-400 mt-1.5 flex-shrink-0"></span>账号批量导入与管理</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-purple-400 mt-1.5 flex-shrink-0"></span>健康评分与状态机（active/warming/restricted）</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-purple-400 mt-1.5 flex-shrink-0"></span>设备指纹与 IP 代理配置</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-purple-400 mt-1.5 flex-shrink-0"></span>每日发布配额与熔断策略</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <div class="font-medium text-slate-900 text-xs mb-1">/personas</div>
+                        <ul class="space-y-1 text-xs text-slate-600">
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-purple-400 mt-1.5 flex-shrink-0"></span>人设档案创建与编辑</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-purple-400 mt-1.5 flex-shrink-0"></span>AI 辅助人设草案生成</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-purple-400 mt-1.5 flex-shrink-0"></span>AIPL/5A 阶段偏好绑定</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-purple-400 mt-1.5 flex-shrink-0"></span>语言风格与禁忌话题配置</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-pink-400 mt-1.5 flex-shrink-0"></span>PersonaStory 故事剧本时间轴管理</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Domain 5: 基础功能 -->
+            <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+                <div class="bg-orange-50 px-5 py-4 border-b border-orange-100">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center"><i class="fas fa-database"></i></div>
+                        <div>
+                            <div class="font-bold text-slate-900 text-sm">基础功能（Function）</div>
+                            <div class="text-xs text-slate-500">Foundation Layer</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-4 space-y-4 text-sm">
+                    <div>
+                        <div class="font-medium text-slate-900 text-xs mb-1">BrandKnowledge</div>
+                        <ul class="space-y-1 text-xs text-slate-600">
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-orange-400 mt-1.5 flex-shrink-0"></span>品牌故事 / Slogan / 品类知识</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-orange-400 mt-1.5 flex-shrink-0"></span>产品 SKU / 卖点 / 禁用语 / FAQ</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-orange-400 mt-1.5 flex-shrink-0"></span>向量索引与 RAG 检索</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-orange-400 mt-1.5 flex-shrink-0"></span>关联 AssetPool / TimelineLibrary / VetDrugDB</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <div class="font-medium text-slate-900 text-xs mb-1">/assets（AssetPool）</div>
+                        <ul class="space-y-1 text-xs text-slate-600">
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-orange-400 mt-1.5 flex-shrink-0"></span>素材上传（运营自有 / AI 生成 / 授权导入）</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-orange-400 mt-1.5 flex-shrink-0"></span>标签体系（品类/场景/适用品种）</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-orange-400 mt-1.5 flex-shrink-0"></span>版权与授权链管理</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-orange-400 mt-1.5 flex-shrink-0"></span>关联 BrandKnowledge 产品</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <div class="font-medium text-slate-900 text-xs mb-1">TimelineLibrary</div>
+                        <ul class="space-y-1 text-xs text-slate-600">
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-orange-400 mt-1.5 flex-shrink-0"></span>产品上市时间线维护</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-orange-400 mt-1.5 flex-shrink-0"></span>季节营销节点 / 平台大促日历</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-orange-400 mt-1.5 flex-shrink-0"></span>产品-时间线关联与推荐 5A 阶段</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-orange-400 mt-1.5 flex-shrink-0"></span>CronHub 定时任务绑定</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <div class="font-medium text-slate-900 text-xs mb-1">VetDrugDB</div>
+                        <ul class="space-y-1 text-xs text-slate-600">
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-orange-400 mt-1.5 flex-shrink-0"></span>兽药批文号 / 有效成分 / 适应症</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-orange-400 mt-1.5 flex-shrink-0"></span>用法用量 / 批准机构 / 有效期</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-orange-400 mt-1.5 flex-shrink-0"></span>关联 BrandKnowledge 产品与合规校验</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <div class="font-medium text-slate-900 text-xs mb-1">/platform-rules</div>
+                        <ul class="space-y-1 text-xs text-slate-600">
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-orange-400 mt-1.5 flex-shrink-0"></span>L1-L4 规则 CRUD</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-orange-400 mt-1.5 flex-shrink-0"></span>账号状态规则 / 动态风控策略</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-orange-400 mt-1.5 flex-shrink-0"></span>跨平台差异映射</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <div class="font-medium text-slate-900 text-xs mb-1">PersonaStory <span class="text-xs text-pink-500">叙事真源</span></div>
+                        <ul class="space-y-1 text-xs text-slate-600">
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-pink-400 mt-1.5 flex-shrink-0"></span>故事剧本 CRUD（绑定 Persona）</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-pink-400 mt-1.5 flex-shrink-0"></span>时间轴节点管理（拖拽排序）</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-pink-400 mt-1.5 flex-shrink-0"></span>情感曲线配置（四级标签模板）</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-pink-400 mt-1.5 flex-shrink-0"></span>自动生成 persona_story_context 注入 ContentForge</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-pink-400 mt-1.5 flex-shrink-0"></span>冲突检测（时间线/系列/合规/人设）</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Domain 6: Agent 治理 -->
+            <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+                <div class="bg-cyan-50 px-5 py-4 border-b border-cyan-100">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-lg bg-cyan-100 text-cyan-600 flex items-center justify-center"><i class="fas fa-robot"></i></div>
+                        <div>
+                            <div class="font-bold text-slate-900 text-sm">Agent 治理</div>
+                            <div class="text-xs text-slate-500">Agent Governance</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-4 space-y-4 text-sm">
+                    <div>
+                        <div class="font-medium text-slate-900 text-xs mb-1">/skillhub</div>
+                        <ul class="space-y-1 text-xs text-slate-600">
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-cyan-400 mt-1.5 flex-shrink-0"></span>Skill 注册与发现</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-cyan-400 mt-1.5 flex-shrink-0"></span>Agent-Skill 绑定配置</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-cyan-400 mt-1.5 flex-shrink-0"></span>Skill 版本管理与效果追踪</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <div class="font-medium text-slate-900 text-xs mb-1">/agent-orchestra</div>
+                        <ul class="space-y-1 text-xs text-slate-600">
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-cyan-400 mt-1.5 flex-shrink-0"></span>Agent 状态看板（空闲/运行中/故障/熔断）</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-cyan-400 mt-1.5 flex-shrink-0"></span>统计报表（任务完成率/Token成本/质量评分）</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-cyan-400 mt-1.5 flex-shrink-0"></span>配置面板（版本快照/回滚/环境切换）</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-cyan-400 mt-1.5 flex-shrink-0"></span>链路追踪（trace_id / span 树）</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-cyan-400 mt-1.5 flex-shrink-0"></span>告警列表与根因分析</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <div class="font-medium text-slate-900 text-xs mb-1">/llm-cockpit</div>
+                        <ul class="space-y-1 text-xs text-slate-600">
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-cyan-400 mt-1.5 flex-shrink-0"></span>模型注册（厂家选择 + 模型名 + APIKey + 状态）</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-cyan-400 mt-1.5 flex-shrink-0"></span>应用范围配置（全局默认 + 节点级覆盖）</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-cyan-400 mt-1.5 flex-shrink-0"></span>成本看板（调用次数/Token/预估成本/趋势）</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-cyan-400 mt-1.5 flex-shrink-0"></span>调用日志筛选导出与连通性测试</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Domain 7: 编排与调度 -->
+            <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+                <div class="bg-violet-50 px-5 py-4 border-b border-violet-100">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-lg bg-violet-100 text-violet-600 flex items-center justify-center"><i class="fas fa-diagram-project"></i></div>
+                        <div>
+                            <div class="font-bold text-slate-900 text-sm">编排与调度</div>
+                            <div class="text-xs text-slate-500">Orchestration & Scheduling</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-4 space-y-4 text-sm">
+                    <div>
+                        <div class="font-medium text-slate-900 text-xs mb-1">/workflow-cockpit</div>
+                        <ul class="space-y-1 text-xs text-slate-600">
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-violet-400 mt-1.5 flex-shrink-0"></span>工作流可视化编辑器（DAG 节点编排）</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-violet-400 mt-1.5 flex-shrink-0"></span>预设模板库（标准生产 / 轻量快速）</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-violet-400 mt-1.5 flex-shrink-0"></span>Prompt Registry（变量白名单/版本化）</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-violet-400 mt-1.5 flex-shrink-0"></span>执行监控与节点状态实时看板</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-violet-400 mt-1.5 flex-shrink-0"></span>任务看板（创建→审核→发布闭环）</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <div class="font-medium text-slate-900 text-xs mb-1">/cron-cockpit</div>
+                        <ul class="space-y-1 text-xs text-slate-600">
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-violet-400 mt-1.5 flex-shrink-0"></span>定时任务看板（CronJob 列表）</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-violet-400 mt-1.5 flex-shrink-0"></span>执行历史与日志追踪</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-violet-400 mt-1.5 flex-shrink-0"></span>手动触发与启停控制</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-violet-400 mt-1.5 flex-shrink-0"></span>DLQ（死信队列）查看与处置</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Domain 8: 系统配置 -->
+            <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+                <div class="bg-slate-50 px-5 py-4 border-b border-slate-200">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-lg bg-slate-200 text-slate-600 flex items-center justify-center"><i class="fas fa-gear"></i></div>
+                        <div>
+                            <div class="font-bold text-slate-900 text-sm">系统配置</div>
+                            <div class="text-xs text-slate-500">System Settings</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-4 space-y-3 text-sm">
+                    <div>
+                        <div class="font-medium text-slate-900 text-xs mb-1">/settings</div>
+                        <ul class="space-y-1 text-xs text-slate-600">
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-slate-400 mt-1.5 flex-shrink-0"></span>用户账号与权限管理（RBAC）</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-slate-400 mt-1.5 flex-shrink-0"></span>通知渠道配置（企业微信/钉钉/邮件）</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-slate-400 mt-1.5 flex-shrink-0"></span>告警分级规则（P0/P1/P2）</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-slate-400 mt-1.5 flex-shrink-0"></span>系统参数与阈值配置</li>
+                            <li class="flex items-start gap-1.5"><span class="w-1 h-1 rounded-full bg-slate-400 mt-1.5 flex-shrink-0"></span>审计日志查询</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Operations Section -->
+<section id="operations" class="py-16 px-4 sm:px-6 lg:px-8 bg-slate-50">
+    <div class="max-w-7xl mx-auto">
+        <div class="text-center mb-10">
+            <h2 class="text-3xl font-bold text-slate-900 mb-3">各业务节点执行操作说明</h2>
+            <p class="text-lg text-slate-600">明确每个流程节点的操作主体、输入输出、关键动作与异常处理</p>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full cover-table text-sm">
+                    <thead>
+                        <tr>
+                            <th class="w-40">业务节点</th>
+                            <th class="w-24">执行主体</th>
+                            <th class="w-48">关键操作</th>
+                            <th class="w-48">输入</th>
+                            <th class="w-48">输出</th>
+                            <th>异常处理</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><b>BrandKnowledge 维护</b><br><span class="text-xs text-slate-500">基础功能</span></td>
+                            <td><span class="status-badge status-done">运营</span></td>
+                            <td>录入品牌故事、品类知识、产品 SKU、卖点、禁用语、FAQ；维护向量索引</td>
+                            <td>品牌资料文档、产品说明书、法务合规清单</td>
+                            <td>结构化知识条目 + 向量索引；API 供所有 Agent RAG 调用</td>
+                            <td>禁用语冲突时系统标红提示；SKU 重复时自动合并建议</td>
+                        </tr>
+                        <tr>
+                            <td><b>AssetPool 素材管理</b><br><span class="text-xs text-slate-500">基础功能</span></td>
+                            <td><span class="status-badge status-done">运营</span></td>
+                            <td>上传真实图片 / AI 生成封面 / 授权图库导入；打标签关联产品；人工审核素材合规性</td>
+                            <td>产品实拍图、场景图、AI 生成参数（风格/尺寸/文案）</td>
+                            <td>带标签的素材文件 + 版权/授权链信息 + 使用统计</td>
+                            <td>图片涉敏（如未授权商标）时 ComplianceGuard 预检拦截；AI 生成图自动打「AI生成」水印</td>
+                        </tr>
+                        <tr>
+                            <td><b>TimelineLibrary 时间线维护</b><br><span class="text-xs text-slate-500">基础功能</span></td>
+                            <td><span class="status-badge status-done">运营</span></td>
+                            <td>录入产品上市时间线、季节营销节点、平台大促日历；关联 BrandKnowledge 产品；绑定 CronHub 定时任务</td>
+                            <td>产品上市计划、营销日历、平台活动排期</td>
+                            <td>时间线事件表 + 产品关联映射 + 推荐 5A 阶段 + CronJob 绑定状态</td>
+                            <td>时间冲突（同一产品多个事件重叠）时系统告警；过期事件自动归档</td>
+                        </tr>
+                        <tr>
+                            <td><b>VetDrugDB 兽药批文维护</b><br><span class="text-xs text-slate-500">基础功能 · 行业真源</span></td>
+                            <td><span class="status-badge status-done">运营</span></td>
+                            <td>录入兽药批文号、有效成分、适应症、用法用量、批准机构、有效期；批量同步国家兽药基础数据；关联 BrandKnowledge 产品</td>
+                            <td>批文文档、国家兽药数据库导出文件、产品关联清单</td>
+                            <td>批文条目表 + 产品-批文关联映射 + 有效期预警状态</td>
+                            <td>批文过期前 30 天自动告警；宣称与批文不一致时 ComplianceGuard 拦截</td>
+                        </tr>
+                        <tr>
+                            <td><b>PlatformRule 平台规则维护</b><br><span class="text-xs text-slate-500">基础功能 · 风控真源</span></td>
+                            <td><span class="status-badge status-done">运营+系统</span></td>
+                            <td>L1 法律红线（广告法/兽药管理条例）由法务录入；L2 平台静态规则（小红书/抖音/视频号差异）由运营维护；L3 账号状态规则、L4 动态风控由系统根据账号状态自动生成</td>
+                            <td>法律条文、平台社区公约、账号状态数据、节日/大促特殊策略</td>
+                            <td>分层规则库 + 平台差异映射 + 违规归因记录 + 动态规则生效日志</td>
+                            <td>规则更新时 AgentWatch 推送 KNOWLEDGE_UPDATED 事件；规则冲突时以 L1 为准</td>
+                        </tr>
+                        <tr>
+                            <td><b>AccountPool 账号导入</b><br><span class="text-xs text-slate-500">账号管理</span></td>
+                            <td><span class="status-badge status-done">运营</span></td>
+                            <td>批量导入账号；配置设备指纹、IP 代理、每日配额；查看健康分与状态机</td>
+                            <td>账号列表（平台/用户名/密码/设备信息）</td>
+                            <td>账号档案 + 健康评分 + 状态（active/warming/restricted）</td>
+                            <td>健康分低于阈值自动熔断；IP 代理失效时标记 degraded</td>
+                        </tr>
+                        <tr>
+                            <td><b>PersonaPool 人设创建</b><br><span class="text-xs text-slate-500">账号管理</span></td>
+                            <td><span class="status-badge status-done">运营</span></td>
+                            <td>定义人设档案（身份/语言风格/专业领域）；AI 辅助生成草案；绑定 AIPL/5A 阶段偏好；<b>维护 PersonaStory 人设故事剧本</b>（时间轴驱动的故事线）</td>
+                            <td>人设定位文档、对标账号参考（仅公开字段）、故事剧本大纲</td>
+                            <td>Persona 档案 + Voice 模板 + 方法论阶段绑定 + <b>PersonaStory 剧本</b></td>
+                            <td>人设与账号领域冲突时提示；禁用话题命中时拦截；故事线与时间线冲突时提示</td>
+                        </tr>
+                        <tr>
+                            <td><b>TrendScout 选题报告</b><br><span class="text-xs text-slate-500">内容生产</span></td>
+                            <td><span class="status-badge status-done">运营+系统</span></td>
+                            <td>运营输入关键词 + 选择 AIPL/5A 阶段；系统自动生成趋势报告（Mock 数据/手动导入）</td>
+                            <td>关键词 + 阶段过滤 + TimelineLibrary 当前时间线状态</td>
+                            <td>结构化趋势报告：热点条目、标题模式、话题簇、阶段标注、推荐 5A 阶段</td>
+                            <td>无热点数据时提示「扩大关键词范围」；报告生成失败时降级为手动选题</td>
+                        </tr>
+                        <tr>
+                            <td><b>MarketingMethodology 结构分析</b><br><span class="text-xs text-slate-500">内容生产</span></td>
+                            <td><span class="status-badge status-p1">系统自动</span></td>
+                            <td>自动匹配 AIPL/5A 阶段模板；注入 BrandKnowledge 品牌卖点与禁用语；生成合规标签清单</td>
+                            <td>TrendScout 输出 + Persona 人设 + BrandKnowledge RAG 上下文</td>
+                            <td>内容结构模板（hook/body/cta/disclaimer）+ 合规标签清单 + KPI 目标</td>
+                            <td>模板字段缺失时触发 S0 结构不合规告警；品牌卖点不足时提示补充 BrandKnowledge</td>
+                        </tr>
+                        <tr>
+                            <td><b>ContentForge 内容生成</b><br><span class="text-xs text-slate-500">内容生产</span></td>
+                            <td><span class="status-badge status-p1">系统自动</span></td>
+                            <td>LLM 按模板生成标题+正文；注入 Persona Voice；Prompt 变量白名单校验；S0 Schema 结构合规校验</td>
+                            <td>结构模板 + Prompt 变量 + Persona Voice + BrandKnowledge RAG</td>
+                            <td>完整图文内容 + 结构质量分 + 生成 Token 成本</td>
+                            <td>生成超时（默认 60s）触发 TIMEOUT_ALERT；质量分低于阈值时自动 regenerate 一次</td>
+                        </tr>
+                        <tr>
+                            <td><b>ImageForge 图片配置</b><br><span class="text-xs text-slate-500">内容生产</span></td>
+                            <td><span class="status-badge status-p1">系统+运营</span></td>
+                            <td>系统自动选取 AssetPool 素材或 AI 生成封面；运营可人工干预：换素材、调布局、改封面文案、调整配色</td>
+                            <td>AssetPool 标签匹配结果 / AI 生成参数 + ContentForge 标题文案</td>
+                            <td>封面图配置（素材ID/叠加文字/布局参数）+ 人工干预标记</td>
+                            <td>素材版权过期时自动替换为备选；AI 生成失败时降级为纯文字封面</td>
+                        </tr>
+                        <tr>
+                            <td><b>PoolPredictor 互动预演</b><br><span class="text-xs text-slate-500">决策辅助</span></td>
+                            <td><span class="status-badge status-p1">系统自动</span></td>
+                            <td>QuantileRegressor 输出点赞/评论/收藏区间；冷启动用先验宽区间；达标后启用 XGBoost 分位数</td>
+                            <td>内容特征向量（18维）+ BrandKnowledge 品牌阶段 + TimelineLibrary 时间线节点 + 时段竞争系数</td>
+                            <td>lower/median/upper + confidence + interval_mode + 启发式优化清单</td>
+                            <td>特征缺失过多时标记「参考区间」；模型漂移时触发校准建议</td>
+                        </tr>
+                        <tr>
+                            <td><b>ComplianceGuard 合规审核</b><br><span class="text-xs text-slate-500">风控</span></td>
+                            <td><span class="status-badge status-p1">系统自动</span></td>
+                            <td>L1 法律红线扫描 → L2 平台规则 → L3 账号状态 → L4 动态风控；命中即记录证据链</td>
+                            <td>图文内容 + BrandKnowledge 禁用语清单 + PlatformRule 规则库 + 账号状态</td>
+                            <td>合规报告（逐层扫描结果）+ 证据链 + 处置建议（拦截/警告/通过）</td>
+                            <td>L1/L2 命中 → 立即失败进 DLQ；L3/L4 命中 → 警告待运营确认</td>
+                        </tr>
+                        <tr>
+                            <td><b>Human-in-the-Loop 审核台</b><br><span class="text-xs text-slate-500">风控</span></td>
+                            <td><span class="status-badge status-done">运营</span></td>
+                            <td>查看图文预览与 Agent 摘要；选择通过/驳回/打回修改；打回时指定回退节点（含 ImageForge）</td>
+                            <td>完整图文内容 + 合规报告 + 预演区间 + 结构质量分 + 品牌一致性校验</td>
+                            <td>审核决策（通过/驳回/打回）+ 审核记录 + 单人审核签名</td>
+                            <td>超时 24h 自动驳回；打回修改时保留上下文回退至指定节点</td>
+                        </tr>
+                        <tr>
+                            <td><b>Publisher 定时发布</b><br><span class="text-xs text-slate-500">发布</span></td>
+                            <td><span class="status-badge status-p1">系统+运营</span></td>
+                            <td>发布前 PlatformRule 预检；错峰调度 + 排版随机化；CronHub 定时执行；失败进重试队列</td>
+                            <td>审核通过内容 + 发布计划（立即/定时）+ 账号日配额状态</td>
+                            <td>发布结果（成功/失败）+ 平台 content_id 映射 + 发布时间戳</td>
+                            <td>发布失败 → 重试队列（最多 3 次）；超 3 次进 DLQ；账号被封时标记 restricted 并告警</td>
+                        </tr>
+                        <tr>
+                            <td><b>PersonaStory 人设故事剧本</b><br><span class="text-xs text-slate-500">人设故事线</span></td>
+                            <td><span class="status-badge status-done">运营</span></td>
+                            <td>为每个 Persona 定义时间轴驱动的故事剧本（如「新手养猫第1-12周的真实记录」）；配置每期主题、情感曲线、关键事件节点；在 TaskHub 创建任务时绑定故事剧本</td>
+                            <td>故事主题 + 时间轴长度 + 每期定位 + 情绪基调 + 互动目标</td>
+                            <td>PersonaStory 剧本 + 当前故事节点标记 + 注入 ContentForge 的 persona_story_context</td>
+                            <td>故事线与时间线/ContentSeries 冲突时提示；故事节点超期时建议续写或收尾</td>
+                        </tr>
+                        <tr>
+                            <td><b>ContentSeries 系列管理</b><br><span class="text-xs text-slate-500">内容呼应</span></td>
+                            <td><span class="status-badge status-done">运营</span></td>
+                            <td>创建内容系列（如「新手养猫100问」）；为系列内每帖配置前后呼应关系（前帖摘要/后帖预告/统一话术标签）</td>
+                            <td>系列主题 + 帖子数量规划 + 各帖定位（引入/展开/总结）</td>
+                            <td>ContentSeries 剧本 + 各帖关联标记 + 注入 ContentForge 的上下文参数</td>
+                            <td>系列内帖子主题冲突时提示；发布顺序错乱时建议调整 CronHub 定时计划</td>
+                        </tr>
+                        <tr>
+                            <td><b>CommentHub 互动剧本</b><br><span class="text-xs text-slate-500">互动呼应 · 独立任务</span></td>
+                            <td><span class="status-badge status-p1">系统+运营</span></td>
+                            <td>在 TaskHub 中作为「独立任务类型」创建互动剧本任务；配置目标帖子、互动账号矩阵、预设评论库、触发时间窗口（如发布后 2h）、单账号频率上限</td>
+                            <td>目标帖子清单 + 矩阵账号关系图 + 预设评论模板 + 触发时间规则 + 频率上限</td>
+                            <td>互动执行记录（评论内容/账号/时间）+ 互动效果统计 + 任务完成状态</td>
+                            <td>评论频率过高时自动限流（避免平台判定刷量）；评论涉敏时 ComplianceGuard 二次拦截；不作为主流程必达节点</td>
+                        </tr>
+                        <tr>
+                            <td><b>DataAnalyst 数据回流</b><br><span class="text-xs text-slate-500">回流优化</span></td>
+                            <td><span class="status-badge status-done">运营+系统</span></td>
+                            <td>运营导入 CSV 实际数据；系统自动对齐 content_id；生成 24h 战报（覆盖率/MAPE/归因）</td>
+                            <td>实际互动数据 CSV / 连接器拉取数据 + 平台 content_id 映射表</td>
+                            <td>24h 战报 + 覆盖率统计（N≥30 子集）+ 归因分析 TOP3 + 校准建议</td>
+                            <td>数据导入失败时提示补全；连接器失效时降级为纯手动导入</td>
+                        </tr>
+                        <tr>
+                            <td><b>模型异步校准</b><br><span class="text-xs text-slate-500">回流优化</span></td>
+                            <td><span class="status-badge status-p1">系统+运营</span></td>
+                            <td>Celery 批任务检查 MAPE/漂移；超阈值写入「待重训」队列；运营或定时任务触发训练</td>
+                            <td>历史预测记录 + 实际互动数据 + 覆盖率统计</td>
+                            <td>校准报告 + 漂移告警 + 待重训队列状态</td>
+                            <td>训练资源不足时排队等待；训练失败时回滚至上一稳定版本</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="py-12 px-4 sm:px-6 lg:px-8 bg-slate-900 text-white">
+    <div class="max-w-7xl mx-auto">
+        <div class="grid md:grid-cols-3 gap-8 mb-8">
+            <div>
+                <div class="flex items-center space-x-3 mb-4">
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-500 to-accent-600 flex items-center justify-center text-white font-bold text-sm">E</div>
+                    <span class="font-bold text-xl">EcoDream <span class="text-brand-400">Omni</span></span>
+                </div>
+                <p class="text-sm text-slate-400 leading-relaxed">素人号矩阵AI内容管理与分发平台。AI 辅助内容生成 + 自动化发布 + 流量预测 + 合规风控。</p>
+            </div>
+            <div>
+                <h4 class="font-semibold mb-3">文档引用</h4>
+                <ul class="space-y-2 text-sm text-slate-400">
+                    <li>《EcoDream_Omni_PRD_v2_对齐核心方案.md》V2.3–V2.7.1</li>
+                    <li>《文档2_最终可行性完整产品方案_素人号矩阵AI平台》v5.0</li>
+                    <li>《开发计划_素人号矩阵AI平台_v2》v2.2</li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-semibold mb-3">关键约束</h4>
+                <ul class="space-y-2 text-sm text-slate-400">
+                    <li>· 禁止自动爬取平台数据（MVP 阶段）</li>
+                    <li>· 禁止承诺 L0-L5 流量池层级预测</li>
+                    <li>· 覆盖率 KPI 绑定最小样本量 N≥30</li>
+                    <li>· Publisher 单人审核（Phase 2 演进为双人复核）</li>
+                </ul>
+            </div>
+        </div>
+        <div class="border-t border-slate-800 pt-8 text-center text-sm text-slate-500">
+            <p>本文档基于 PRD V2.3–V2.7.1 与 v5.0 方案真源编制 · 与项目代码同步维护</p>
+        </div>
+    </div>
+</footer>
+
+<script>
+    // Tab switching
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+        document.getElementById('content-' + tabId).classList.remove('hidden');
+        document.querySelectorAll('.tab-btn').forEach(el => {
+            el.classList.remove('tab-active');
+            el.classList.add('text-slate-500');
+        });
+        document.getElementById('tab-' + tabId).classList.add('tab-active');
+        document.getElementById('tab-' + tabId).classList.remove('text-slate-500');
+    }
+
+    // Phase highlight
+    function highlightPhase(phaseId) {
+        document.querySelectorAll('.flow-card').forEach(el => {
+            el.style.opacity = '0.4';
+        });
+        const target = document.getElementById(phaseId);
+        if (target) {
+            target.style.opacity = '1';
+            target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        setTimeout(() => {
+            document.querySelectorAll('.flow-card').forEach(el => {
+                el.style.opacity = '1';
+            });
+        }, 2000);
+    }
+
+    // Mermaid init
+    mermaid.initialize({ startOnLoad: true, theme: 'default' });
+</script>
+
+</body>
+</html>

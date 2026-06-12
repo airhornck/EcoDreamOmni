@@ -1,0 +1,59 @@
+platform_id: "bilibili"
+content_dna:
+  - element: "opening"
+    value: "前30秒交代价值点"
+audit_rules:
+  - category: "sensitive"
+    forbidden_terms: ["政治敏感词占位"]
+
+content_formats:
+  仅文字:
+    title:
+      max_chars: 40
+      default: "30以内"
+    template_id:
+      options: [3, 4, 5]
+      default: 5
+      description: "3=封面三图、4=封面单图/无封面、5=平台默认封面"
+    summary:
+      range: "250-300"
+    content:
+      min_chars: 200
+      max_chars: 40000
+    tags:
+      max_count: 10
+  图文:
+    title:
+      max_chars: 40
+      min_chars: 1
+      default: "20-30"
+    content:
+      min_chars: 100
+      max_chars: 5000
+      default: "500-1500"
+    tags:
+      max_count: 10
+    pic_num:
+      min: 1
+      max: 20
+      default: "3-9"
+  视频:
+    title:
+      max_chars: 80
+      min_chars: 1
+      default: "30-50"
+    video_size:
+      max: "20GB"
+    video_duration:
+      max: "10小时"
+      default: "1-10分钟"
+    video_format:
+      recommended: ["mp4", "mov", "flv"]
+    video_resolution:
+      recommended: "1080P(1920*1080)及以上"
+    content:
+      min_chars: 50
+      max_chars: 2000
+      default: "100-500"
+    tags:
+      max_count: 10

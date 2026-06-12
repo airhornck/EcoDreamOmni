@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>实验室 — 能力沙盒与验证中心</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            background: '#ffffff',
+            foreground: '#1f1f1f',
+            card: '#f7f7f8',
+            'card-foreground': '#1f1f1f',
+            primary: '#7c3aed',
+            'primary-foreground': '#ffffff',
+            secondary: '#f3f4f6',
+            'secondary-foreground': '#374151',
+            muted: '#f7f7f8',
+            'muted-foreground': '#6b7280',
+            border: '#e5e7eb',
+            success: '#16a34a',
+            warning: '#d97706',
+            info: '#2563eb',
+            destructive: '#dc2626',
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        }
+      }
+    }
+  </script>
+  <style>
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+    .animate-shimmer {
+      background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s linear infinite;
+    }
+    @keyframes pulse-ring {
+      0% { transform: scale(0.8); opacity: 1; }
+      100% { transform: scale(1.3); opacity: 0; }
+    }
+    .ai-pulse::before {
+      content: '';
+      position: absolute;
+      width: 8px; height: 8px;
+      background: #7c3aed;
+      border-radius: 50%;
+      animation: pulse-ring 2s ease-out infinite;
+    }
+    @keyframes flow {
+      0% { background-position: 0% 50%; }
+      100% { background-position: 200% 50%; }
+    }
+    .ai-flow-border {
+      background: linear-gradient(90deg, #7c3aed, #a78bfa, #7c3aed);
+      background-size: 200% 100%;
+      animation: flow 2s linear infinite;
+    }
+
+    .tab-content { transition: opacity 0.2s ease; }
+    .tab-btn { transition: all 0.15s ease; }
+    .tab-btn:hover:not(.active) { background: #f3f4f6; }
+    .tab-btn.active { background: #7c3aed; color: white; }
+
+    .capability-pill { transition: all 0.15s ease; }
+    .capability-pill.active {
+      background: #7c3aed;
+      color: white;
+      box-shadow: 0 1px 4px rgba(124,58,237,0.25);
+    }
+    .capability-pill:not(.active):not(.locked):hover {
+      background: #f3f4f6;
+    }
+    .capability-pill.locked {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .card-hover { transition: all 0.2s ease; }
+    .card-hover:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+
+    .kw-structure { background: rgba(59,130,246,0.15); color: #1d4ed8; border-radius: 3px; padding: 0 3px; }
+    .kw-function { background: rgba(16,185,129,0.15); color: #047857; border-radius: 3px; padding: 0 3px; }
+    .kw-emotion { background: rgba(239,68,68,0.15); color: #b91c1c; border-radius: 3px; padding: 0 3px; }
+    .kw-industry { background: rgba(245,158,11,0.15); color: #b45309; border-radius: 3px; padding: 0 3px; }
+    .kw-effect { background: rgba(124,58,237,0.15); color: #6d28d9; border-radius: 3px; padding: 0 3px; }
+
+    .score-ring { transform: rotate(-90deg); }
+
+    .json-tree-toggle { cursor: pointer; user-select: none; }
+    .json-tree-toggle:hover { color: #7c3aed; }
+    .json-tree-children { transition: all 0.2s ease; }
+
+    @media (max-width: 1023px) {
+      .copilot-panel { display: none; }
+      .workspace-canvas { width: 100%; }
+    }
+    @media (max-width: 767px) {
+      .icon-nav { width: 48px; }
+      .icon-nav span { display: none; }
+    }
+  </style>
+</head>
+<body class="bg-background text-foreground font-sans antialiased h-screen overflow-hidden">
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- Layout: IconNav (52px) | Workspace Canvas | Copilot (320px) -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<div class="flex h-full">
+
+  <!-- ═════ IconNav ═════ -->
+  <nav class="icon-nav w-[52px] shrink-0 bg-card border-r border-border flex flex-col items-center py-3 gap-1">
+    <div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center mb-2">
+      <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+    </div>
+    <button class="w-9 h-9 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors" title="工作台">🏠</button>
+    <button class="w-9 h-9 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors" title="内容生产">✨</button>
+    <button class="w-9 h-9 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors" title="审核发布">🛡️</button>
+    <button class="w-9 h-9 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors" title="数据报表">📊</button>
+    <button class="w-9 h-9 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors" title="账号矩阵">👤</button>
+    <button class="w-9 h-9 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors" title="素材库">🖼️</button>
+    <button class="w-9 h-9 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors" title="Agent 舰队">🤖</button>
+    <button class="w-9 h-9 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors" title="模型中心">🧠</button>
+    <button class="w-9 h-9 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors" title="工作流">⚙️</button>
+    <button class="w-9 h-9 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors" title="平台规则">📋</button>
+    <button class="w-9 h-9 rounded-lg flex items-center justify-center bg-primary/10 text-primary relative" title="实验室">
+      <span>🧪</span>
+      <span class="absolute top-1 right-1 w-1.5 h-1.5 bg-primary rounded-full"></span>
+    </button>
+    <button class="w-9 h-9 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors mt-auto" title="设置">🔧</button>
+  </nav>
+
+  <!-- ═════ Workspace Canvas ═════ -->
+  <main class="workspace-canvas flex-1 min-w-0 flex flex-col h-full">
+    <!-- Header -->
+    <header class="h-14 border-b border-border flex items-center justify-between px-5 shrink-0">
+      <div class="flex items-center gap-3">
+        <div>
+          <h1 class="text-base font-semibold text-foreground">实验室</h1>
+          <p class="text-xs text-muted-foreground">能力沙盒与验证中心 · 爆款笔记分析</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-xs text-muted-foreground">Mode C</span>
+        <span class="px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-medium">Copilot-Driven</span>
+      </div>
+    </header>
+
+    <!-- ═════ Capability Navigator ═════ -->
+    <div class="shrink-0 border-b border-border bg-secondary/30">
+      <div class="px-5 py-2.5 flex items-center gap-2 overflow-x-auto">
+        <span class="text-[11px] text-muted-foreground font-medium mr-1 shrink-0">能力:</span>
+        <!-- Active capability -->
+        <button class="capability-pill active flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap" onclick="switchCapability('viral-analyzer')">
+          <span>🔥</span>
+          <span>爆款笔记分析</span>
+          <span class="w-1.5 h-1.5 bg-white/70 rounded-full ml-0.5"></span>
+        </button>
+        <!-- Locked capabilities -->
+        <button class="capability-pill locked flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-muted-foreground bg-card border border-border whitespace-nowrap" title="即将上线">
+          <span>✍️</span>
+          <span>标题优化器</span>
+          <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+        </button>
+        <button class="capability-pill locked flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-muted-foreground bg-card border border-border whitespace-nowrap" title="即将上线">
+          <span>🖼️</span>
+          <span>封面生成器</span>
+          <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+        </button>
+        <button class="capability-pill locked flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-muted-foreground bg-card border border-border whitespace-nowrap" title="即将上线">
+          <span>🧪</span>
+          <span>A/B 测试</span>
+          <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+        </button>
+        <button class="capability-pill locked flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-muted-foreground bg-card border border-border whitespace-nowrap" title="即将上线">
+          <span>🎯</span>
+          <span>关键词热榜</span>
+          <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+        </button>
+        <!-- Divider + add button -->
+        <div class="w-px h-4 bg-border mx-1 shrink-0"></div>
+        <button class="flex items-center gap-1 px-2 py-1 rounded-full text-[11px] text-muted-foreground hover:text-primary hover:bg-primary/5 transition-colors whitespace-nowrap" title="提交新能力需求">
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          <span>提交需求</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Capability Content -->
+    <div class="flex-1 overflow-y-auto">
+
+      <!-- ═══════════════════════════════════════════ -->
+      <!-- Capability: 爆款笔记分析 -->
+      <!-- ═══════════════════════════════════════════ -->
+      <div id="capability-viral-analyzer" class="capability-content">
+        <!-- Sub-Tab Navigation (within capability) -->
+        <div class="px-5 pt-3 pb-0 border-b border-border shrink-0 sticky top-0 bg-background z-10">
+          <div class="flex gap-1 bg-secondary/50 p-1 rounded-lg w-fit">
+            <button class="tab-btn active px-3 py-1.5 rounded-md text-xs font-medium" data-tab="edit" onclick="switchTab('edit')">📝 笔记编辑</button>
+            <button class="tab-btn px-3 py-1.5 rounded-md text-xs font-medium text-muted-foreground" data-tab="preview" onclick="switchTab('preview')">🔍 分析预览</button>
+            <button class="tab-btn px-3 py-1.5 rounded-md text-xs font-medium text-muted-foreground" data-tab="report" onclick="switchTab('report')">📋 报告详情</button>
+            <button class="tab-btn px-3 py-1.5 rounded-md text-xs font-medium text-muted-foreground" data-tab="template" onclick="switchTab('template')">📐 模板预览</button>
+          </div>
+        </div>
+
+        <!-- Canvas Content -->
+        <div class="p-5">
+
+          <!-- ═══════════════════════════════════════════ -->
+          <!-- Tab 1: Note Editor -->
+          <!-- ═══════════════════════════════════════════ -->
+          <div id="tab-edit" class="tab-content space-y-4 max-w-3xl mx-auto">
+            <div>
+              <label class="text-xs font-medium text-muted-foreground mb-1.5 block">标题</label>
+              <input type="text" value="猫咪驱虫避坑指南，这3个误区90%的人都不知道" class="w-full h-10 px-3 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all" placeholder="输入笔记标题...">
+            </div>
+            <div>
+              <label class="text-xs font-medium text-muted-foreground mb-1.5 block">正文</label>
+              <textarea class="w-full h-48 px-3 py-2 rounded-lg border border-border bg-background text-sm resize-none focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all leading-relaxed" placeholder="粘贴笔记正文...">作为一个养了3年猫的铲屎官，今天必须跟大家聊聊驱虫这件事！
+
+😱 误区一：以为家养猫不用驱虫
+很多人觉得猫咪不出门就不用驱虫，其实这是大错特错！寄生虫卵可能通过鞋底、快递箱、甚至是窗户飘进来。我家豆豆之前就是因为这个原因感染了跳蚤，整个客厅都遭殃了...
+
+✅ 正确做法：即使家养，也要每3个月做一次体内外驱虫。
+
+💡 误区二：驱虫药越贵越好
+市面上驱虫药从几十到几百都有，但真的不是越贵越好！关键要看成分和驱虫谱。我之前花了300多买的一款进口药，结果兽医告诉我成分和国产几十块的差不多...
+
+✅ 正确做法：选择广谱驱虫药，覆盖跳蚤、蜱虫、蛔虫、绦虫即可。
+
+🎯 误区三：驱虫后不用观察
+很多铲屎官给猫吃了驱虫药就完事了，其实驱虫后的48小时非常关键！需要观察猫咪的精神状态、食欲和排便情况...
+
+✅ 正确做法：驱虫后观察2天，有异常及时就医。
+
+好了，今天就分享到这里！你们家毛孩子驱虫遇到过什么问题？欢迎在评论区交流～ 👇
+#猫咪驱虫 #新手养猫 #省钱攻略 #宠物健康</textarea>
+            </div>
+            <div>
+              <label class="text-xs font-medium text-muted-foreground mb-1.5 block">封面图</label>
+              <div class="w-full h-40 rounded-lg border-2 border-dashed border-border bg-secondary/30 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-primary/40 hover:bg-primary/5 transition-all group">
+                <svg class="w-8 h-8 text-muted-foreground group-hover:text-primary transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                <span class="text-xs text-muted-foreground">拖拽图片到此处，或点击粘贴链接</span>
+                <span class="text-[10px] text-muted-foreground/60">支持 JPG, PNG, WebP（最大 5MB）</span>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="text-xs font-medium text-muted-foreground mb-1.5 block">赛道标签</label>
+                <select class="w-full h-9 px-3 rounded-lg border border-border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary">
+                  <option>宠物健康</option>
+                  <option>新手养猫</option>
+                  <option>省钱攻略</option>
+                  <option>宠物食品</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-xs font-medium text-muted-foreground mb-1.5 block">互动数据（可选）</label>
+                <div class="flex gap-2">
+                  <input type="number" placeholder="点赞" value="12500" class="flex-1 h-9 px-2 rounded-lg border border-border bg-background text-sm text-center">
+                  <input type="number" placeholder="收藏" value="3400" class="flex-1 h-9 px-2 rounded-lg border border-border bg-background text-sm text-center">
+                  <input type="number" placeholder="评论" value="890" class="flex-1 h-9 px-2 rounded-lg border border-border bg-background text-sm text-center">
+                </div>
+              </div>
+            </div>
+            <div>
+              <label class="text-xs font-medium text-muted-foreground mb-1.5 block">话题标签</label>
+              <div class="flex flex-wrap gap-2">
+                <span class="px-2 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">#猫咪驱虫</span>
+                <span class="px-2 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">#新手养猫</span>
+                <span class="px-2 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">#省钱攻略</span>
+                <span class="px-2 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">#宠物健康</span>
+                <input type="text" placeholder="+ 添加标签" class="h-7 px-2 rounded-full border border-border bg-background text-xs w-20 focus:outline-none focus:border-primary">
+              </div>
+            </div>
+          </div>
+
+          <!-- ═══════════════════════════════════════════ -->
+          <!-- Tab 2: Analysis Preview -->
+          <!-- ═══════════════════════════════════════════ -->
+          <div id="tab-preview" class="tab-content hidden space-y-4">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div class="bg-card rounded-xl border border-border p-4">
+                <div class="flex items-center justify-between mb-3">
+                  <h3 class="text-sm font-semibold">原文 · 关键词高亮</h3>
+                  <div class="flex gap-1.5 text-[10px]">
+                    <span class="px-1.5 py-0.5 rounded bg-blue-100 text-blue-700">结构</span>
+                    <span class="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700">功能</span>
+                    <span class="px-1.5 py-0.5 rounded bg-rose-100 text-rose-700">情感</span>
+                    <span class="px-1.5 py-0.5 rounded bg-amber-100 text-amber-700">行业</span>
+                    <span class="px-1.5 py-0.5 rounded bg-violet-100 text-violet-700">效果</span>
+                  </div>
+                </div>
+                <div class="text-sm leading-relaxed text-foreground/90 space-y-2 max-h-[420px] overflow-y-auto pr-2">
+                  <p class="font-medium"><span class="kw-structure">猫咪驱虫</span><span class="kw-effect">避坑</span>指南，这3个<span class="kw-function">误区</span>90%的人都不知道</p>
+                  <p>作为一个养了3年猫的<span class="kw-structure">铲屎官</span>，今天必须跟大家聊聊<span class="kw-industry">驱虫</span>这件事！</p>
+                  <p class="text-rose-600 font-medium">😱 误区一：以为家养猫不用驱虫</p>
+                  <p>很多人觉得猫咪不出门就不用<span class="kw-industry">驱虫</span>，其实这是<span class="kw-emotion">大错特错</span>！<span class="kw-industry">寄生虫</span>卵可能通过鞋底、快递箱、甚至是窗户飘进来...</p>
+                  <p class="text-emerald-600 font-medium">✅ 正确做法：即使家养，也要每3个月做一次体内外驱虫。</p>
+                  <p class="text-rose-600 font-medium">💡 误区二：驱虫药越贵越好</p>
+                  <p>市面上驱虫药从几十到几百都有，但真的不是<span class="kw-effect">越贵越好</span>！关键要看成分和驱虫谱...</p>
+                  <p class="text-emerald-600 font-medium">✅ 正确做法：选择广谱驱虫药，覆盖跳蚤、蜱虫、蛔虫、绦虫即可。</p>
+                  <p class="text-rose-600 font-medium">🎯 误区三：驱虫后不用观察</p>
+                  <p>很多<span class="kw-structure">铲屎官</span>给猫吃了驱虫药就完事了，其实驱虫后的48小时非常关键！</p>
+                  <p>好了，今天就分享到这里！你们家毛孩子驱虫遇到过什么问题？欢迎在评论区交流～ 👇</p>
+                </div>
+              </div>
+
+              <div class="space-y-4">
+                <div class="bg-card rounded-xl border border-border p-4 card-hover">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <p class="text-xs text-muted-foreground mb-1">识别结构类型</p>
+                      <p class="text-lg font-bold text-primary">避坑排雷型</p>
+                    </div>
+                    <div class="text-right">
+                      <p class="text-xs text-muted-foreground mb-1">置信度</p>
+                      <p class="text-sm font-semibold">87%</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="bg-card rounded-xl border border-border p-4 card-hover">
+                  <div class="flex items-center gap-4">
+                    <div class="relative w-20 h-20 shrink-0">
+                      <svg class="w-20 h-20 score-ring" viewBox="0 0 64 64">
+                        <circle cx="32" cy="32" r="28" fill="none" stroke="#e5e7eb" stroke-width="5"/>
+                        <circle cx="32" cy="32" r="28" fill="none" stroke="#7c3aed" stroke-width="5" stroke-dasharray="175.9" stroke-dashoffset="31.7" stroke-linecap="round"/>
+                      </svg>
+                      <div class="absolute inset-0 flex items-center justify-center">
+                        <span class="text-lg font-bold text-foreground">82</span>
+                      </div>
+                    </div>
+                    <div class="flex-1">
+                      <p class="text-sm font-semibold mb-2">爆款评分</p>
+                      <div class="space-y-1.5">
+                        <div class="flex items-center gap-2 text-[10px]">
+                          <span class="w-16 text-muted-foreground">结构完整性</span>
+                          <div class="flex-1 h-1.5 rounded-full bg-secondary overflow-hidden"><div class="h-full bg-primary rounded-full" style="width:70%"></div></div>
+                          <span class="w-6 text-right">35</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-[10px]">
+                          <span class="w-16 text-muted-foreground">关键词丰富</span>
+                          <div class="flex-1 h-1.5 rounded-full bg-secondary overflow-hidden"><div class="h-full bg-primary rounded-full" style="width:56%"></div></div>
+                          <span class="w-6 text-right">28</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-[10px]">
+                          <span class="w-16 text-muted-foreground">情绪曲线</span>
+                          <div class="flex-1 h-1.5 rounded-full bg-secondary overflow-hidden"><div class="h-full bg-info rounded-full" style="width:36%"></div></div>
+                          <span class="w-6 text-right">18</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="bg-card rounded-xl border border-border p-4 card-hover">
+                  <p class="text-xs font-medium text-muted-foreground mb-2">情绪曲线</p>
+                  <div class="h-24 flex items-end gap-2">
+                    <div class="flex-1 flex flex-col items-center gap-1">
+                      <div class="w-full bg-rose-200 rounded-t" style="height: 80%"></div>
+                      <span class="text-[10px] text-muted-foreground">开篇</span>
+                      <span class="text-[10px] text-rose-600">焦虑</span>
+                    </div>
+                    <div class="flex-1 flex flex-col items-center gap-1">
+                      <div class="w-full bg-blue-200 rounded-t" style="height: 60%"></div>
+                      <span class="text-[10px] text-muted-foreground">误区1</span>
+                      <span class="text-[10px] text-blue-600">信任</span>
+                    </div>
+                    <div class="flex-1 flex flex-col items-center gap-1">
+                      <div class="w-full bg-amber-200 rounded-t" style="height: 70%"></div>
+                      <span class="text-[10px] text-muted-foreground">误区2</span>
+                      <span class="text-[10px] text-amber-600">惊喜</span>
+                    </div>
+                    <div class="flex-1 flex flex-col items-center gap-1">
+                      <div class="w-full bg-emerald-200 rounded-t" style="height: 75%"></div>
+                      <span class="text-[10px] text-muted-foreground">结尾</span>
+                      <span class="text-[10px] text-emerald-600">共鸣</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="bg-card rounded-xl border border-border p-4 card-hover">
+                  <p class="text-xs font-medium text-muted-foreground mb-2">Top 3 成功因子</p>
+                  <div class="space-y-2">
+                    <div class="flex items-start gap-2">
+                      <span class="w-5 h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">1</span>
+                      <p class="text-xs text-foreground">标题含具体数字「3个」，提升点击率约 <span class="text-primary font-medium">+23%</span></p>
+                    </div>
+                    <div class="flex items-start gap-2">
+                      <span class="w-5 h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">2</span>
+                      <p class="text-xs text-foreground">开篇建立身份认同「3年铲屎官」，增强用户信任</p>
+                    </div>
+                    <div class="flex items-start gap-2">
+                      <span class="w-5 h-5 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">3</span>
+                      <p class="text-xs text-foreground">使用 emoji 标记重点段落，提升可读性和完读率</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═══════════════════════════════════════════ -->
+          <!-- Tab 3: Report Detail -->
+          <!-- ═══════════════════════════════════════════ -->
+          <div id="tab-report" class="tab-content hidden space-y-4 max-w-3xl mx-auto">
+            <div class="bg-card rounded-xl border border-border p-4">
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="text-sm font-semibold">结构化分析报告</h3>
+                <span class="text-[10px] text-muted-foreground">JSON 树 · 可折叠</span>
+              </div>
+              <div class="bg-secondary/30 rounded-lg p-3 font-mono text-xs leading-relaxed">
+                <div class="json-tree">
+                  <div class="json-tree-toggle" onclick="toggleJson(this)">
+                    <span class="text-primary">▼</span> <span class="text-purple-600">{</span> AnalysisReport
+                  </div>
+                  <div class="json-tree-children pl-4">
+                    <div><span class="text-blue-600">"note_id"</span>: <span class="text-green-600">"note_abc123"</span>,</div>
+                    <div><span class="text-blue-600">"structure_type"</span>: <span class="text-green-600">"避坑排雷型"</span>,</div>
+                    <div><span class="text-blue-600">"viral_score"</span>: <span class="text-amber-600">82</span>,</div>
+                    <div class="json-tree-toggle" onclick="toggleJson(this)">
+                      <span class="text-primary">▼</span> <span class="text-blue-600">"scoring_breakdown"</span>: <span class="text-purple-600">{</span>
+                    </div>
+                    <div class="json-tree-children pl-4">
+                      <div><span class="text-blue-600">"completeness"</span>: <span class="text-amber-600">35</span>,</div>
+                      <div><span class="text-blue-600">"keyword_richness"</span>: <span class="text-amber-600">28</span>,</div>
+                      <div><span class="text-blue-600">"emotion_curve"</span>: <span class="text-amber-600">18</span></div>
+                    </div>
+                    <div><span class="text-purple-600">}</span>,</div>
+                    <div class="json-tree-toggle" onclick="toggleJson(this)">
+                      <span class="text-primary">▼</span> <span class="text-blue-600">"keyword_matches"</span>: <span class="text-purple-600">{</span>
+                    </div>
+                    <div class="json-tree-children pl-4">
+                      <div class="json-tree-toggle" onclick="toggleJson(this)">
+                        <span class="text-primary">▼</span> <span class="text-blue-600">"structure"</span>: <span class="text-purple-600">[</span> 3 items
+                      </div>
+                      <div class="json-tree-children pl-4">
+                        <div><span class="text-purple-600">{</span> <span class="text-blue-600">"keyword"</span>: <span class="text-green-600">"避坑"</span>, <span class="text-blue-600">"weight"</span>: <span class="text-amber-600">1.2</span> <span class="text-purple-600">}</span>,</div>
+                        <div><span class="text-purple-600">{</span> <span class="text-blue-600">"keyword"</span>: <span class="text-green-600">"误区"</span>, <span class="text-blue-600">"weight"</span>: <span class="text-amber-600">1.1</span> <span class="text-purple-600">}</span>,</div>
+                        <div><span class="text-purple-600">{</span> <span class="text-blue-600">"keyword"</span>: <span class="text-green-600">"铲屎官"</span>, <span class="text-blue-600">"weight"</span>: <span class="text-amber-600">0.9</span> <span class="text-purple-600">}</span></div>
+                      </div>
+                      <div><span class="text-purple-600">]</span></div>
+                    </div>
+                    <div><span class="text-purple-600">}</span></div>
+                  </div>
+                  <div><span class="text-purple-600">}</span></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div class="bg-card rounded-xl border border-border p-3 card-hover">
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="w-6 h-6 rounded bg-blue-100 text-blue-600 flex items-center justify-center text-xs">T</span>
+                  <span class="text-xs font-medium">标题分析</span>
+                </div>
+                <p class="text-[11px] text-muted-foreground">模式：痛点+数字+结果</p>
+                <p class="text-[11px] text-muted-foreground">含数字：✅ 含疑问：❌ 长度：18字</p>
+              </div>
+              <div class="bg-card rounded-xl border border-border p-3 card-hover">
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="w-6 h-6 rounded bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs">H</span>
+                  <span class="text-xs font-medium">开头钩子</span>
+                </div>
+                <p class="text-[11px] text-muted-foreground">类型：身份认同式</p>
+                <p class="text-[11px] text-muted-foreground">效果分：0.75（良好）</p>
+              </div>
+              <div class="bg-card rounded-xl border border-border p-3 card-hover">
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="w-6 h-6 rounded bg-amber-100 text-amber-600 flex items-center justify-center text-xs">B</span>
+                  <span class="text-xs font-medium">正文结构</span>
+                </div>
+                <p class="text-[11px] text-muted-foreground">段落数：4 平均长度：150字</p>
+                <p class="text-[11px] text-muted-foreground">含故事：✅ 含数据：❌</p>
+              </div>
+              <div class="bg-card rounded-xl border border-border p-3 card-hover">
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="w-6 h-6 rounded bg-rose-100 text-rose-600 flex items-center justify-center text-xs">C</span>
+                  <span class="text-xs font-medium">结尾 CTA</span>
+                </div>
+                <p class="text-[11px] text-muted-foreground">类型：互动引导</p>
+                <p class="text-[11px] text-muted-foreground">效果分：0.68（中等）</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═══════════════════════════════════════════ -->
+          <!-- Tab 4: Template Preview -->
+          <!-- ═══════════════════════════════════════════ -->
+          <div id="tab-template" class="tab-content hidden space-y-4 max-w-3xl mx-auto">
+            <div class="bg-card rounded-xl border border-border p-4">
+              <h3 class="text-sm font-semibold mb-3">标题公式</h3>
+              <div class="flex flex-wrap items-center gap-1.5 text-sm">
+                <span class="text-foreground">猫咪</span>
+                <span class="px-2 py-0.5 rounded bg-blue-100 text-blue-700 text-xs font-medium">{{痛点}}</span>
+                <span class="text-foreground">避坑指南，这</span>
+                <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-700 text-xs font-medium">{{数字}}</span>
+                <span class="text-foreground">个</span>
+                <span class="px-2 py-0.5 rounded bg-rose-100 text-rose-700 text-xs font-medium">{{误区}}</span>
+                <span class="text-foreground">90%的人都不知道</span>
+              </div>
+            </div>
+
+            <div class="bg-card rounded-xl border border-border p-4">
+              <h3 class="text-sm font-semibold mb-3">Prompt 模板</h3>
+              <div class="bg-secondary/30 rounded-lg p-3 font-mono text-xs leading-relaxed space-y-1">
+                <p>作为一个养了<span class="px-1.5 py-0.5 rounded bg-amber-100 text-amber-700">{{养宠年限}}</span>年<span class="px-1.5 py-0.5 rounded bg-blue-100 text-blue-700">{{宠物类型}}</span>的<span class="px-1.5 py-0.5 rounded bg-violet-100 text-violet-700">{{人设}}</span>，</p>
+                <p>今天必须跟大家聊聊<span class="px-1.5 py-0.5 rounded bg-rose-100 text-rose-700">{{痛点}}</span>这件事！</p>
+                <p class="text-muted-foreground">// ... 正文内容 ...</p>
+                <p>好了，今天就分享到这里！你们家<span class="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700">{{话题}}</span>欢迎在评论区交流～ 👇</p>
+              </div>
+            </div>
+
+            <div class="bg-card rounded-xl border border-border p-4">
+              <h3 class="text-sm font-semibold mb-3">变量列表（10个）</h3>
+              <div class="space-y-2">
+                <div class="flex items-center gap-3 text-xs">
+                  <span class="w-3 h-3 rounded-full bg-destructive/20 border border-destructive"></span>
+                  <span class="w-20 font-medium">养宠年限</span>
+                  <span class="text-muted-foreground">number</span>
+                  <span class="text-muted-foreground">默认: 3</span>
+                  <span class="ml-auto px-1.5 py-0.5 rounded bg-destructive/10 text-destructive text-[10px]">必填</span>
+                </div>
+                <div class="flex items-center gap-3 text-xs">
+                  <span class="w-3 h-3 rounded-full bg-destructive/20 border border-destructive"></span>
+                  <span class="w-20 font-medium">宠物类型</span>
+                  <span class="text-muted-foreground">text</span>
+                  <span class="text-muted-foreground">默认: 猫</span>
+                  <span class="ml-auto px-1.5 py-0.5 rounded bg-destructive/10 text-destructive text-[10px]">必填</span>
+                </div>
+                <div class="flex items-center gap-3 text-xs">
+                  <span class="w-3 h-3 rounded-full bg-secondary border border-border"></span>
+                  <span class="w-20 font-medium">解决方案描述</span>
+                  <span class="text-muted-foreground">textarea</span>
+                  <span class="text-muted-foreground">默认: 空</span>
+                  <span class="ml-auto px-1.5 py-0.5 rounded bg-secondary text-muted-foreground text-[10px]">可选</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-card rounded-xl border border-border p-4">
+              <h3 class="text-sm font-semibold mb-3">约束条件</h3>
+              <div class="grid grid-cols-2 gap-2">
+                <div class="flex items-center justify-between text-xs py-2 px-3 rounded-lg bg-secondary/30">
+                  <span class="text-muted-foreground">标题字数</span>
+                  <span class="font-medium">10-30 字</span>
+                </div>
+                <div class="flex items-center justify-between text-xs py-2 px-3 rounded-lg bg-secondary/30">
+                  <span class="text-muted-foreground">最少段落</span>
+                  <span class="font-medium">3 段</span>
+                </div>
+                <div class="flex items-center justify-between text-xs py-2 px-3 rounded-lg bg-secondary/30">
+                  <span class="text-muted-foreground">Emoji 密度</span>
+                  <span class="font-medium">2-3/100字</span>
+                </div>
+                <div class="flex items-center justify-between text-xs py-2 px-3 rounded-lg bg-secondary/30">
+                  <span class="text-muted-foreground">钩子长度</span>
+                  <span class="font-medium">20-60 字</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════ -->
+      <!-- Capability: Title Optimizer (Placeholder) -->
+      <!-- ═══════════════════════════════════════════ -->
+      <div id="capability-title-optimizer" class="capability-content hidden">
+        <div class="flex items-center justify-center h-[60vh]">
+          <div class="text-center space-y-4">
+            <div class="w-16 h-16 rounded-2xl bg-secondary flex items-center justify-center mx-auto">
+              <span class="text-3xl">🔒</span>
+            </div>
+            <div>
+              <h3 class="text-base font-semibold text-foreground">标题优化器</h3>
+              <p class="text-sm text-muted-foreground mt-1">AI 驱动的标题 A/B 测试与优化建议</p>
+            </div>
+            <div class="space-y-2 text-xs text-muted-foreground">
+              <p>• 输入原始标题，AI 生成 5+ 个优化版本</p>
+              <p>• 基于关键词热榜和点击率预测评分</p>
+              <p>• 一键替换到内容生产流程</p>
+            </div>
+            <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-secondary text-muted-foreground text-xs">
+              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              预计 2026-Q3 上线
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════ -->
+      <!-- Capability: Cover Generator (Placeholder) -->
+      <!-- ═══════════════════════════════════════════ -->
+      <div id="capability-cover-generator" class="capability-content hidden">
+        <div class="flex items-center justify-center h-[60vh]">
+          <div class="text-center space-y-4">
+            <div class="w-16 h-16 rounded-2xl bg-secondary flex items-center justify-center mx-auto">
+              <span class="text-3xl">🔒</span>
+            </div>
+            <div>
+              <h3 class="text-base font-semibold text-foreground">封面生成器</h3>
+              <p class="text-sm text-muted-foreground mt-1">AI 封面设计与排版优化</p>
+            </div>
+            <div class="space-y-2 text-xs text-muted-foreground">
+              <p>• 根据笔记内容自动生成封面设计方案</p>
+              <p>• 支持多平台尺寸（小红书 3:4 / 抖音 9:16）</p>
+              <p>• 字体、配色、布局智能推荐</p>
+            </div>
+            <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-secondary text-muted-foreground text-xs">
+              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              预计 2026-Q3 上线
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════ -->
+      <!-- Capability: A/B Test (Placeholder) -->
+      <!-- ═══════════════════════════════════════════ -->
+      <div id="capability-ab-test" class="capability-content hidden">
+        <div class="flex items-center justify-center h-[60vh]">
+          <div class="text-center space-y-4">
+            <div class="w-16 h-16 rounded-2xl bg-secondary flex items-center justify-center mx-auto">
+              <span class="text-3xl">🔒</span>
+            </div>
+            <div>
+              <h3 class="text-base font-semibold text-foreground">A/B 测试</h3>
+              <p class="text-sm text-muted-foreground mt-1">多版本内容效果预测与对比</p>
+            </div>
+            <div class="space-y-2 text-xs text-muted-foreground">
+              <p>• 同时生成多个内容变体</p>
+              <p>• 基于历史数据预测各版本互动表现</p>
+              <p>• 自动推荐最优版本</p>
+            </div>
+            <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-secondary text-muted-foreground text-xs">
+              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              预计 2026-Q4 上线
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════ -->
+      <!-- Capability: Keyword Hotlist (Placeholder) -->
+      <!-- ═══════════════════════════════════════════ -->
+      <div id="capability-keyword-hotlist" class="capability-content hidden">
+        <div class="flex items-center justify-center h-[60vh]">
+          <div class="text-center space-y-4">
+            <div class="w-16 h-16 rounded-2xl bg-secondary flex items-center justify-center mx-auto">
+              <span class="text-3xl">🔒</span>
+            </div>
+            <div>
+              <h3 class="text-base font-semibold text-foreground">关键词热榜</h3>
+              <p class="text-sm text-muted-foreground mt-1">实时热门关键词发现与追踪</p>
+            </div>
+            <div class="space-y-2 text-xs text-muted-foreground">
+              <p>• 跨平台热门关键词实时监控</p>
+              <p>• 关键词热度趋势与竞争度分析</p>
+              <p>• 智能推荐高潜力长尾词</p>
+            </div>
+            <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-secondary text-muted-foreground text-xs">
+              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              预计 2026-Q4 上线
+            </span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ═════ AI Copilot Panel (320px) ═════ -->
+  <aside class="copilot-panel w-[320px] shrink-0 bg-card border-l border-border flex flex-col h-full">
+    <!-- Copilot Header -->
+    <div class="h-14 border-b border-border flex items-center px-4 gap-2 shrink-0">
+      <div class="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center relative ai-pulse">
+        <svg class="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+      </div>
+      <div>
+        <p class="text-sm font-semibold">AI Copilot</p>
+        <p class="text-[10px] text-muted-foreground">实验室 · 爆款笔记分析助手</p>
+      </div>
+    </div>
+
+    <!-- Copilot Content -->
+    <div class="flex-1 overflow-y-auto p-4 space-y-3">
+      <!-- Context Bar -->
+      <div class="p-2.5 rounded-lg bg-primary/5 border border-primary/10">
+        <p class="text-[10px] text-primary font-medium mb-1">当前上下文</p>
+        <p class="text-[11px] text-muted-foreground">页面: 实验室</p>
+        <p class="text-[11px] text-muted-foreground">能力: 爆款笔记分析</p>
+        <p class="text-[11px] text-muted-foreground">状态: 笔记已填充，待分析</p>
+      </div>
+
+      <!-- Action Card: Upload Note -->
+      <div class="rounded-xl border border-border bg-background p-3 card-hover">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="text-lg">📤</span>
+          <p class="text-sm font-medium">粘贴笔记内容</p>
+        </div>
+        <p class="text-[11px] text-muted-foreground mb-2">支持粘贴链接、拖拽截图或直接输入正文</p>
+        <button class="w-full py-1.5 rounded-lg bg-primary text-white text-xs font-medium hover:opacity-90 transition-opacity">确认上传</button>
+      </div>
+
+      <!-- Action Card: Analyze -->
+      <div class="rounded-xl border border-border bg-background p-3 card-hover opacity-60">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="text-lg">🔍</span>
+          <p class="text-sm font-medium">开始分析</p>
+        </div>
+        <p class="text-[11px] text-muted-foreground">识别结构类型、关键词匹配、情绪曲线</p>
+      </div>
+
+      <!-- Action Card: Generate Template -->
+      <div class="rounded-xl border border-border bg-background p-3 card-hover opacity-40">
+        <div class="flex items-center gap-2 mb-2">
+          <span class="text-lg">📐</span>
+          <p class="text-sm font-medium">生成模板</p>
+        </div>
+        <p class="text-[11px] text-muted-foreground">基于分析报告生成 ContentTemplate</p>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="flex gap-2">
+        <button class="flex-1 py-1.5 rounded-lg border border-border text-[11px] text-muted-foreground hover:bg-secondary transition-colors">🗑️ 清空画布</button>
+        <button class="flex-1 py-1.5 rounded-lg border border-border text-[11px] text-muted-foreground hover:bg-secondary transition-colors">📜 历史记录</button>
+      </div>
+
+      <!-- AI Message -->
+      <div class="flex gap-2">
+        <div class="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+          <svg class="w-3 h-3 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        </div>
+        <div class="bg-secondary/50 rounded-lg rounded-tl-none px-3 py-2">
+          <p class="text-xs text-foreground">我已检测到笔记内容，包含标题和正文。点击「确认上传」后，我可以开始分析这篇笔记的结构和爆款因子。</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Copilot Input -->
+    <div class="p-3 border-t border-border shrink-0">
+      <div class="flex items-center gap-2">
+        <input type="text" placeholder="输入指令或问题..." class="flex-1 h-9 px-3 rounded-lg border border-border bg-background text-xs focus:outline-none focus:border-primary transition-colors">
+        <button class="w-9 h-9 rounded-lg bg-primary text-white flex items-center justify-center hover:opacity-90 transition-opacity">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+</div>
+
+<script>
+  // ── Capability Switching ──
+  function switchCapability(capId) {
+    // Hide all capabilities
+    document.querySelectorAll('.capability-content').forEach(el => el.classList.add('hidden'));
+    // Show selected
+    const target = document.getElementById('capability-' + capId);
+    if (target) target.classList.remove('hidden');
+
+    // Update pills
+    document.querySelectorAll('.capability-pill').forEach(pill => {
+      pill.classList.remove('active');
+      if (!pill.classList.contains('locked')) {
+        pill.classList.add('text-muted-foreground');
+      }
+    });
+    const activePill = document.querySelector('.capability-pill[onclick*="' + capId + '"]');
+    if (activePill) {
+      activePill.classList.add('active');
+      activePill.classList.remove('text-muted-foreground');
+    }
+
+    // Update Copilot context (demo only)
+    const copilotContext = document.querySelector('.copilot-panel .bg-primary\\/5 p-2\\.5');
+    if (copilotContext) {
+      const nameMap = {
+        'viral-analyzer': '爆款笔记分析',
+        'title-optimizer': '标题优化器',
+        'cover-generator': '封面生成器',
+        'ab-test': 'A/B 测试',
+        'keyword-hotlist': '关键词热榜'
+      };
+      const lines = copilotContext.querySelectorAll('p');
+      if (lines[1]) lines[1].textContent = '能力: ' + (nameMap[capId] || capId);
+      if (lines[2]) lines[2].textContent = '状态: ' + (capId === 'viral-analyzer' ? '笔记已填充，待分析' : '功能开发中');
+    }
+  }
+
+  // ── Tab Switching (within capability) ──
+  function switchTab(tab) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+    document.querySelectorAll('.tab-btn').forEach(el => {
+      el.classList.remove('active');
+      el.classList.add('text-muted-foreground');
+    });
+    document.getElementById('tab-' + tab).classList.remove('hidden');
+    const activeBtn = document.querySelector('.tab-btn[data-tab="' + tab + '"]');
+    if (activeBtn) {
+      activeBtn.classList.add('active');
+      activeBtn.classList.remove('text-muted-foreground');
+    }
+  }
+
+  // ── JSON Tree Toggle ──
+  function toggleJson(el) {
+    const children = el.nextElementSibling;
+    if (children && children.classList.contains('json-tree-children')) {
+      const arrow = el.querySelector('span:first-child');
+      if (children.style.display === 'none') {
+        children.style.display = 'block';
+        arrow.textContent = '▼';
+      } else {
+        children.style.display = 'none';
+        arrow.textContent = '▶';
+      }
+    }
+  }
+</script>
+
+</body>
+</html>

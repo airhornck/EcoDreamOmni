@@ -1,0 +1,218 @@
+import { useNavigate } from 'react-router-dom'
+import { Card, CardContent, CardHeader } from '../ui/Card'
+import { Button } from '../ui/Button'
+import { Badge } from '../ui/Badge'
+import {
+  Send,
+  CheckCircle,
+  XCircle,
+  RotateCcw,
+  Shield,
+  Gavel,
+  CheckCheck,
+  AlertTriangle,
+  Ban,
+} from 'lucide-react'
+
+const decisionLabels: Record<string, string> = {
+  APPROVE: '通过',
+  REJECT: '驳回',
+  REVISE: '打回',
+}
+
+const decisionVariants: Record<string, any> = {
+  APPROVE: 'success',
+  REJECT: 'danger',
+  REVISE: 'warning',
+}
+
+const statusLabels: Record<string, { label: string; icon: typeof CheckCircle; color: string; bg: string }> = {
+  completed: { label: '已发布完成', icon: CheckCheck, color: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-200' },
+  failed: { label: '发布失败', icon: AlertTriangle, color: 'text-amber-700', bg: 'bg-amber-50 border-amber-200' },
+  cancelled: { label: '已取消', icon: Ban, color: 'text-slate-600', bg: 'bg-slate-50 border-slate-200' },
+  running: { label: '发布执行中', icon: Send, color: 'text-blue-700', bg: 'bg-blue-50 border-blue-200' },
+  paused: { label: '已暂停', icon: AlertTriangle, color: 'text-amber-700', bg: 'bg-amber-50 border-amber-200' },
+  draft: { label: '草稿', icon: RotateCcw, color: 'text-slate-600', bg: 'bg-slate-50 border-slate-200' },
+}
+
+interface ReviewDecisionPanelProps {
+  taskId?: string
+  status: string
+  canPublish: boolean
+  hasPrimaryApproval?: boolean
+  reviewDecision?: string
+  reviewReason?: string | null
+  reviewHistory?: Array<{
+    reviewer: string
+    decision: string
+    reason: string | null
+    publish_mode: string | null
+    scheduled_at: string | null
+    created_at: string
+  }>
+  onApprove: () => void
+  onReject: () => void
+  onRevise: () => void
+  onConfirmPublish: () => void
+  confirmLoading?: boolean
+}
+
+export function ReviewDecisionPanel({
+  status,
+  canPublish: _canPublish,
+  hasPrimaryApproval,
+  reviewDecision,
+  reviewReason,
+  taskId,
+  reviewHistory,
+  onApprove,
+  onReject,
+  onRevise,
+  onConfirmPublish,
+  confirmLoading,
+}: ReviewDecisionPanelProps) {
+  const navigate = useNavigate()
+
+  const isHumanWait = status === 'human_wait'
+  const isApprovedWaiting = status === 'approved_waiting_publish'
+  const isTerminal = ['completed', 'failed', 'cancelled'].includes(status)
+  const showActions = isHumanWait || isApprovedWaiting
+
+  return (
+    <div className="space-y-4">
+      {/* Review History */}
+      {reviewHistory && reviewHistory.length > 0 && (
+        <Card>
+          <CardHeader className="text-sm font-medium py-3">审核历史</CardHeader>
+          <CardContent className="pt-0 space-y-3">
+            {reviewHistory.map((h, i) => (
+              <div key={i} className="flex items-start gap-2 text-xs">
+                <Badge variant={decisionVariants[h.decision] || 'default'} className="text-[10px] shrink-0">
+                  {decisionLabels[h.decision] || h.decision}
+                </Badge>
+                <div className="space-y-0.5">
+                  <span className="text-muted-foreground">{h.reviewer}</span>
+                  <span className="text-muted-foreground mx-1">·</span>
+                  <span className="text-muted-foreground">
+                    {new Date(h.created_at).toLocaleString('zh-CN')}
+                  </span>
+                  {h.reason && <p className="text-destructive">{h.reason}</p>}
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Unified Action Card: review + publish + terminal status */}
+      {showActions ? (
+        <Card className="border-primary/20">
+          <CardHeader className="flex items-center gap-1.5 py-3">
+            <Gavel className="w-4 h-4 text-primary" />
+            <span className="text-sm font-medium">
+              {isApprovedWaiting ? '发布确认' : '审核决策'}
+            </span>
+            {hasPrimaryApproval && isHumanWait && (
+              <Badge variant="warning" className="text-[10px]">待二次审核</Badge>
+            )}
+          </CardHeader>
+          <CardContent className="space-y-3 pt-0">
+            {/* Review decision buttons — only in human_wait */}
+            {isHumanWait && (
+              <>
+                {hasPrimaryApproval && (
+                  <div className="p-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-xs">
+                    <CheckCircle className="w-3.5 h-3.5 inline mr-1" />
+                    该任务已通过第一次审核，<strong>需第二次审核通过</strong>后才会进入发布确认阶段。
+                  </div>
+                )}
+                <div className="flex gap-2">
+                  <Button
+                    className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white"
+                    variant="primary"
+                    size="sm"
+                    onClick={onApprove}
+                  >
+                    <CheckCircle className="w-4 h-4 mr-1" />
+                    {hasPrimaryApproval ? '二次通过' : '审核通过'}
+                  </Button>
+                  <Button className="flex-1" variant="outline" size="sm" onClick={onRevise}>
+                    <RotateCcw className="w-4 h-4 mr-1" />
+                    打回修改
+                  </Button>
+                </div>
+                <Button className="w-full" variant="danger" size="sm" onClick={onReject}>
+                  <XCircle className="w-4 h-4 mr-1" />
+                  驳回
+                </Button>
+              </>
+            )}
+
+            {/* Publish confirm — only in approved_waiting_publish */}
+            {isApprovedWaiting && (
+              <>
+                <div className="p-3 rounded-lg bg-secondary/30 text-xs space-y-1">
+                  <div className="flex items-center gap-1.5">
+                    <Shield className="w-3.5 h-3.5 text-success" />
+                    <span>PlatformRule L3：账号日配额充足</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <Shield className="w-3.5 h-3.5 text-success" />
+                    <span>PlatformRule L4：当前时段合规</span>
+                  </div>
+                </div>
+                <Button onClick={onConfirmPublish} isLoading={confirmLoading} className="w-full">
+                  <Send className="w-4 h-4 mr-1" />
+                  确认发布
+                </Button>
+              </>
+            )}
+          </CardContent>
+        </Card>
+      ) : isTerminal ? (
+        /* Terminal state card */
+        <Card className={statusLabels[status]?.bg || 'bg-slate-50 border-slate-200'}>
+          <CardContent className="py-4 space-y-2">
+            <div className={`flex items-center gap-2 text-sm font-medium ${statusLabels[status]?.color || 'text-slate-700'}`}>
+              {(() => {
+                const StatusIcon = statusLabels[status]?.icon
+                return StatusIcon ? <StatusIcon className="w-4 h-4" /> : null
+              })()}
+              <span>{statusLabels[status]?.label || status}</span>
+            </div>
+            {reviewDecision === 'REJECT' && (
+              <p className="text-xs text-destructive">
+                <XCircle className="w-3.5 h-3.5 inline mr-1" />
+                驳回原因：{reviewReason || '无'}
+              </p>
+            )}
+            {reviewDecision === 'REVISE' && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full mt-2"
+                onClick={() => taskId && navigate(`/content-forge/${taskId}`)}
+              >
+                <RotateCcw className="w-3.5 h-3.5 mr-1" />
+                前往修改
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      ) : (
+        /* Other non-action states (running, paused, draft, etc.) */
+        <Card className={statusLabels[status]?.bg || 'bg-slate-50 border-slate-200'}>
+          <CardContent className="py-4">
+            <div className={`flex items-center gap-2 text-sm font-medium ${statusLabels[status]?.color || 'text-slate-700'}`}>
+              {(() => {
+                const StatusIcon = statusLabels[status]?.icon
+                return StatusIcon ? <StatusIcon className="w-4 h-4" /> : null
+              })()}
+              <span>{statusLabels[status]?.label || `状态：${status}`}</span>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  )
+}

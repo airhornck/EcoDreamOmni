@@ -1,0 +1,204 @@
+import { create } from 'zustand'
+import { authHeaders } from '../lib/api'
+
+export interface ReviewConclusion {
+  task_id: string
+  task_name: string
+  content_title: string | null
+  platform: string
+  account_name: string
+  status: string
+  review_decision: string | null
+  reviewed_at: string | null
+  reviewer: string | null
+  review_reason: string | null
+  content_preview: string
+  waiting_since: string
+  priority: number
+  risk_level: string
+  can_publish_now: boolean
+  has_cron_job: boolean
+}
+
+export interface GeneratedContent {
+  title: string
+  body: string
+  tags: string[]
+  platform: string
+  content_type: string
+  content_format?: string
+  cover_image_url?: string
+  cover_image_ratio?: string
+  images?: string[]
+}
+
+export interface TopicReport {
+  report_id: string
+  selected_topic: string
+  topics: Array<{
+    id: string
+    title: string
+    source_report: string
+    estimated_engagement: number
+    tags: string[]
+    status: string
+  }>
+  '5a_stage': string
+  audience_fit_score: number
+}
+
+export interface ReviewDetail {
+  task_id: string
+  task_name: string
+  platform: string
+  status: string
+  content_preview: string
+  generated_content: GeneratedContent | null
+  agent_summary: string
+  compliance_result: Record<string, unknown>
+  prediction_result: Record<string, unknown>
+  quality_score: Record<string, unknown>
+  injection_context: Record<string, unknown>
+  topic_report: TopicReport | null
+  cover_image_url: string | null
+  review_history: Array<{
+    reviewer: string
+    decision: string
+    reason: string | null
+    publish_mode: string | null
+    scheduled_at: string | null
+    created_at: string
+  }>
+  risk_level: string
+  can_publish: boolean
+  has_primary_approval?: boolean
+  account_id: string
+  account_name: string
+  draft_id: string | null
+  cron_schedule?: string | null
+}
+
+interface ReviewPublishState {
+  conclusions: ReviewConclusion[]
+  isLoading: boolean
+  isDeciding: boolean
+  error: string | null
+  fetchConclusions: (status_filter?: string) => Promise<void>
+  confirmPublish: (taskId: string, config: {
+    operator?: string
+    publish_mode: string
+    scheduled_at?: string
+    cron_schedule?: string
+  }) => Promise<{ success: boolean; cron_job_id?: string; publish_task_id?: string }>
+  decideTask: (taskId: string, decision: 'approve' | 'reject' | 'revise', reason?: string) => Promise<{ success: boolean; status?: string }>
+  updateContent: (taskId: string, patch: {
+    title?: string
+    body?: string
+    tags?: string[]
+    cover_image_url?: string
+  }) => Promise<{ success: boolean; updated_at?: string }>
+  regenerateContent: (taskId: string) => Promise<{ success: boolean; status?: string; message?: string }>
+}
+
+export const useReviewPublishStore = create<ReviewPublishState>((set) => ({
+  conclusions: [],
+  isLoading: false,
+  isDeciding: false,
+  error: null,
+
+  fetchConclusions: async (status_filter) => {
+    set({ isLoading: true, error: null })
+    try {
+      const url = status_filter
+        ? `/api/review-publish-center/conclusions?status_filter=${status_filter}`
+        : '/api/review-publish-center/conclusions'
+      const res = await fetch(url, { headers: authHeaders() })
+      if (!res.ok) throw new Error(`获取审核结论失败: ${res.status}`)
+      const data = await res.json()
+      set({ conclusions: data.items || [], isLoading: false })
+    } catch (err) {
+      set({ isLoading: false, error: err instanceof Error ? err.message : '加载失败' })
+    }
+  },
+
+  confirmPublish: async (taskId, config) => {
+    try {
+      const res = await fetch(`/api/review-publish-center/conclusions/${taskId}/confirm-publish`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify(config),
+      })
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}))
+        throw new Error(errData.detail || '确认发布失败')
+      }
+      const data = await res.json()
+      return {
+        success: true,
+        cron_job_id: data.cron_job_id,
+        publish_task_id: data.publish_task_id,
+      }
+    } catch (err) {
+      set({ error: err instanceof Error ? err.message : '确认发布失败' })
+      return { success: false }
+    }
+  },
+
+  decideTask: async (taskId, decision, reason) => {
+    set({ isDeciding: true, error: null })
+    try {
+      const res = await fetch(`/api/human-in-the-loop/tasks/${taskId}/${decision}`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ reason }),
+      })
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}))
+        throw new Error(errData.detail || '审核操作失败')
+      }
+      const data = await res.json()
+      set({ isDeciding: false })
+      return { success: true, status: data.status }
+    } catch (err) {
+      set({ isDeciding: false, error: err instanceof Error ? err.message : '审核操作失败' })
+      return { success: false }
+    }
+  },
+
+  updateContent: async (taskId, patch) => {
+    try {
+      const res = await fetch(`/api/review-publish-center/conclusions/${taskId}/content`, {
+        method: 'PUT',
+        headers: authHeaders(),
+        body: JSON.stringify(patch),
+      })
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}))
+        throw new Error(errData.detail || '更新内容失败')
+      }
+      const data = await res.json()
+      return { success: true, updated_at: data.updated_at }
+    } catch (err) {
+      set({ error: err instanceof Error ? err.message : '更新内容失败' })
+      return { success: false }
+    }
+  },
+
+  regenerateContent: async (taskId) => {
+    try {
+      const res = await fetch(`/api/review-publish-center/conclusions/${taskId}/regenerate`, {
+        method: 'POST',
+        headers: authHeaders(),
+      })
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}))
+        throw new Error(errData.detail || '重新生成失败')
+      }
+      const data = await res.json()
+      return { success: true, status: data.status, message: data.message }
+    } catch (err) {
+      set({ error: err instanceof Error ? err.message : '重新生成失败' })
+      return { success: false }
+    }
+  },
+}))

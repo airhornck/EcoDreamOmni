@@ -1,0 +1,605 @@
+import { useEffect, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { useDashboardStore } from '../stores/dashboardStore'
+import { useAuthStore } from '../stores/authStore'
+import { PageHeader } from '../components/common/PageHeader'
+import { StatCard } from '../components/common/StatCard'
+import { Card, CardHeader, CardContent } from '../components/ui/Card'
+import { Button } from '../components/ui/Button'
+import { Badge } from '../components/ui/Badge'
+import { EmptyState } from '../components/ui/EmptyState'
+import {
+  FileText,
+  Send,
+  BarChart3,
+  Activity,
+  Sparkles,
+  ChevronRight,
+  PlusCircle,
+  MessageSquare,
+  Upload,
+  Newspaper,
+  Lightbulb,
+  CheckCircle2,
+  AlertTriangle,
+  AlertCircle,
+  Info,
+  Cpu,
+  Mail,
+  TrendingUp,
+  BookOpen,
+  Clock,
+  Zap,
+} from 'lucide-react'
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
+} from 'recharts'
+import type { LucideIcon } from 'lucide-react'
+
+const alertIconMap: Record<string, LucideIcon> = {
+  emergency: AlertCircle,
+  warning: AlertTriangle,
+  info: Info,
+  success: CheckCircle2,
+}
+
+const alertColorMap: Record<string, string> = {
+  emergency: 'text-red-600 bg-red-50 border-red-200',
+  warning: 'text-orange-600 bg-orange-50 border-orange-200',
+  info: 'text-blue-600 bg-blue-50 border-blue-200',
+  success: 'text-green-600 bg-green-50 border-green-200',
+}
+
+const alertBadgeVariantMap: Record<string, 'danger' | 'warning' | 'info' | 'success'> = {
+  emergency: 'danger',
+  warning: 'warning',
+  info: 'info',
+  success: 'success',
+}
+
+const quickActions = [
+  { id: 'create-content', label: '新建内容任务', icon: PlusCircle, href: '/content-forge?mode=create', variant: 'primary' as const },
+  { id: 'create-interaction', label: '新建互动剧本', icon: MessageSquare, href: '/task-hub?type=interaction', variant: 'secondary' as const },
+  { id: 'import-data', label: '导入实际数据', icon: Upload, href: '/data-analyst?action=import', variant: 'outline' as const },
+  { id: 'daily-report', label: '查看昨日战报', icon: Newspaper, href: '/dashboard?tab=report', variant: 'outline' as const },
+]
+
+function SkeletonCard({ className = '' }: { className?: string }) {
+  return <div className={`bg-card rounded-xl border border-border animate-pulse ${className}`} />
+}
+
+export function DashboardPage() {
+  const navigate = useNavigate()
+  const {
+    overview,
+    activityLog,
+    alerts,
+    coreMetrics,
+    smartTopics,
+    agentStatus,
+    storyProgress,
+    engagementTrend,
+    hitRate,
+    isLoading,
+    error,
+    fetchDashboard,
+    fetchCoreMetrics,
+    fetchSmartTopics,
+    fetchAgentStatus,
+    fetchStoryProgress,
+    fetchEngagementTrend,
+    fetchHitRate,
+    clearError,
+  } = useDashboardStore()
+  const { user } = useAuthStore()
+  const [showAllAlerts, setShowAllAlerts] = useState(false)
+
+  useEffect(() => {
+    fetchDashboard()
+    fetchCoreMetrics()
+    fetchSmartTopics()
+    fetchAgentStatus()
+    fetchStoryProgress()
+    fetchEngagementTrend()
+    fetchHitRate()
+  }, [fetchDashboard, fetchCoreMetrics, fetchSmartTopics, fetchAgentStatus, fetchStoryProgress, fetchEngagementTrend, fetchHitRate])
+
+  const pendingTasks = overview?.tasksPending ?? 0
+
+  const displayedAlerts = showAllAlerts ? alerts : alerts.slice(0, 5)
+
+  if (isLoading) {
+    return (
+      <div className="space-y-8 animate-fade-in">
+        <PageHeader title="驾驶舱" subtitle="加载中..." />
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <SkeletonCard key={i} className="h-24" />
+          ))}
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <SkeletonCard key={i} className="h-14" />
+          ))}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="space-y-8">
+            <SkeletonCard className="h-64" />
+            <SkeletonCard className="h-48" />
+            <SkeletonCard className="h-72" />
+          </div>
+          <div className="space-y-8">
+            <SkeletonCard className="h-64" />
+            <SkeletonCard className="h-48" />
+            <SkeletonCard className="h-72" />
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-8 animate-fade-in">
+      {/* ─── Page Header ─── */}
+      <PageHeader
+        title="驾驶舱"
+        subtitle={`欢迎回来，${user?.username ?? '运营'}。今日有 ${pendingTasks} 项待处理任务。`}
+        action={
+          <Button variant="primary" size="md" onClick={() => navigate('/content-forge')}>
+            <Sparkles className="w-4 h-4" />
+            新建任务
+          </Button>
+        }
+      />
+
+      {/* ─── Error Banner ─── */}
+      {error && (
+        <div className="p-4 rounded-xl bg-destructive/10 border border-destructive/20 flex items-center justify-between">
+          <p className="text-sm text-destructive">{error}</p>
+          <button onClick={clearError} className="text-sm text-destructive hover:underline">
+            重试
+          </button>
+        </div>
+      )}
+
+      {/* ─── 1. 顶部核心指标卡（5个） ─── */}
+      <section>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+          <StatCard
+            label="待审核任务数"
+            value={coreMetrics?.pendingReview ?? overview?.contentsPendingReview ?? 0}
+            icon={FileText}
+            variant="warning"
+          />
+          <StatCard
+            label="今日已发布数"
+            value={coreMetrics?.publishedToday ?? overview?.contentsPublished ?? 0}
+            icon={Send}
+            variant="success"
+          />
+          <StatCard
+            label="队列中任务数"
+            value={coreMetrics?.queuedTasks ?? 0}
+            icon={Activity}
+            variant="primary"
+          />
+          <StatCard
+            label="失败 / DLQ 数"
+            value={coreMetrics?.failedDlq ?? 0}
+            icon={AlertTriangle}
+            variant="danger"
+          />
+          <StatCard
+            label="今日 Token 成本"
+            value={`¥${(coreMetrics?.tokenCostToday ?? 0).toFixed(2)}`}
+            icon={BarChart3}
+            variant="default"
+          />
+        </div>
+      </section>
+
+      {/* ─── 2. 快捷操作行（4个按钮） ─── */}
+      <section>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {quickActions.map((action) => {
+            const Icon = action.icon
+            return (
+              <Link
+                key={action.id}
+                to={action.href}
+                className="group relative flex items-center gap-3 p-3 bg-card rounded-xl border border-border hover:border-primary/30 hover:shadow-sm transition-all"
+              >
+                <div className={`flex items-center justify-center w-9 h-9 rounded-lg ${
+                  action.variant === 'primary' ? 'bg-primary/10 text-primary' :
+                  action.variant === 'secondary' ? 'bg-secondary text-secondary-foreground' :
+                  'bg-muted text-muted-foreground'
+                } group-hover:bg-primary/10 group-hover:text-primary transition-colors`}>
+                  <Icon className="w-4 h-4" />
+                </div>
+                <span className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
+                  {action.label}
+                </span>
+                <ChevronRight className="w-4 h-4 text-muted-foreground ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
+              </Link>
+            )
+          })}
+        </div>
+      </section>
+
+      {/* ─── 核心内容区（双栏） ─── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* 左栏 */}
+        <div className="space-y-8">
+          {/* ─── 3. 智能选题推荐 ─── */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Lightbulb className="w-4 h-4 text-primary" />
+                  <h2 className="text-base font-semibold text-foreground">智能选题推荐</h2>
+                </div>
+                <Link to="/trend-scout" className="text-xs text-primary hover:underline flex items-center gap-0.5">
+                  更多选题 <ChevronRight className="w-3 h-3" />
+                </Link>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {smartTopics.length === 0 ? (
+                <EmptyState
+                  icon={Lightbulb}
+                  title="暂无推荐选题"
+                  description="系统正在分析趋势数据，请稍后再试"
+                />
+              ) : (
+                <div className="space-y-3">
+                  {smartTopics.map((topic) => (
+                    <div
+                      key={topic.id}
+                      className="flex items-center gap-3 p-3 rounded-lg border border-border hover:border-primary/30 hover:bg-muted/30 transition-all"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium text-foreground truncate">{topic.title}</div>
+                        <div className="flex items-center gap-2 mt-1 flex-wrap">
+                          {topic.tags.map((tag) => (
+                            <Badge key={tag} variant="default" className="text-[10px]">
+                              {tag}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <div className="text-xs text-muted-foreground">预估互动</div>
+                        <div className="text-sm font-semibold text-primary">{topic.estimatedEngagement.toLocaleString()}</div>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => navigate(`/content-forge?topic=${encodeURIComponent(topic.title)}`)}
+                      >
+                        采用
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* ─── 6. 故事线进度Widget ─── */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <BookOpen className="w-4 h-4 text-primary" />
+                  <h2 className="text-base font-semibold text-foreground">故事线进度</h2>
+                </div>
+                <Link to="/personas" className="text-xs text-primary hover:underline flex items-center gap-0.5">
+                  全部剧本 <ChevronRight className="w-3 h-3" />
+                </Link>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {storyProgress.length === 0 ? (
+                <EmptyState
+                  icon={BookOpen}
+                  title="暂无活跃剧本"
+                  description="创建 persona 故事线后即可在此追踪进度"
+                />
+              ) : (
+                <div className="space-y-4">
+                  {storyProgress.map((story) => {
+                    const pct = story.totalNodes > 0 ? Math.round((story.currentNodeIndex / story.totalNodes) * 100) : 0
+                    return (
+                      <div key={story.id} className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-foreground">{story.name}</span>
+                          <span className="text-xs text-muted-foreground">{story.currentNodeIndex} / {story.totalNodes}</span>
+                        </div>
+                        <div className="h-2 bg-muted rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-primary rounded-full transition-all"
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                        <div className="flex items-center justify-between text-xs text-muted-foreground">
+                          <span>当前：{story.currentNode}</span>
+                          <span>下一节点：{story.nextNodeTopic}</span>
+                        </div>
+                        {story.estimatedCompletionAt && (
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                            <Clock className="w-3 h-3" />
+                            预计完成：{new Date(story.estimatedCompletionAt).toLocaleString('zh-CN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* ─── 7. 互动量趋势折线图 ─── */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 text-primary" />
+                  <h2 className="text-base font-semibold text-foreground">互动量趋势</h2>
+                </div>
+                <Link to="/data-analyst" className="text-xs text-primary hover:underline flex items-center gap-0.5">
+                  详细分析 <ChevronRight className="w-3 h-3" />
+                </Link>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {engagementTrend.length === 0 ? (
+                <EmptyState
+                  icon={TrendingUp}
+                  title="暂无趋势数据"
+                  description="数据导入后将展示近7日互动量趋势"
+                />
+              ) : (
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={engagementTrend} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                      <XAxis
+                        dataKey="date"
+                        tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
+                        tickFormatter={(v) => new Date(v).toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' })}
+                      />
+                      <YAxis tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }} />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: 'hsl(var(--card))',
+                          border: '1px solid hsl(var(--border))',
+                          borderRadius: '8px',
+                          fontSize: '12px',
+                        }}
+                      />
+                      <Legend wrapperStyle={{ fontSize: '12px' }} />
+                      <Line type="monotone" dataKey="likes" name="点赞" stroke="#22c55e" strokeWidth={2} dot={false} />
+                      <Line type="monotone" dataKey="comments" name="评论" stroke="#3b82f6" strokeWidth={2} dot={false} />
+                      <Line type="monotone" dataKey="collections" name="收藏" stroke="#f59e0b" strokeWidth={2} dot={false} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* ─── 9. 活动日志（保留现有） ─── */}
+          {activityLog.length > 0 && (
+            <Card>
+              <div className="px-5 py-4 border-b border-border flex items-center gap-2">
+                <Zap className="w-4 h-4 text-primary" />
+                <h2 className="text-base font-semibold text-foreground">活动日志</h2>
+              </div>
+              <div className="divide-y divide-border">
+                {activityLog.map((entry) => (
+                  <div key={entry.id} className="px-5 py-3 flex items-center gap-3">
+                    <span className="text-sm font-medium text-foreground min-w-[4rem]">{entry.actor}</span>
+                    <span className="text-sm text-muted-foreground">{entry.action}</span>
+                    <span className="text-sm text-foreground">{entry.target}</span>
+                    <span className="text-xs text-muted-foreground ml-auto">
+                      {new Date(entry.timestamp).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
+        </div>
+
+        {/* 右栏 */}
+        <div className="space-y-8">
+          {/* ─── 4. 异常与告警 ─── */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 text-primary" />
+                  <h2 className="text-base font-semibold text-foreground">异常与告警</h2>
+                </div>
+                {alerts.length > 5 && (
+                  <button
+                    onClick={() => setShowAllAlerts((v) => !v)}
+                    className="text-xs text-primary hover:underline"
+                  >
+                    {showAllAlerts ? '收起' : '查看全部'}
+                  </button>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent>
+              {alerts.length === 0 ? (
+                <EmptyState
+                  icon={CheckCircle2}
+                  title="暂无告警"
+                  description="系统运行正常，未发现异常"
+                />
+              ) : (
+                <div className="space-y-2">
+                  {displayedAlerts.map((alert) => {
+                    const Icon = alertIconMap[alert.level] || Info
+                    const colorClass = alertColorMap[alert.level] || alertColorMap.info
+                    return (
+                      <div
+                        key={alert.id}
+                        className={`flex items-start gap-2 p-3 rounded-lg border ${colorClass}`}
+                      >
+                        <Icon className="w-4 h-4 mt-0.5 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium">{alert.title}</span>
+                            <Badge variant={alertBadgeVariantMap[alert.level] || 'info'} className="text-[10px]">
+                              {alert.level === 'emergency' ? '紧急' : alert.level === 'warning' ? '警告' : '提示'}
+                            </Badge>
+                          </div>
+                          <p className="text-xs mt-0.5 opacity-90">{alert.message}</p>
+                          <span className="text-[10px] opacity-70 mt-1 block">
+                            {new Date(alert.timestamp).toLocaleString('zh-CN')}
+                          </span>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* ─── 5. Agent状态Widget（2×2小卡片） ─── */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Cpu className="w-4 h-4 text-primary" />
+                  <h2 className="text-base font-semibold text-foreground">Agent 状态</h2>
+                </div>
+                <Link to="/agent-orchestra" className="text-xs text-primary hover:underline flex items-center gap-0.5">
+                  详情 <ChevronRight className="w-3 h-3" />
+                </Link>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {!agentStatus ? (
+                <EmptyState
+                  icon={Cpu}
+                  title="暂无 Agent 数据"
+                  description="Agent 舰队上线后即可查看状态"
+                />
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="p-3 rounded-lg border border-border bg-muted/30">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Cpu className="w-4 h-4 text-primary" />
+                      <span className="text-xs text-muted-foreground">活跃 Agent</span>
+                    </div>
+                    <div className="text-xl font-bold text-foreground">{agentStatus.activeAgents}</div>
+                  </div>
+                  <div className="p-3 rounded-lg border border-border bg-muted/30">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Mail className="w-4 h-4 text-primary" />
+                      <span className="text-xs text-muted-foreground">待处理消息</span>
+                    </div>
+                    <div className="text-xl font-bold text-foreground">{agentStatus.pendingMessages}</div>
+                  </div>
+                  <div className="p-3 rounded-lg border border-border bg-muted/30">
+                    <div className="flex items-center gap-2 mb-1">
+                      <TrendingUp className="w-4 h-4 text-primary" />
+                      <span className="text-xs text-muted-foreground">近1h成功率</span>
+                    </div>
+                    <div className={`text-xl font-bold ${agentStatus.successRate1h >= 0.9 ? 'text-success' : agentStatus.successRate1h >= 0.7 ? 'text-warning' : 'text-red-600'}`}>
+                      {(agentStatus.successRate1h * 100).toFixed(1)}%
+                    </div>
+                  </div>
+                  <div className="p-3 rounded-lg border border-border bg-muted/30">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Activity className="w-4 h-4 text-primary" />
+                      <span className="text-xs text-muted-foreground">最近执行</span>
+                    </div>
+                    <div className={`text-sm font-semibold ${
+                      agentStatus.lastExecutionStatus === 'success' ? 'text-success' :
+                      agentStatus.lastExecutionStatus === 'failure' ? 'text-red-600' :
+                      'text-muted-foreground'
+                    }`}>
+                      {agentStatus.lastExecutionStatus === 'success' ? '成功' :
+                       agentStatus.lastExecutionStatus === 'failure' ? '失败' : '空闲'}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* ─── 8. 预测区间命中率饼图 ─── */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <BarChart3 className="w-4 h-4 text-primary" />
+                  <h2 className="text-base font-semibold text-foreground">预测命中率</h2>
+                </div>
+                <Link to="/predictions" className="text-xs text-primary hover:underline flex items-center gap-0.5">
+                  预测中心 <ChevronRight className="w-3 h-3" />
+                </Link>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {hitRate.length === 0 ? (
+                <EmptyState
+                  icon={BarChart3}
+                  title="暂无预测数据"
+                  description="预测模型运行后将展示命中率分布"
+                />
+              ) : (
+                <div className="h-64">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={hitRate}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={80}
+                        paddingAngle={4}
+                        dataKey="value"
+                        nameKey="label"
+                      >
+                        {hitRate.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: 'hsl(var(--card))',
+                          border: '1px solid hsl(var(--border))',
+                          borderRadius: '8px',
+                          fontSize: '12px',
+                        }}
+                        formatter={(value) => [`${value}`, '数量']}
+                      />
+                      <Legend wrapperStyle={{ fontSize: '12px' }} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  )
+}

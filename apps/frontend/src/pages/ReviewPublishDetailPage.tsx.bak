@@ -1,0 +1,532 @@
+import { useEffect, useState } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
+import { useReviewPublishStore, type ReviewDetail, type GeneratedContent } from '../stores/reviewPublishStore'
+import { authHeaders } from '../lib/api'
+import {
+  NoteEditorPanel,
+  NotePreviewPanel,
+  AgentSummaryPanel,
+  ReviewDecisionPanel,
+  TopicReportPanel,
+  CoverPickerModal,
+} from '../components/review'
+import { PageHeader } from '../components/common/PageHeader'
+import { Button } from '../components/ui/Button'
+import { Badge } from '../components/ui/Badge'
+import {
+  ArrowLeft,
+  CheckCircle,
+  Sparkles,
+  AlertTriangle,
+  Loader2,
+} from 'lucide-react'
+
+/* ── PlatformSchema type (minimal, aligned with backend) ── */
+
+interface PlatformSchema {
+  platform_id: string
+  display_name: string
+  version: string
+  content_formats: Array<{
+    format_name: string
+    fields: Array<{
+      name: string
+      label: string
+      type: string
+      required: boolean
+      max_chars?: number
+      min_chars?: number
+      max_count?: number
+      min?: number | string
+      max?: number | string
+      supported?: string[]
+      default?: any
+    }>
+  }>
+}
+
+/* ── NoteMeta (editor extended fields) ── */
+
+interface NoteMeta {
+  location: string
+  mentions: string[]
+  visibility: 'public' | 'private'
+  declaration: 'none' | 'cooperation' | 'experience'
+}
+
+const platformLabels: Record<string, string> = {
+  xhs: '小红书',
+  xiaohongshu: '小红书',
+  douyin: '抖音',
+  wechat_channels: '视频号',
+  bilibili: '哔哩哔哩',
+}
+
+const decisionLabels: Record<string, string> = {
+  APPROVE: '通过',
+  REJECT: '驳回',
+  REVISE: '打回',
+}
+
+const decisionVariants: Record<string, any> = {
+  APPROVE: 'success',
+  REJECT: 'danger',
+  REVISE: 'warning',
+}
+
+const REGENERATE_MIN_WAIT_MS = 3000
+
+export function ReviewPublishDetailPage() {
+  const { taskId } = useParams<{ taskId: string }>()
+  const navigate = useNavigate()
+  const { confirmPublish, updateContent, regenerateContent, decideTask } = useReviewPublishStore()
+
+  const [detail, setDetail] = useState<ReviewDetail | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  // Editing state
+  const [generatedDraft, setGeneratedDraft] = useState<GeneratedContent | null>(null)
+  const [noteMeta, setNoteMeta] = useState<NoteMeta>({
+    location: '',
+    mentions: [],
+    visibility: 'public',
+    declaration: 'none',
+  })
+
+  const handleMetaChange = (patch: Partial<NoteMeta>) => {
+    setNoteMeta((prev) => ({ ...prev, ...patch }))
+  }
+  const [coverPickerOpen, setCoverPickerOpen] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const [regenerating, setRegenerating] = useState(false)
+  const [showRegenerateModal, setShowRegenerateModal] = useState(false)
+  const [regenerateWaitStart, setRegenerateWaitStart] = useState<number | null>(null)
+  const [regenerateStep, setRegenerateStep] = useState(0)
+
+  const REGENERATE_STEPS = [
+    { label: '选题分析', desc: '根据账号人设与热点趋势匹配最佳选题' },
+    { label: '结构规划', desc: '构建内容大纲与段落逻辑' },
+    { label: '正文生成', desc: '调用 LLM 生成原创正文内容（最耗时）' },
+    { label: '合规检测', desc: '执行 L1/L2/L3/L4 多级合规扫描' },
+    { label: '互动预演', desc: '预测互动数据与质量评分' },
+  ]
+
+  // Platform schema
+  const [platformSchema, setPlatformSchema] = useState<PlatformSchema | null>(null)
+  const [schemaLoading, setSchemaLoading] = useState(false)
+
+  // Publish form state
+  const [confirmLoading, setConfirmLoading] = useState(false)
+  const [confirmToast, setConfirmToast] = useState<string | null>(null)
+  const [decisionToast, setDecisionToast] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!taskId) return
+    fetchDetail(taskId)
+  }, [taskId])
+
+  const fetchDetail = async (id: string) => {
+    setLoading(true)
+    setError(null)
+    try {
+      const res = await fetch(`/api/review-publish-center/conclusions/${id}`, {
+        headers: authHeaders(),
+      })
+      if (!res.ok) throw new Error('获取详情失败')
+      const data = await res.json()
+      setDetail(data)
+      setGeneratedDraft(data.generated_content)
+      // Fetch platform schema after detail loaded
+      if (data.platform) {
+        fetchPlatformSchema(data.platform)
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '加载失败')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const fetchPlatformSchema = async (platformId: string) => {
+    setSchemaLoading(true)
+    try {
+      const res = await fetch(`/api/platform-schemas/${platformId}`, {
+        headers: authHeaders(),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setPlatformSchema(data)
+      }
+    } catch {
+      // Silently ignore schema fetch errors — editor falls back to defaults
+    } finally {
+      setSchemaLoading(false)
+    }
+  }
+
+  const handleConfirmPublish = async () => {
+    if (!taskId) return
+    setConfirmLoading(true)
+
+    // Determine publish mode from task configuration
+    const cronSchedule = detail?.cron_schedule
+
+    const result = await confirmPublish(taskId, {
+      // operator is injected by backend from JWT
+      publish_mode: cronSchedule ? 'cron' : 'immediate',
+      cron_schedule: cronSchedule || undefined,
+    })
+    setConfirmLoading(false)
+    if (result.success) {
+      setConfirmToast(
+        result.cron_job_id
+          ? `发布已确认，循环任务已创建（ID: ${result.cron_job_id}）`
+          : '发布已确认'
+      )
+      setTimeout(() => {
+        navigate('/review-publish-center')
+      }, 2000)
+    }
+  }
+
+  // ── Content editing ──
+  const handleContentPatch = async (patch: Partial<GeneratedContent>) => {
+    if (!taskId || !generatedDraft) return
+    const next = { ...generatedDraft, ...patch }
+    setGeneratedDraft(next)
+    setIsSaving(true)
+    // Only send backend-supported fields
+    const backendPatch: Partial<GeneratedContent> = {}
+    if ('title' in patch) backendPatch.title = patch.title
+    if ('body' in patch) backendPatch.body = patch.body
+    if ('tags' in patch) backendPatch.tags = patch.tags
+    if ('cover_image_url' in patch) backendPatch.cover_image_url = patch.cover_image_url
+    if ('cover_image_ratio' in patch) backendPatch.cover_image_ratio = patch.cover_image_ratio
+
+    const result = await updateContent(taskId, backendPatch)
+    setIsSaving(false)
+    if (result.success && detail) {
+      setDetail({ ...detail, generated_content: next, content_preview: next.body?.slice(0, 200) || detail.content_preview })
+    }
+  }
+
+  const handleRegenerate = async () => {
+    if (!taskId) return
+    setShowRegenerateModal(true)
+  }
+
+  const doRegenerate = async () => {
+    if (!taskId) return
+    setShowRegenerateModal(false)
+    setRegenerating(true)
+    setRegenerateWaitStart(Date.now())
+    setRegenerateStep(0)
+
+    // Start step animation
+    const stepInterval = setInterval(() => {
+      setRegenerateStep((prev) => (prev + 1) % REGENERATE_STEPS.length)
+    }, 1200)
+
+    const start = Date.now()
+    let result
+    try {
+      result = await regenerateContent(taskId)
+    } catch {
+      result = { success: false }
+    }
+
+    // Ensure minimum wait time for UX
+    const elapsed = Date.now() - start
+    if (elapsed < REGENERATE_MIN_WAIT_MS) {
+      await new Promise((resolve) => setTimeout(resolve, REGENERATE_MIN_WAIT_MS - elapsed))
+    }
+
+    clearInterval(stepInterval)
+    setRegenerating(false)
+    setRegenerateWaitStart(null)
+    setRegenerateStep(0)
+
+    if (result.success) {
+      setDecisionToast(result.message || '内容已重新生成')
+      await fetchDetail(taskId)
+      setTimeout(() => setDecisionToast(null), 4000)
+    } else {
+      setDecisionToast('重新生成失败，请稍后重试')
+      setTimeout(() => setDecisionToast(null), 4000)
+    }
+  }
+
+  // ── Review decision ──
+  const handleDecision = async (decision: 'approve' | 'reject' | 'revise') => {
+    if (!taskId) return
+    let reason: string | undefined
+    if (decision === 'reject' || decision === 'revise') {
+      reason = window.prompt(decision === 'reject' ? '请输入驳回原因：' : '请输入打回修改原因：') || undefined
+      if (!reason) return
+    }
+    const result = await decideTask(taskId, decision, reason)
+    if (result.success) {
+      setDecisionToast(
+        decision === 'approve' && result.status === 'approved_waiting_publish'
+          ? '审核已通过，请确认发布'
+          : decision === 'approve'
+          ? '审核已通过'
+          : decision === 'reject'
+          ? '已驳回'
+          : '已打回修改'
+      )
+      await fetchDetail(taskId)
+      setTimeout(() => setDecisionToast(null), 3000)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="h-8 w-48 animate-pulse bg-secondary rounded" />
+        <div className="h-96 animate-pulse bg-secondary rounded-lg" />
+      </div>
+    )
+  }
+
+  if (error || !detail) {
+    return (
+      <div className="space-y-6">
+        <PageHeader title="审核详情" subtitle="查看审核结论详情" />
+        <div className="p-4 rounded-lg bg-destructive/10 text-destructive text-sm">
+          {error || '任务不存在'}
+        </div>
+        <Button variant="outline" onClick={() => navigate('/review-publish-center')}>
+          <ArrowLeft className="w-4 h-4 mr-1" />
+          返回列表
+        </Button>
+      </div>
+    )
+  }
+
+  const generated = generatedDraft || detail.generated_content
+  const latestReview = detail.review_history?.[detail.review_history.length - 1]
+  const reviewDecision = latestReview?.decision
+  const reviewReason = latestReview?.reason
+
+  return (
+    <div className="h-full flex flex-col -m-6">
+      {/* Header */}
+      <div className="shrink-0 border-b border-border bg-background px-6 py-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="sm" onClick={() => navigate('/review-publish-center')}>
+              <ArrowLeft className="w-4 h-4 mr-1" />
+              返回
+            </Button>
+            <div>
+              <h1 className="text-base font-semibold">{detail.task_name}</h1>
+              <div className="flex items-center gap-2 mt-0.5 text-xs text-muted-foreground">
+                <span>{platformLabels[detail.platform] || detail.platform}</span>
+                <span>·</span>
+                <span>{detail.account_name}</span>
+                {reviewDecision && (
+                  <>
+                    <span>·</span>
+                    <Badge variant={decisionVariants[reviewDecision] || 'default'} className="text-[10px]">
+                      {decisionLabels[reviewDecision] || reviewDecision}
+                    </Badge>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            {detail.can_publish && (
+              <Badge variant="warning" className="text-xs">待发布确认</Badge>
+            )}
+            {isSaving && (
+              <span className="text-xs text-muted-foreground">保存中...</span>
+            )}
+            {schemaLoading && (
+              <span className="text-xs text-muted-foreground">加载平台规范...</span>
+            )}
+          </div>
+        </div>
+
+        {confirmToast && (
+          <div className="mt-3 p-2 rounded-lg bg-success/10 text-success text-sm flex items-center gap-1.5">
+            <CheckCircle className="w-4 h-4" />
+            {confirmToast}
+          </div>
+        )}
+        {decisionToast && (
+          <div className="mt-3 p-2 rounded-lg bg-primary/10 text-primary text-sm flex items-center gap-1.5">
+            <CheckCircle className="w-4 h-4" />
+            {decisionToast}
+          </div>
+        )}
+      </div>
+
+      {/* Main content — two columns */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Left Column: Editor + Agent Summary */}
+        <div className="flex-1 overflow-y-auto p-6 bg-secondary/10 space-y-5 min-w-0">
+          {/* Note Editor */}
+          <NoteEditorPanel
+            content={generated}
+            meta={noteMeta}
+            editable
+            onChange={handleContentPatch}
+            onMetaChange={handleMetaChange}
+            onCoverChange={() => setCoverPickerOpen(true)}
+            platformSchema={platformSchema}
+            contentFormat={generated?.content_type === 'note' ? '图文' : generated?.content_type === 'video' ? '视频' : generated?.content_type === 'article' ? '长文章' : generated?.content_format || ''}
+            maxImages={platformSchema?.content_formats?.[0]?.fields?.find((f) => f.name === 'pic_num')?.max as number || 18}
+          />
+
+          <CoverPickerModal
+            open={coverPickerOpen}
+            onClose={() => setCoverPickerOpen(false)}
+            onSelect={(url, ratio) => {
+              handleContentPatch({ cover_image_url: url })
+              if (ratio) {
+                handleContentPatch({ cover_image_ratio: ratio })
+              }
+              setCoverPickerOpen(false)
+            }}
+          />
+
+          {/* Topic Report */}
+          <TopicReportPanel report={detail.topic_report} />
+
+          {/* Agent Summary */}
+          <AgentSummaryPanel
+            detail={detail}
+            onRegenerate={handleRegenerate}
+            regenerating={regenerating}
+          />
+        </div>
+
+        {/* Right Column: Preview + Decision */}
+        <div className="w-[420px] border-l border-border overflow-y-auto p-5 space-y-5 bg-background shrink-0">
+          {/* Note Preview */}
+          <NotePreviewPanel
+            content={generated}
+            location={noteMeta.location}
+            mentions={noteMeta.mentions}
+            visibility={noteMeta.visibility}
+            declaration={noteMeta.declaration}
+          />
+
+          {/* Review Decision */}
+          <ReviewDecisionPanel
+            taskId={taskId}
+            status={detail.status}
+            canPublish={detail.can_publish}
+            hasPrimaryApproval={detail.has_primary_approval}
+            reviewDecision={reviewDecision}
+            reviewReason={reviewReason}
+            reviewHistory={detail.review_history}
+            onApprove={() => handleDecision('approve')}
+            onReject={() => handleDecision('reject')}
+            onRevise={() => handleDecision('revise')}
+            onConfirmPublish={handleConfirmPublish}
+            confirmLoading={confirmLoading}
+          />
+        </div>
+      </div>
+
+      {/* Regenerate Confirm Modal */}
+      {showRegenerateModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-background border border-border rounded-xl shadow-lg p-6 w-full max-w-md mx-4 space-y-4">
+            <div className="flex items-center gap-2 text-amber-600">
+              <AlertTriangle className="w-5 h-5" />
+              <h3 className="text-base font-semibold">确认重新生成</h3>
+            </div>
+            <p className="text-sm text-muted-foreground">
+              重新生成将清空当前内容并重新执行完整工作流（选题→结构→正文→合规→预演）。
+              <br /><br />
+              当前已编辑的内容<strong>不会被保留</strong>，是否继续？
+            </p>
+            <div className="flex gap-3 justify-end pt-2">
+              <Button variant="outline" onClick={() => setShowRegenerateModal(false)}>
+                取消
+              </Button>
+              <Button variant="primary" onClick={doRegenerate}>
+                <Sparkles className="w-4 h-4 mr-1" />
+                确认重新生成
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Regenerate Loading Overlay */}
+      {regenerating && (
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm">
+          <div className="bg-background border border-border rounded-xl shadow-lg p-8 w-full max-w-md mx-4 space-y-5">
+            {/* Header */}
+            <div className="text-center space-y-1">
+              <div className="relative flex items-center justify-center mx-auto w-16 h-16">
+                <div className="absolute w-16 h-16 rounded-full border-4 border-primary/20" />
+                <div className="absolute w-16 h-16 rounded-full border-4 border-t-primary border-r-transparent border-b-transparent border-l-transparent animate-spin" />
+                <Loader2 className="w-8 h-8 text-primary animate-spin" />
+              </div>
+              <h3 className="text-base font-semibold">内容重新生成中</h3>
+              <p className="text-xs text-muted-foreground">
+                已耗时 {regenerateWaitStart ? ((Date.now() - regenerateWaitStart) / 1000).toFixed(1) : '0.0'} 秒
+              </p>
+            </div>
+
+            {/* Step indicators */}
+            <div className="space-y-2">
+              {REGENERATE_STEPS.map((step, idx) => {
+                const isActive = idx === regenerateStep
+                const isPast = idx < regenerateStep
+                return (
+                  <div
+                    key={step.label}
+                    className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-500 ${
+                      isActive
+                        ? 'bg-primary/10 border border-primary/20'
+                        : isPast
+                        ? 'opacity-40'
+                        : 'opacity-60'
+                    }`}
+                  >
+                    <div
+                      className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${
+                        isActive
+                          ? 'bg-primary text-primary-foreground'
+                          : isPast
+                          ? 'bg-success text-success-foreground'
+                          : 'bg-secondary text-muted-foreground'
+                      }`}
+                    >
+                      {isPast ? (
+                        <CheckCircle className="w-3.5 h-3.5" />
+                      ) : (
+                        idx + 1
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <p className={`text-xs font-medium ${isActive ? 'text-primary' : 'text-foreground'}`}>
+                        {step.label}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground truncate">{step.desc}</p>
+                    </div>
+                    {isActive && (
+                      <Loader2 className="w-3.5 h-3.5 text-primary animate-spin ml-auto shrink-0" />
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+
+            <p className="text-[10px] text-center text-muted-foreground">
+              工作流执行时间取决于 LLM 响应速度，请耐心等待...
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
