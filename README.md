@@ -81,11 +81,28 @@ EcoDreamOmni/
 ├── packages/shared/       # 前后端共享类型与工具
 ├── docker/                # Docker 配置与 override 文件
 ├── vendor/                # 开源依赖本地离线副本
-├── docs/                  # 产品/架构/设计/评审文档
-│   ├── 文档总纲.md
-│   ├── 数据词典/
-│   ├── 变更记录/
-│   └── Local_Startup_Guide.md
+├── docs/                  # 产品/架构/设计/评审文档（按命名规范组织）
+│   ├── README.md           # 文档中心索引
+│   ├── PROJECT_NAMING_CONVENTION_v1.0.md  # 文件命名规范
+│   ├── 00-index/           # 总纲与索引
+│   ├── 01-prd/             # 产品需求文档
+│   ├── 02-architecture/    # 架构设计
+│   ├── 03-design/          # 前端设计规范
+│   ├── 04-requirements/    # 需求分析
+│   ├── 05-development/     # 开发计划
+│   ├── 06-testing/         # 测试报告
+│   ├── 07-reviews/         # 评审报告
+│   ├── 08-bugs/            # Bug 记录
+│   ├── 09-reports/         # 分析报告
+│   ├── 10-deployment/      # 部署文档
+│   ├── 11-refactoring/     # 重构方案
+│   ├── 12-guides/          # 操作指南
+│   ├── 13-data-dictionary/ # 数据词典
+│   ├── 14-process-flows/   # 流程图
+│   ├── 15-policies/        # 规范约束
+│   ├── 16-changelogs/      # 变更记录
+│   ├── 17-outputs/         # 输出物
+│   └── 99-archives/        # 归档
 ├── demo/                  # Storybook 组件与页面预览
 ├── scripts/               # 运营/测试辅助脚本
 ├── .github/workflows/     # CI/CD 质量门禁
@@ -222,12 +239,17 @@ npm run coverage
 
 | 文档 | 路径 | 说明 |
 |------|------|------|
-| PRD 真源 | [`EcoDream_Omni_PRD_v2_对齐核心方案.md`](./EcoDream_Omni_PRD_v2_对齐核心方案.md) | 产品需求唯一真源 |
+| PRD 真源 | [`demo/EcoDream_Omni_PRD_v2_对齐核心方案.md`](./demo/EcoDream_Omni_PRD_v2_对齐核心方案.md) | 产品需求唯一真源 |
+| 命名规范 | [`docs/PROJECT_NAMING_CONVENTION_v1.0.md`](./docs/PROJECT_NAMING_CONVENTION_v1.0.md) | 全项目文件命名与版本管理 |
+| 文档中心 | [`docs/README.md`](./docs/README.md) | 文档分类索引与入口 |
 | Agent 协作手册 | [`AGENTS.md`](./AGENTS.md) | 工程纪律、TDD、提交规范 |
+| Cursor 规范 | [`.cursorrules`](./.cursorrules) | IDE 系统级规范提示词 |
+| 前端规范 | [`apps/frontend/AGENTS.md`](./apps/frontend/AGENTS.md) | React + Tailwind 专属约定 |
+| 后端规范 | [`apps/backend/AGENTS.md`](./apps/backend/AGENTS.md) | FastAPI + SQLAlchemy 专属约定 |
+| 共享包规范 | [`packages/shared/AGENTS.md`](./packages/shared/AGENTS.md) | 类型契约与接口约定 |
 | Sprint 任务 | [`TASK.md`](./TASK.md) | 当前 Sprint 原子任务分解 |
-| 本地启动指南 | [`docs/Local_Startup_Guide.md`](./docs/Local_Startup_Guide.md) | 从 0 开始启动全栈 |
-| 文档总纲 | [`docs/文档总纲.md`](./docs/文档总纲.md) | 全项目文档索引 |
-| 数据词典 | [`docs/数据词典/00-数据词典总纲.md`](./docs/数据词典/00-数据词典总纲.md) | API/Service/Store 映射 |
+| 本地启动指南 | [`docs/12-guides/GUIDE-local-startup_v1.0.md`](./docs/12-guides/GUIDE-local-startup_v1.0.md) | 从 0 开始启动全栈 |
+| 数据词典 | [`docs/13-data-dictionary/00-数据词典总纲.md`](./docs/13-data-dictionary/00-数据词典总纲.md) | API/Service/Store 映射 |
 
 ---
 
@@ -256,10 +278,11 @@ chore: 构建/工具链
 
 - ❌ 不写测试直接实现功能
 - ❌ 修改后不更新数据词典和总纲索引
+- ❌ 未遵循 `docs/PROJECT_NAMING_CONVENTION_v1.0.md` 命名规范
 - ❌ Agent 直接操作数据库（静态扫描 0 违规）
 - ❌ 一次修改多个不相关的模块
 
-更多规范请阅读 [`AGENTS.md`](./AGENTS.md)。
+更多规范请阅读 [`AGENTS.md`](./AGENTS.md)、[`.cursorrules`](./.cursorrules)。
 
 ---
 
