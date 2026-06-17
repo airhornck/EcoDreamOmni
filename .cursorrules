@@ -1,0 +1,188 @@
+# EcoDreamOmni — Cursor IDE 系统级规范提示词
+
+> 本文件为 Cursor IDE 的 `.cursorrules`，面向所有使用 Cursor 的 AI Agent 和人类开发者。
+> 与 `AGENTS.md` 互补：AGENTS.md 侧重项目协作纪律，本文件侧重 IDE 行为约束与代码生成规范。
+
+---
+
+## 1. 项目上下文（必须首先加载）
+
+每次会话开始时，必须读取以下文件以建立完整上下文：
+
+```
+1. AGENTS.md          → 项目协作手册（TDD 纪律、质量门禁、禁止事项）
+2. TASK.md            → 当前 Sprint 原子任务分解
+3. docs/README.md     → 文档中心索引
+4. docs/PROJECT_NAMING_CONVENTION_v1.0.md → 文件命名规范
+```
+
+**当前技术栈**：
+- 前端：React 19 + Vite 6 + TailwindCSS v4 + shadcn/ui + Zustand + TanStack Query
+- 后端：FastAPI + Python 3.11 + SQLAlchemy 2.0 + Alembic + Celery + Redis
+- 数据库：PostgreSQL 16 + Redis 7
+- 容器：Docker + Docker Compose
+
+---
+
+## 2. 代码生成纪律
+
+### 2.1 红绿灯 TDD（强制）
+
+```
+🔴 RED   → 先写测试，必须看到失败（证明测试有效）
+🟢 GREEN → 最小化实现使测试通过（禁止过度工程）
+🔵 BLUE  → 重构，保持测试通过（测试是安全网）
+```
+
+**Cursor 行为约束**：
+- 生成任何功能代码前，先生成对应的测试代码
+- 禁止一次性生成超过 3 个不相关模块的代码
+- 重构前必须确认测试覆盖存在，重构后必须运行测试
+
+### 2.2 质量门禁（Quality Gates）
+
+| 门禁 | 阈值 | 触发命令 |
+|------|------|----------|
+| 前端测试覆盖率 | ≥ 80% | `npm run test -- --run --coverage` |
+| 前端类型检查 | 0 errors | `npx tsc --noEmit` |
+| 前端 Lint | 0 errors | `npm run lint` |
+| 后端测试覆盖率 | ≥ 80% | `pytest --cov=src --cov-fail-under=80` |
+| 后端类型检查 | 0 errors | `mypy src/` |
+| 后端 Lint | 0 errors | `ruff check src/ tests/` |
+
+**Cursor 行为约束**：
+- 每次代码修改后，自动建议运行对应的质量门禁命令
+- 如果检测到类型/Lint 错误，优先修复错误再生成新代码
+
+---
+
+## 3. 代码风格规范
+
+### 3.1 前端（TypeScript / React）
+
+```
+- 使用函数组件 + Hooks，禁止类组件
+- 所有组件必须带显式返回类型注解
+- Props 必须用 interface 定义，禁止用 type 定义对象类型
+- 状态管理优先 Zustand（客户端）+ TanStack Query（服务端）
+- 表单使用 React Hook Form + Zod 校验
+- 样式使用 TailwindCSS v4 工具类，禁止内联 style
+- shadcn/ui 组件模式：复制到 components/ui/ 后按需修改
+- 文件命名：PascalCase（组件）、camelCase（工具）、kebab-case（配置）
+- 测试文件：{Component}.test.tsx 与源文件同目录
+```
+
+### 3.2 后端（Python / FastAPI）
+
+```
+- 使用 SQLAlchemy 2.0 新风格（type-annotated declarative）
+- 所有 API 路由必须带 Pydantic 请求/响应模型
+- 依赖注入使用 FastAPI 的 Depends
+- 异步优先：async def + await，数据库操作使用 AsyncSession
+- 服务层（Service）与 API 层（Router）分离
+- 文件命名：snake_case（模块）、PascalCase（类）
+- 测试文件：test_{module}.py 放在 tests/ 目录
+- 类型注解：必须完整，mypy --strict 通过
+```
+
+### 3.3 通用规范
+
+```
+- 禁止 any 类型（TypeScript）和 Any（Python）
+- 禁止魔法数字/字符串，必须提取为常量
+- 禁止 console.log / print 遗留，使用项目日志系统
+- 禁止硬编码 API 密钥，使用环境变量
+- 错误处理：前端用 ErrorBoundary，后端用 HTTPException + 统一响应模型
+```
+
+---
+
+## 4. 文件操作规范
+
+### 4.1 命名规范（强制）
+
+所有新建/重命名文件必须遵循 `docs/PROJECT_NAMING_CONVENTION_v1.0.md`：
+
+```
+{PREFIX}-{topic}_{version}.{ext}
+
+常用前缀：PRD, ARCH, DES, REQ, DEV, BUG, TEST, REVIEW,
+          DEPLOY, REPORT, REFACTOR, GUIDE, DATA, FLOW,
+          POLICY, CHANGELOG, PREVIEW, SCRIPT, OUTPUT
+```
+
+### 4.2 文件创建约束
+
+- 禁止在 `docs/` 根目录直接创建文件，必须放入对应分类文件夹
+- 禁止在 `apps/frontend/src/` 根目录创建组件，必须放入对应 page/ 或 components/
+- 禁止在 `apps/backend/src/api/` 直接创建路由，必须先在 `models/` 定义模型
+- 新建模块必须同步更新 `docs/13-data-dictionary/` 数据词典
+
+---
+
+## 5. 需求对齐约束（强制）
+
+每段需求处理前，必须执行以下检查：
+
+1. **PRD 真源对齐** — 与 `demo/EcoDream_Omni_PRD_v2_对齐核心方案.md` 一致；新增/偏差需求必须先补充到 PRD
+2. **技术架构对齐** — 修改仅维护调用关系，不涉及架构调整；涉及架构调整（新增 Router/ORM/Service）必须**暂停实施，请求用户严格审核**
+3. **文档连锁更新** — 所有变更必须从 `docs/00-index/` 可索引；同步更新数据词典 + 偏差报告
+4. **变更记录登记** — 实施完成后在 `docs/16-changelogs/YYYY-MM-DD/` 按模板填写变更总结
+
+---
+
+## 6. 禁止事项（红线）
+
+- ❌ 不写测试直接实现功能
+- ❌ 跳过红灯阶段（必须看到测试失败）
+- ❌ 一次修改多个不相关的模块
+- ❌ 删除或修改他人写的测试
+- ❌ 修改后不更新数据词典和总纲索引
+- ❌ 未按 `docs/15-policies/POLICY-testing-steps-collaboration_v1.0.md` 执行递进式测试
+- ❌ 生成代码不遵循当前项目的 ESLint / ruff / mypy 配置
+- ❌ 在 Cursor Chat 中泄露 API 密钥或数据库密码
+
+---
+
+## 7. 提交规范
+
+```
+feat: 新功能
+fix: Bug 修复
+test: 测试相关
+refactor: 重构（不改变行为）
+docs: 文档更新
+chore: 构建/工具链
+```
+
+**Cursor 行为约束**：
+- 生成代码后，建议合适的提交 message
+- 如果修改涉及多个类型，拆分为多个提交
+
+---
+
+## 8. 关键路径提醒
+
+```
+W1 → W2 → W3 → W4 → W5 → W6 → W7 → W8 → W9 → W10
+初始化 → 登录 → 主页 → 账号池 → 内容生成 → 合规 → 发布 → 驾驶舱 → 预测 → E2E
+```
+
+当前 Sprint：见 `TASK.md`
+
+---
+
+## 9. 快速命令参考
+
+| 场景 | 命令 |
+|------|------|
+| 前端测试 | `cd apps/frontend && npm run test -- --run --coverage` |
+| 前端类型检查 | `cd apps/frontend && npx tsc --noEmit` |
+| 前端 Lint | `cd apps/frontend && npm run lint` |
+| 前端构建 | `cd apps/frontend && npm run build` |
+| 后端测试 | `cd apps/backend && pytest --cov=src --cov-fail-under=80` |
+| 后端类型检查 | `cd apps/backend && mypy src/` |
+| 后端 Lint | `cd apps/backend && ruff check src/ tests/` |
+| 数据库迁移 | `cd apps/backend && alembic revision --autogenerate -m "描述"` |
+| Docker 构建 | `docker compose -f docker/docker-compose.yml build` |
+| 全量质量门禁 | `.github/workflows/ci.yml`（CI 自动执行） |

@@ -1,0 +1,71 @@
+{
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": "explicit",
+        "source.fixAll.ruff": "explicit"
+    },
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true,
+    "editor.rulers": [80, 120],
+    "editor.wordWrap": "wordWrapColumn",
+    "editor.wordWrapColumn": 120,
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+    "files.eol": "\n",
+
+    "typescript.preferences.importModuleSpecifier": "relative",
+    "typescript.suggest.autoImports": true,
+    "typescript.updateImportsOnFileMove.enabled": "always",
+
+    "python.analysis.typeCheckingMode": "strict",
+    "python.analysis.autoImportCompletions": true,
+    "python.analysis.autoFormatStrings": true,
+    "python.formatting.provider": "ruff",
+    "python.linting.enabled": true,
+    "python.linting.ruffEnabled": true,
+    "python.linting.mypyEnabled": true,
+
+    "search.exclude": {
+        "**/node_modules": true,
+        "**/.venv": true,
+        "**/__pycache__": true,
+        "**/.pytest_cache": true,
+        "**/.mypy_cache": true,
+        "**/.ruff_cache": true,
+        "**/dist": true,
+        "**/storybook-static": true,
+        "**/vendor": true,
+        "**/.git": true,
+        "**/.codegraph": true
+    },
+
+    "files.exclude": {
+        "**/.git": true,
+        "**/.DS_Store": true,
+        "**/node_modules": true,
+        "**/.venv": true
+    },
+
+    "git.ignoreLimitWarning": true,
+
+    "cursor.rules": [
+        "AGENTS.md",
+        "apps/frontend/AGENTS.md",
+        "apps/backend/AGENTS.md",
+        "packages/shared/AGENTS.md",
+        ".cursorrules"
+    ],
+
+    "extensions.json": {
+        "recommendations": [
+            "openai.chatgpt",
+            "esbenp.prettier-vscode",
+            "dbaeumer.vscode-eslint",
+            "charliermarsh.ruff",
+            "ms-python.python",
+            "bradlc.vscode-tailwindcss",
+            "github.copilot"
+        ]
+    }
+}
