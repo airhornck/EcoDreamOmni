@@ -175,8 +175,9 @@ def main():
         if r.status_code == 201:
             task = r.json()
             task_id = task["id"]
+            status = task.get("status", "unknown")
             log("B", "TC-B1 标准工作流节点流转", "PASS",
-                f"任务创建成功: {task_id}, status={task['status']}, node_index={task.get('current_node_index')}")
+                f"任务创建成功: {task_id}, status={status}, node_index={task.get('current_node_index')}")
         else:
             log("B", "TC-B1 标准工作流节点流转", "FAIL",
                 f"创建任务失败 HTTP {r.status_code}: {r.text[:300]}")
@@ -247,8 +248,9 @@ def main():
         })
         if r.status_code == 200:
             result = r.json()
+            status = result.get("status", "unknown")
             log("C", "TC-C1 APPROVE 驱动发布", "PASS",
-                f"新状态: {result['status']}, review_decision={result.get('review_decision')}")
+                f"新状态: {status}, review_decision={result.get('review_decision')}")
         else:
             log("C", "TC-C1 APPROVE 驱动发布", "FAIL",
                 f"HTTP {r.status_code}: {r.text[:300]}")
@@ -281,10 +283,14 @@ def main():
                 "operator": "reality_tester",
                 "feedback": "内容不符合要求",
             })
-            if r.status_code == 200 and r.json()["status"] == "failed":
-                log("C", "TC-C2 REJECT 终止工作流", "PASS", "状态变为 failed")
+            if r.status_code == 200:
+                result = r.json()
+                if result.get("status") == "failed":
+                    log("C", "TC-C2 REJECT 终止工作流", "PASS", "状态变为 failed")
+                else:
+                    log("C", "TC-C2 REJECT 终止工作流", "FAIL", f"status={result.get('status')}")
             else:
-                log("C", "TC-C2 REJECT 终止工作流", "FAIL", f"status={r.json().get('status') if r.status_code==200 else r.status_code}")
+                log("C", "TC-C2 REJECT 终止工作流", "FAIL", f"HTTP {r.status_code}")
         else:
             log("C", "TC-C2 REJECT 终止工作流", "FAIL", f"创建任务失败 {r2.status_code}")
 
