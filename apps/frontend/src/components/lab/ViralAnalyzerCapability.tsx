@@ -131,44 +131,32 @@ export function ViralAnalyzerCapability() {
     switch (copilotState) {
       case 'empty':
         return (
-          <>
-            <ActionCard icon="📤" title="粘贴笔记内容" description="支持粘贴链接、拖拽截图或直接输入正文">
-              <div className="space-y-2">
-                <p className="text-xs text-muted-foreground">在左侧「笔记编辑」Tab 中填写标题和正文，AI 会自动感知输入内容。</p>
-              </div>
-            </ActionCard>
-            <div className="flex gap-2">
-              <QuickAction icon={<History className="w-3.5 h-3.5" />} label="历史记录" />
-              <QuickAction icon={<Trash2 className="w-3.5 h-3.5" />} label="清空画布" onClick={handleReset} />
+          <ActionCard icon="📤" title="粘贴笔记内容" description="支持粘贴链接、拖拽截图或直接输入正文">
+            <div className="space-y-2">
+              <p className="text-xs text-muted-foreground">在左侧「笔记编辑」Tab 中填写标题和正文，AI 会自动感知输入内容。</p>
             </div>
-          </>
+          </ActionCard>
         )
 
       case 'input_ready':
         return (
-          <>
-            <ActionCard icon="🔍" title="开始分析" description="识别结构类型、关键词匹配、情绪曲线">
-              <Button
-                size="sm"
-                className="w-full"
-                onClick={handleAnalyze}
-                disabled={isAnalyzing}
-              >
-                {isAnalyzing ? (
-                  <>
-                    <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />
-                    分析中...
-                  </>
-                ) : (
-                  '开始分析'
-                )}
-              </Button>
-            </ActionCard>
-            <div className="flex gap-2">
-              <QuickAction icon={<History className="w-3.5 h-3.5" />} label="历史记录" />
-              <QuickAction icon={<Trash2 className="w-3.5 h-3.5" />} label="清空画布" onClick={handleReset} />
-            </div>
-          </>
+          <ActionCard icon="🔍" title="开始分析" description="识别结构类型、关键词匹配、情绪曲线">
+            <Button
+              size="sm"
+              className="w-full"
+              onClick={handleAnalyze}
+              disabled={isAnalyzing}
+            >
+              {isAnalyzing ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />
+                  分析中...
+                </>
+              ) : (
+                '开始分析'
+              )}
+            </Button>
+          </ActionCard>
         )
 
       case 'analyzing':
@@ -208,10 +196,6 @@ export function ViralAnalyzerCapability() {
                 )}
               </Button>
             </ActionCard>
-            <div className="flex gap-2">
-              <QuickAction icon={<History className="w-3.5 h-3.5" />} label="历史记录" />
-              <QuickAction icon={<Trash2 className="w-3.5 h-3.5" />} label="清空画布" onClick={handleReset} />
-            </div>
           </>
         )
 
@@ -228,10 +212,6 @@ export function ViralAnalyzerCapability() {
                 导出 JSON
               </Button>
             </ActionCard>
-            <div className="flex gap-2">
-              <QuickAction icon={<History className="w-3.5 h-3.5" />} label="历史记录" />
-              <QuickAction icon={<Trash2 className="w-3.5 h-3.5" />} label="清空画布" onClick={handleReset} />
-            </div>
           </>
         )
 
@@ -292,6 +272,14 @@ export function ViralAnalyzerCapability() {
 
           {/* Action Cards */}
           {renderCopilotActionCards()}
+
+          {/* Common Canvas Actions */}
+          {copilotState !== 'analyzing' && (
+            <div className="flex gap-2">
+              <QuickAction icon={<History className="w-3.5 h-3.5" />} label="历史记录" />
+              <QuickAction icon={<Trash2 className="w-3.5 h-3.5" />} label="清空画布" onClick={handleReset} />
+            </div>
+          )}
 
           {/* AI Message */}
           {copilotState !== 'empty' && (

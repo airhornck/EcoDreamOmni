@@ -194,6 +194,15 @@ async def _fetch_engagement_for_content(db: AsyncSession, content_id: str) -> di
     }
 
 
+@router.get("/reports", response_model=ReportBatchOut)
+def list_reports(user=Depends(get_current_user)):
+    reports = data_analyst_service.list_data_reports()
+    return ReportBatchOut(
+        count=len(reports),
+        reports=[_report_to_out(r) for r in reports],
+    )
+
+
 @router.get("/reports/{report_id}", response_model=ReportOut)
 def get_report(report_id: str, user=Depends(get_current_user)):
     report = data_analyst_service.get_data_report(report_id)

@@ -1,6 +1,22 @@
 import { create } from 'zustand'
 import { authHeaders } from '../lib/api'
 
+const PLATFORM_COLORS: Record<string, string> = {
+  xiaohongshu: '#ff2442',
+  xhs: '#ff2442',
+  douyin: '#1c1c1c',
+  wechat_channels: '#07c160',
+  videoChannel: '#07c160',
+}
+
+const PLATFORM_LABELS: Record<string, string> = {
+  xiaohongshu: '小红书',
+  xhs: '小红书',
+  douyin: '抖音',
+  wechat_channels: '视频号',
+  videoChannel: '视频号',
+}
+
 export interface DataReport {
   id: string
   account_id: string
@@ -166,7 +182,16 @@ export const useDataAnalystStore = create<DataAnalystState>((set, get) => ({
       const res = await fetch(`/api/data-analyst/publish-trend?days=${days}`, { headers: authHeaders() })
       if (!res.ok) throw new Error(`获取发布趋势失败: ${res.status}`)
       const data = await res.json()
-      set({ publishTrend: data })
+      const trend = Array.isArray(data) ? data : (data.trend || [])
+      set({
+        publishTrend: trend.map((d: { date: string; count?: number; total?: number }) => ({
+          date: d.date,
+          total: d.total ?? d.count ?? 0,
+          xiaohongshu: d.count ?? d.total ?? 0,
+          douyin: d.count ?? d.total ?? 0,
+          videoChannel: d.count ?? d.total ?? 0,
+        })),
+      })
     } catch (err) {
       set({ error: err instanceof Error ? err.message : '获取发布趋势失败' })
     }
@@ -177,7 +202,14 @@ export const useDataAnalystStore = create<DataAnalystState>((set, get) => ({
       const res = await fetch('/api/data-analyst/platform-distribution', { headers: authHeaders() })
       if (!res.ok) throw new Error(`获取平台分布失败: ${res.status}`)
       const data = await res.json()
-      set({ platformDistribution: data })
+      const distribution = Array.isArray(data) ? data : (data.distribution || [])
+      set({
+        platformDistribution: distribution.map((d: { platform: string; count: number; percentage?: number }) => ({
+          name: PLATFORM_LABELS[d.platform] || d.platform,
+          value: d.count,
+          color: PLATFORM_COLORS[d.platform] || '#888888',
+        })),
+      })
     } catch (err) {
       set({ error: err instanceof Error ? err.message : '获取平台分布失败' })
     }
@@ -188,7 +220,18 @@ export const useDataAnalystStore = create<DataAnalystState>((set, get) => ({
       const res = await fetch('/api/data-analyst/engagement-distribution', { headers: authHeaders() })
       if (!res.ok) throw new Error(`获取互动量分布失败: ${res.status}`)
       const data = await res.json()
-      set({ engagementDistribution: data })
+      set({
+        engagementDistribution: data
+          ? [
+              {
+                type: '平均互动',
+                likes: data.likes_avg || 0,
+                comments: data.comments_avg || 0,
+                saves: data.collections_avg || 0,
+              },
+            ]
+          : [],
+      })
     } catch (err) {
       set({ error: err instanceof Error ? err.message : '获取互动量分布失败' })
     }
@@ -199,7 +242,7 @@ export const useDataAnalystStore = create<DataAnalystState>((set, get) => ({
       const res = await fetch('/api/data-analyst/mape-trend', { headers: authHeaders() })
       if (!res.ok) throw new Error(`获取MAPE趋势失败: ${res.status}`)
       const data = await res.json()
-      set({ mapeTrend: data })
+      set({ mapeTrend: Array.isArray(data) ? data : (data.trend || []) })
     } catch (err) {
       set({ error: err instanceof Error ? err.message : '获取MAPE趋势失败' })
     }
@@ -210,7 +253,20 @@ export const useDataAnalystStore = create<DataAnalystState>((set, get) => ({
       const res = await fetch(`/api/data-analyst/content-ranking?limit=${limit}`, { headers: authHeaders() })
       if (!res.ok) throw new Error(`获取内容排行榜失败: ${res.status}`)
       const data = await res.json()
-      set({ contentRanking: data })
+      const ranking = Array.isArray(data) ? data : (data.ranking || [])
+      set({
+        contentRanking: ranking.map((item: { rank: number; title: string; platform: string; likes: number; comments: number; collections?: number; saves?: number; coverage: number; mape: number }) => ({
+          id: `${item.rank}-${item.title}`,
+          rank: item.rank,
+          title: item.title,
+          platform: item.platform,
+          likes: item.likes,
+          comments: item.comments,
+          saves: item.saves ?? item.collections ?? 0,
+          coverage: item.coverage,
+          mape: item.mape,
+        })),
+      })
     } catch (err) {
       set({ error: err instanceof Error ? err.message : '获取内容排行榜失败' })
     }
@@ -221,7 +277,17 @@ export const useDataAnalystStore = create<DataAnalystState>((set, get) => ({
       const res = await fetch('/api/data-analyst/account-comparison', { headers: authHeaders() })
       if (!res.ok) throw new Error(`获取账号对比失败: ${res.status}`)
       const data = await res.json()
-      set({ accountComparison: data })
+      const accounts = Array.isArray(data) ? data : (data.accounts || [])
+      set({
+        accountComparison: accounts.map((a: { account_id: string; account_name: string; platform: string; avg_engagement: number; health_score: number }) => ({
+          id: a.account_id,
+          name: a.account_name,
+          platform: a.platform,
+          publishCount: 0,
+          avgLikes: a.avg_engagement,
+          healthScore: a.health_score,
+        })),
+      })
     } catch (err) {
       set({ error: err instanceof Error ? err.message : '获取账号对比失败' })
     }
@@ -230,10 +296,26 @@ export const useDataAnalystStore = create<DataAnalystState>((set, get) => ({
   fetchReportList: async () => {
     try {
       const res = await fetch('/api/data-analyst/reports', { headers: authHeaders() })
-      if (!res.ok) throw new Error(`获取报表列表失败: ${res.status}`)
+      if (!res.ok) {
+        // 后端暂无列表接口，返回空数组避免页面白屏
+        if (res.status === 404) {
+          set({ reportList: [] })
+          return
+        }
+        throw new Error(`获取报表列表失败: ${res.status}`)
+      }
       const data = await res.json()
-      set({ reportList: data })
+      const items = Array.isArray(data) ? data : (data.items || data.reports || [])
+      set({
+        reportList: items.map((r: { id?: string; name?: string; created_at?: string; createdAt?: string; period?: string }) => ({
+          id: r.id || '',
+          name: r.name || '',
+          createdAt: r.created_at || r.createdAt || '',
+          period: r.period || '',
+        })),
+      })
     } catch (err) {
+      set({ reportList: [] })
       set({ error: err instanceof Error ? err.message : '获取报表列表失败' })
     }
   },
@@ -243,7 +325,20 @@ export const useDataAnalystStore = create<DataAnalystState>((set, get) => ({
       const res = await fetch('/api/data-analyst/calibration-status', { headers: authHeaders() })
       if (!res.ok) throw new Error(`获取校准状态失败: ${res.status}`)
       const data = await res.json()
-      set({ calibrationStatus: data })
+      const statusMap: Record<string, CalibrationStatus['status']> = {
+        ok: 'success',
+        success: 'success',
+        running: 'running',
+        failed: 'failed',
+        idle: 'idle',
+      }
+      set({
+        calibrationStatus: {
+          lastCalibratedAt: data.last_calibrated_at || null,
+          status: statusMap[data.status] || 'idle',
+          message: data.message || '',
+        },
+      })
     } catch (err) {
       set({ error: err instanceof Error ? err.message : '获取校准状态失败' })
     }
@@ -254,7 +349,16 @@ export const useDataAnalystStore = create<DataAnalystState>((set, get) => ({
       const res = await fetch('/api/data-analyst/import-history', { headers: authHeaders() })
       if (!res.ok) throw new Error(`获取导入历史失败: ${res.status}`)
       const data = await res.json()
-      set({ importHistory: data })
+      const history = Array.isArray(data) ? data : (data.history || [])
+      set({
+        importHistory: history.map((h: { id: string; file_name?: string; filename?: string; imported_at?: string; importedAt?: string; record_count?: number; rows?: number; status?: 'success' | 'partial' | 'failed' }) => ({
+          id: h.id,
+          filename: h.file_name || h.filename || '',
+          importedAt: h.imported_at || h.importedAt || '',
+          rows: h.record_count ?? h.rows ?? 0,
+          status: h.status || 'success',
+        })),
+      })
     } catch (err) {
       set({ error: err instanceof Error ? err.message : '获取导入历史失败' })
     }

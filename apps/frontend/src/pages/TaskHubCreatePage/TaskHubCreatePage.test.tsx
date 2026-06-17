@@ -83,6 +83,7 @@ vi.mock('../../stores/strategyStore', () => ({
 
 vi.mock('../../hooks/useStrategyQueries', () => ({
   useStrategyElements: () => ({ data: [], isSuccess: true }),
+  useStrategyElement: () => ({ data: null, isSuccess: false }),
   useStrategyElementRecommendations: () => ({ data: [], isLoading: false }),
 }))
 

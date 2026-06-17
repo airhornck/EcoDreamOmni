@@ -10,26 +10,25 @@ import {
   useDashboardAlerts,
   useDashboardSmartTopics,
   useDashboardAgentStatus,
-  useDashboardStoryProgress,
   useDashboardEngagementTrend,
-  useDashboardHitRate,
+  useDashboardQuickActions,
+  useDashboardActivityLog,
 } from "../hooks/useDashboardQueries";
 
 import { MetricCards } from "./DashboardPage/MetricCards";
 import { TodoListCard } from "./DashboardPage/TodoListCard";
 import { AIInsightCard } from "./DashboardPage/AIInsightCard";
 import { TrendChartCard } from "./DashboardPage/TrendChartCard";
-import { ContentStream } from "./DashboardPage/ContentStream";
 import { AgentStatusCard } from "./DashboardPage/AgentStatusCard";
 import { AlertsCard } from "./DashboardPage/AlertsCard";
-import { StoryProgressCard } from "./DashboardPage/StoryProgressCard";
+import { QuickActionsCard } from "./DashboardPage/QuickActionsCard";
+import { ActivityLogCard } from "./DashboardPage/ActivityLogCard";
 
 export function DashboardPage() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const [selectedTopicId, setSelectedTopicId] = useState<string | null>(null);
 
-  // Register Copilot context + action handler for Dashboard page
   useDashboardContext({ navigate });
 
   const overviewQuery = useDashboardOverview();
@@ -37,9 +36,9 @@ export function DashboardPage() {
   const alertsQuery = useDashboardAlerts();
   const topicsQuery = useDashboardSmartTopics();
   const agentQuery = useDashboardAgentStatus();
-  const storyQuery = useDashboardStoryProgress();
   const trendQuery = useDashboardEngagementTrend();
-  const hitRateQuery = useDashboardHitRate();
+  const quickActionsQuery = useDashboardQuickActions();
+  const activityLogQuery = useDashboardActivityLog();
 
   const isLoading =
     overviewQuery.isLoading ||
@@ -47,9 +46,9 @@ export function DashboardPage() {
     alertsQuery.isLoading ||
     topicsQuery.isLoading ||
     agentQuery.isLoading ||
-    storyQuery.isLoading ||
     trendQuery.isLoading ||
-    hitRateQuery.isLoading;
+    quickActionsQuery.isLoading ||
+    activityLogQuery.isLoading;
 
   const pendingTasks = overviewQuery.data?.tasksPending ?? 0;
 
@@ -58,7 +57,6 @@ export function DashboardPage() {
       <PageHeader
         title="工作台"
         subtitle={`欢迎回来，${user?.username ?? "运营"}。今日有 ${pendingTasks} 项待处理任务。`}
-        // Mode C: 新建任务按钮已移除，操作走 Copilot Action Card
       />
 
       {/* 顶部指标卡 */}
@@ -67,6 +65,14 @@ export function DashboardPage() {
           overview={overviewQuery.data ?? null}
           coreMetrics={metricsQuery.data ?? null}
           isLoading={isLoading}
+        />
+      </section>
+
+      {/* 快捷入口 */}
+      <section>
+        <QuickActionsCard
+          actions={quickActionsQuery.data ?? []}
+          isLoading={quickActionsQuery.isLoading}
         />
       </section>
 
@@ -80,9 +86,10 @@ export function DashboardPage() {
             selectedTopicId={selectedTopicId}
             onSelectTopic={setSelectedTopicId}
           />
-          <StoryProgressCard
-            stories={storyQuery.data ?? []}
-            isLoading={storyQuery.isLoading}
+          <ActivityLogCard
+            entries={activityLogQuery.data?.entries ?? []}
+            total={activityLogQuery.data?.total ?? 0}
+            isLoading={activityLogQuery.isLoading}
           />
           <TrendChartCard
             data={trendQuery.data ?? []}
@@ -107,11 +114,6 @@ export function DashboardPage() {
           />
         </div>
       </div>
-
-      {/* 内容卡片流（通栏） */}
-      <section>
-        <ContentStream isLoading={isLoading} />
-      </section>
     </div>
   );
 }

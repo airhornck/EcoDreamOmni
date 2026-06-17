@@ -197,7 +197,7 @@ export const DEFAULT_PAGE_COPILOT_CONFIG: Record<string, PageCopilotDefaultConfi
   /* ── 账号矩阵 ── */
   '/accounts': {
     welcomeMessage: '账号矩阵管理。查看素人账号健康度、发布计划和人设配置。',
-    quickActions: ['添加账号', '生成发布计划'],
+    quickActions: ['添加账号', '生成发布计划', '查看健康分'],
     actionCards: [
       {
         id: 'add-account',
@@ -206,7 +206,7 @@ export const DEFAULT_PAGE_COPILOT_CONFIG: Record<string, PageCopilotDefaultConfi
         description: '新增平台账号到矩阵中',
         priority: 1,
         actions: [
-          { id: 'add', label: '添加账号', variant: 'primary' },
+          { id: 'add_account', label: '添加账号', variant: 'primary' },
         ],
       },
       {
@@ -219,13 +219,20 @@ export const DEFAULT_PAGE_COPILOT_CONFIG: Record<string, PageCopilotDefaultConfi
           { id: 'generate_schedule', label: '生成计划', variant: 'primary' },
         ],
       },
+      {
+        id: 'account-health',
+        type: 'info',
+        title: '💚 账号健康度',
+        description: '查看矩阵中账号的健康分、风险等级与违规历史',
+        priority: 3,
+      },
     ],
   },
 
   /* ── 素材库 ── */
   '/assets': {
-    welcomeMessage: '素材库管理。管理图片、视频等素材，支持 AI 批量打标签。',
-    quickActions: ['上传素材', 'AI 打标签'],
+    welcomeMessage: '素材库管理。管理图片、视频等素材，支持 AI 批量打标签与一键应用到任务。',
+    quickActions: ['上传素材', 'AI 打标签', '筛选未标签'],
     actionCards: [
       {
         id: 'upload-asset',
@@ -234,7 +241,7 @@ export const DEFAULT_PAGE_COPILOT_CONFIG: Record<string, PageCopilotDefaultConfi
         description: '拖拽或选择文件上传至素材库',
         priority: 1,
         actions: [
-          { id: 'upload', label: '上传', variant: 'primary' },
+          { id: 'upload_asset', label: '上传', variant: 'primary' },
         ],
       },
       {
@@ -244,60 +251,83 @@ export const DEFAULT_PAGE_COPILOT_CONFIG: Record<string, PageCopilotDefaultConfi
         description: '为未打标签的素材自动生成标签',
         priority: 2,
         actions: [
-          { id: 'auto_tag', label: '开始打标签', variant: 'primary' },
+          { id: 'auto_tag_assets', label: '开始打标签', variant: 'primary' },
+        ],
+      },
+      {
+        id: 'apply-asset-to-task',
+        type: 'suggestion',
+        title: '🚀 应用到任务',
+        description: '选中素材后带入内容生产流程',
+        priority: 3,
+        actions: [
+          { id: 'apply_to_task', label: '去创建任务', variant: 'secondary' },
         ],
       },
     ],
   },
 
-  /* ── Agent 舰队 ── */
+  /* ── Agent 驾驶舱 ── */
   '/agents': {
-    welcomeMessage: 'Agent 舰队管理。查看 Agent 状态、部署新 Agent 或调整配置。',
-    quickActions: ['部署 Agent', '查看状态'],
+    welcomeMessage: 'Agent 驾驶舱。查看 v4.0 Agent-First 舰队，与 TaskHub Step3 同款数据源。',
+    quickActions: ['刷新列表'],
     actionCards: [
       {
-        id: 'deploy-agent',
+        id: 'agent-refresh',
         type: 'decision',
-        title: '🚀 部署 Agent',
-        description: '部署新的 AI Agent 到生产环境',
+        title: '🔄 刷新 Agent 列表',
+        description: '重新拉取 Agent 舰队最新状态',
         priority: 1,
         actions: [
-          { id: 'deploy', label: '部署', variant: 'primary' },
+          { id: 'refresh', label: '刷新', variant: 'primary' },
         ],
-      },
-      {
-        id: 'agent-status',
-        type: 'info',
-        title: '📊 Agent 状态',
-        description: '查看所有 Agent 的运行状态和队列情况',
-        priority: 2,
       },
     ],
   },
 
-  /* ── 模型中心 ── */
+  /* ── AI 引擎（原模型中心）── */
   '/models': {
-    welcomeMessage: '模型管理中心。查看 LLM 模型配置、成本监控和性能基准。',
-    quickActions: ['切换模型', '运行基准测试'],
+    welcomeMessage: 'AI 引擎管理。注册 LLM 模型、配置账号池代理、监控成本与性能。',
+    quickActions: ['新增模型', '新增代理', '查看成本', '查看日志'],
     actionCards: [
       {
-        id: 'switch-model',
+        id: 'model-add',
         type: 'decision',
-        title: '⚡ 切换模型',
-        description: '切换至其他 LLM 提供商或模型版本',
+        title: '➕ 新增模型',
+        description: '快速添加一个 AI 模型配置并测试连通性',
         priority: 1,
         actions: [
-          { id: 'switch', label: '切换', variant: 'primary' },
+          { id: 'add_model', label: '添加', variant: 'primary' },
         ],
       },
       {
-        id: 'benchmark',
+        id: 'proxy-add',
         type: 'decision',
-        title: '📊 运行基准测试',
-        description: '对比不同模型的性能和质量',
+        title: '🌐 新增代理',
+        description: '添加新的 HTTP/SOCKS5 代理以提升调用稳定性',
         priority: 2,
         actions: [
-          { id: 'benchmark', label: '运行测试', variant: 'secondary' },
+          { id: 'add_proxy', label: '添加', variant: 'primary' },
+        ],
+      },
+      {
+        id: 'model-cost',
+        type: 'info',
+        title: '📊 成本看板',
+        description: '查看最近 7 天模型调用成本与 token 消耗趋势',
+        priority: 3,
+        actions: [
+          { id: 'view_cost', label: '查看', variant: 'secondary' },
+        ],
+      },
+      {
+        id: 'model-logs',
+        type: 'info',
+        title: '📜 调用日志',
+        description: '浏览模型调用日志、延迟与错误分析',
+        priority: 4,
+        actions: [
+          { id: 'view_logs', label: '查看', variant: 'secondary' },
         ],
       },
     ],
@@ -306,26 +336,46 @@ export const DEFAULT_PAGE_COPILOT_CONFIG: Record<string, PageCopilotDefaultConfi
   /* ── 实验室 ── */
   '/lab': {
     welcomeMessage: '实验室。使用 AI 能力进行爆款笔记分析、文案优化和模板生成。',
-    quickActions: ['分析笔记', '生成模板'],
+    quickActions: ['爆款分析', '标题优化', '封面生成', 'A/B 测试'],
     actionCards: [
       {
-        id: 'analyze-note',
+        id: 'lab-viral',
         type: 'decision',
-        title: '🔍 爆款笔记分析',
-        description: '输入小红书笔记链接，分析其爆款结构',
+        title: '🔥 爆款笔记分析',
+        description: '粘贴爆款内容，AI 拆解结构并生成可复用模板',
         priority: 1,
         actions: [
-          { id: 'analyze', label: '开始分析', variant: 'primary' },
+          { id: 'open_viral_analyzer', label: '打开', variant: 'primary' },
         ],
       },
       {
-        id: 'generate-template',
-        type: 'decision',
-        title: '📝 生成模板',
-        description: '基于分析报告生成可复用的 ContentTemplate',
+        id: 'lab-title',
+        type: 'info',
+        title: '✍️ 标题优化器',
+        description: '标题 A/B 测试与优化（计划 2026-Q3 上线）',
         priority: 2,
         actions: [
-          { id: 'generate_template', label: '生成模板', variant: 'primary' },
+          { id: 'open_title_optimizer', label: '预览', variant: 'secondary' },
+        ],
+      },
+      {
+        id: 'lab-cover',
+        type: 'info',
+        title: '🖼️ 封面生成器',
+        description: 'AI 封面设计与排版优化（计划 2026-Q3 上线）',
+        priority: 3,
+        actions: [
+          { id: 'open_cover_generator', label: '预览', variant: 'secondary' },
+        ],
+      },
+      {
+        id: 'lab-ab',
+        type: 'info',
+        title: '🧪 A/B 测试',
+        description: '多版本内容效果预测与对比（计划 2026-Q4 上线）',
+        priority: 4,
+        actions: [
+          { id: 'open_ab_test', label: '预览', variant: 'secondary' },
         ],
       },
     ],
@@ -389,55 +439,85 @@ export const DEFAULT_PAGE_COPILOT_CONFIG: Record<string, PageCopilotDefaultConfi
 
   /* ── 设置 ── */
   '/settings': {
-    welcomeMessage: '系统设置。配置账号、通知、权限和平台规则。',
-    quickActions: ['保存设置', '重置'],
+    welcomeMessage: '系统设置。配置平台名称、API、通知与安全选项。',
+    quickActions: ['通用', 'API', '通知', '安全', '保存'],
     actionCards: [
       {
-        id: 'save-settings',
-        type: 'decision',
-        title: '💾 保存设置',
-        description: '保存当前所有配置更改',
+        id: 'settings-general',
+        type: 'info',
+        title: '⚙️ 通用设置',
+        description: '配置平台名称、默认平台与时区',
         priority: 1,
         actions: [
-          { id: 'save', label: '保存', variant: 'primary' },
+          { id: 'tab_general', label: '查看', variant: 'secondary' },
         ],
       },
       {
-        id: 'reset-settings',
-        type: 'decision',
-        title: '🔄 重置',
-        description: '将所有设置恢复为默认值',
+        id: 'settings-api',
+        type: 'info',
+        title: '🔑 API 配置',
+        description: '设置 API 基地址与请求超时',
         priority: 2,
         actions: [
-          { id: 'reset', label: '重置', variant: 'ghost' },
+          { id: 'tab_api', label: '查看', variant: 'secondary' },
+        ],
+      },
+      {
+        id: 'settings-notify',
+        type: 'info',
+        title: '🔔 通知开关',
+        description: '管理发布、合规、Agent 等消息通知',
+        priority: 3,
+        actions: [
+          { id: 'tab_notifications', label: '查看', variant: 'secondary' },
+        ],
+      },
+      {
+        id: 'settings-security',
+        type: 'info',
+        title: '🛡️ 安全设置',
+        description: '访问控制与密码策略',
+        priority: 4,
+        actions: [
+          { id: 'tab_security', label: '查看', variant: 'secondary' },
+        ],
+      },
+      {
+        id: 'settings-save',
+        type: 'decision',
+        title: '💾 保存当前配置',
+        description: '保存当前 Tab 下的设置项',
+        priority: 5,
+        actions: [
+          { id: 'save', label: '保存', variant: 'primary' },
         ],
       },
     ],
   },
 
-  /* ── 工作流编排 ── */
-  '/workflows': {
-    welcomeMessage: '工作流编排中心。设计、部署和管理自动化工作流。',
-    quickActions: ['创建工作流', '运行工作流'],
+  /* ── 策略元素 ── */
+  '/strategy-elements': {
+    welcomeMessage: '策略元素管理中心。统一管理关键词策略、Hook 模式、结构框架、CTA 模式等可复用内容组件。',
+    quickActions: ['创建元素', '爆款分析', '应用到任务'],
     actionCards: [
       {
-        id: 'create-workflow',
+        id: 'strategy-elements-create-default',
         type: 'decision',
-        title: '➕ 创建工作流',
-        description: '设计新的自动化工作流',
+        title: '➕ 创建策略元素',
+        description: '手动创建一个新的策略元素，补充到内容策略库',
         priority: 1,
         actions: [
-          { id: 'create_wf', label: '创建', variant: 'primary' },
+          { id: 'create_element', label: '开始创建', variant: 'primary' },
         ],
       },
       {
-        id: 'run-workflow',
-        type: 'decision',
-        title: '▶️ 运行工作流',
-        description: '手动触发工作流执行',
+        id: 'strategy-elements-analyze-default',
+        type: 'suggestion',
+        title: '🧪 爆款分析提取',
+        description: '前往实验室分析爆款笔记，自动提取策略元素',
         priority: 2,
         actions: [
-          { id: 'run_wf', label: '运行', variant: 'secondary' },
+          { id: 'go_lab', label: '去实验室', variant: 'secondary' },
         ],
       },
     ],
@@ -445,27 +525,37 @@ export const DEFAULT_PAGE_COPILOT_CONFIG: Record<string, PageCopilotDefaultConfi
 
   /* ── 平台规则 ── */
   '/rules': {
-    welcomeMessage: '平台规则管理。配置各平台的发布规则、合规要求和限制。',
-    quickActions: ['添加规则', '测试规则'],
+    welcomeMessage: '平台规则管理。配置 L1-L4 四层风控规则，支持试跑与状态切换。',
+    quickActions: ['新建规则', '规则试跑', '切换状态'],
     actionCards: [
       {
-        id: 'add-rule',
+        id: 'rule-create',
         type: 'decision',
-        title: '➕ 添加规则',
-        description: '新增平台规则或合规要求',
+        title: '➕ 新建平台规则',
+        description: '创建一条新的 L1-L4 风控规则',
         priority: 1,
         actions: [
-          { id: 'add_rule', label: '添加', variant: 'primary' },
+          { id: 'create_rule', label: '新建', variant: 'primary' },
         ],
       },
       {
-        id: 'test-rule',
+        id: 'rule-test',
         type: 'decision',
-        title: '🧪 测试规则',
-        description: '验证规则配置是否正确',
+        title: '🧪 规则试跑',
+        description: '输入内容并测试当前平台规则命中情况',
         priority: 2,
         actions: [
-          { id: 'test_rule', label: '测试', variant: 'secondary' },
+          { id: 'test_rule', label: '试跑', variant: 'secondary' },
+        ],
+      },
+      {
+        id: 'rule-toggle',
+        type: 'decision',
+        title: '🔁 切换首条规则',
+        description: '启用/禁用列表中的第一条规则',
+        priority: 3,
+        actions: [
+          { id: 'toggle_rule', label: '切换', variant: 'secondary' },
         ],
       },
     ],
@@ -503,9 +593,50 @@ export const DEFAULT_PAGE_COPILOT_CONFIG: Record<string, PageCopilotDefaultConfi
     actionCards: [],
   },
   '/proxy-config': {
-    welcomeMessage: '代理配置中心。管理网络代理和 API 密钥配置。',
-    quickActions: ['添加代理', '测试连接'],
-    actionCards: [],
+    welcomeMessage: '代理配置中心。代理配置已合并到 AI 引擎，建议从左侧导航进入。',
+    quickActions: ['新增代理', '测试连接', '切换状态', 'AI 引擎'],
+    actionCards: [
+      {
+        id: 'proxy-create',
+        type: 'decision',
+        title: '➕ 新增代理',
+        description: '添加新的 HTTP/SOCKS5 代理配置',
+        priority: 1,
+        actions: [
+          { id: 'create_proxy', label: '添加', variant: 'primary' },
+        ],
+      },
+      {
+        id: 'proxy-test',
+        type: 'decision',
+        title: '🧪 测试首个代理',
+        description: '对列表中的第一条代理进行连通性测试',
+        priority: 2,
+        actions: [
+          { id: 'test_first_proxy', label: '测试', variant: 'secondary' },
+        ],
+      },
+      {
+        id: 'proxy-toggle',
+        type: 'decision',
+        title: '🔁 切换首条代理状态',
+        description: '启用/禁用列表中的第一条代理',
+        priority: 3,
+        actions: [
+          { id: 'toggle_first_proxy', label: '切换', variant: 'secondary' },
+        ],
+      },
+      {
+        id: 'proxy-to-engine',
+        type: 'info',
+        title: '🚀 前往 AI 引擎',
+        description: '代理管理已合并至 AI 引擎，推荐统一入口',
+        priority: 4,
+        actions: [
+          { id: 'goto_engine', label: '前往', variant: 'secondary' },
+        ],
+      },
+    ],
   },
   '/timeline': {
     welcomeMessage: '时间线视图。查看账号矩阵的历史发布记录。',
@@ -513,9 +644,50 @@ export const DEFAULT_PAGE_COPILOT_CONFIG: Record<string, PageCopilotDefaultConfi
     actionCards: [],
   },
   '/vetdrug': {
-    welcomeMessage: '兽药查询中心。查询宠物用药信息和合规要求。',
-    quickActions: ['查询药品', '查看说明'],
-    actionCards: [],
+    welcomeMessage: '兽药批文库。录入批文、宣称校验、到期预警与产品关联。',
+    quickActions: ['新增批文', '宣称校验', '到期预警', 'CSV 导入'],
+    actionCards: [
+      {
+        id: 'vet-create',
+        type: 'decision',
+        title: '➕ 新增兽药批文',
+        description: '录入新的兽药批准文号及产品信息',
+        priority: 1,
+        actions: [
+          { id: 'create_drug', label: '新增', variant: 'primary' },
+        ],
+      },
+      {
+        id: 'vet-validate',
+        type: 'decision',
+        title: '🛡️ 宣称校验',
+        description: '校验产品宣称适应症是否在批文范围内',
+        priority: 2,
+        actions: [
+          { id: 'validate_claim', label: '校验', variant: 'primary' },
+        ],
+      },
+      {
+        id: 'vet-expiry',
+        type: 'info',
+        title: '⏰ 到期预警',
+        description: '查看 90 天内即将过期或已失效的批文',
+        priority: 3,
+        actions: [
+          { id: 'expiry_warnings', label: '查看', variant: 'secondary' },
+        ],
+      },
+      {
+        id: 'vet-import',
+        type: 'decision',
+        title: '📤 CSV 批量导入',
+        description: '通过 CSV 批量导入兽药批文数据',
+        priority: 4,
+        actions: [
+          { id: 'bulk_import', label: '导入', variant: 'secondary' },
+        ],
+      },
+    ],
   },
   '/predictions': {
     welcomeMessage: '预测分析中心。基于历史数据预测内容表现趋势。',

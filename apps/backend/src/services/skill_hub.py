@@ -19,7 +19,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Set
 
-from src.models.skill_definition import SkillDefinitionORM
+from src.services.skill_hub_orm import load_skills_from_orm, save_skill_to_orm
 
 
 @dataclass
@@ -779,94 +779,6 @@ def get_latest_version(skill_id: str) -> Optional[SkillDefinition]:
 
 
 # ─── P8-5: ORM Integration ───
-
-
-def _orm_to_dataclass(orm: SkillDefinitionORM) -> SkillDefinition:
-    """Convert ORM instance to in-memory dataclass."""
-    from typing import cast
-    return SkillDefinition(
-        skill_id=cast(str, orm.skill_id),
-        name=cast(str, orm.name),
-        version=cast(str, orm.version),
-        description=cast(str, orm.description) or "",
-        level=cast(str, orm.level),
-        input_schema=cast(Dict, orm.input_schema) or {},
-        output_schema=cast(Dict, orm.output_schema) or {},
-        modality_support=cast(Dict, orm.modality_support) or {"text": True},
-        requires_llm=cast(bool, orm.requires_llm),
-        llm_model_preference=cast(str, orm.llm_model_preference) or "",
-        required_functions=cast(List[str], orm.required_functions) or [],
-        permissions=cast(Dict, orm.permissions) or {},
-        code=cast(str, orm.code_path) or "",
-        status=cast(str, orm.status),
-        meta=cast(Dict, orm.meta) or {},
-    )
-
-
-async def load_skills_from_orm(db_session) -> int:
-    """Load all active skills from DB into in-memory registry.
-
-    Called during startup or admin-triggered refresh.
-    Returns count of loaded skills.
-    """
-    from sqlalchemy import select
-    result = await db_session.execute(
-        select(SkillDefinitionORM).where(SkillDefinitionORM.status == "active")
-    )
-    orm_skills = result.scalars().all()
-    count = 0
-    for orm in orm_skills:
-        sd = _orm_to_dataclass(orm)
-        register(sd)
-        count += 1
-    return count
-
-
-async def save_skill_to_orm(db_session, skill_def: SkillDefinition) -> SkillDefinitionORM:
-    """Persist a SkillDefinition to DB (upsert)."""
-    from sqlalchemy import select
-    result = await db_session.execute(
-        select(SkillDefinitionORM).where(
-            SkillDefinitionORM.skill_id == skill_def.skill_id,
-            SkillDefinitionORM.version == skill_def.version,
-        )
-    )
-    existing = result.scalar_one_or_none()
-    if existing:
-        existing.name = skill_def.name
-        existing.description = skill_def.description
-        existing.level = skill_def.level
-        existing.input_schema = skill_def.input_schema
-        existing.output_schema = skill_def.output_schema
-        existing.modality_support = skill_def.modality_support
-        existing.requires_llm = skill_def.requires_llm
-        existing.llm_model_preference = skill_def.llm_model_preference
-        existing.required_functions = skill_def.required_functions
-        existing.permissions = skill_def.permissions
-        existing.code_path = skill_def.code
-        existing.status = skill_def.status
-        existing.meta = skill_def.metadata
-        existing.updated_at = datetime.now(timezone.utc)
-        await db_session.flush()
-        return existing
-    else:
-        orm = SkillDefinitionORM(
-            skill_id=skill_def.skill_id,
-            name=skill_def.name,
-            description=skill_def.description,
-            version=skill_def.version,
-            level=skill_def.level,
-            input_schema=skill_def.input_schema,
-            output_schema=skill_def.output_schema,
-            modality_support=skill_def.modality_support,
-            requires_llm=skill_def.requires_llm,
-            llm_model_preference=skill_def.llm_model_preference,
-            required_functions=skill_def.required_functions,
-            permissions=skill_def.permissions,
-            code_path=skill_def.code,
-            status=skill_def.status,
-            meta=skill_def.metadata,
-        )
-        db_session.add(orm)
-        await db_session.flush()
-        return orm
+# DB access helpers live in skill_hub_orm.py to keep this module free of
+# direct SQLAlchemy execution.  They are re-exported here for backwards
+# compatibility with existing call sites.

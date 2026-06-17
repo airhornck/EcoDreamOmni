@@ -12,14 +12,6 @@
   "tests/test_human_in_loop_v2.py::test_batch_approve_blocks_high_risk": true,
   "tests/test_human_in_loop_v2.py::test_batch_approve_single_reviewer_for_low_risk": true,
   "tests/test_file_upload.py::test_safe_filename[../../etc/passwd-etcpasswd]": true,
-  "tests/test_skill_hub.py::test_create_skill": true,
-  "tests/test_skill_hub.py::test_list_skills": true,
-  "tests/test_skill_hub.py::test_get_skill_detail": true,
-  "tests/test_skill_hub.py::test_update_skill_version": true,
-  "tests/test_skill_hub.py::test_delete_skill": true,
-  "tests/test_skill_hub.py::test_bind_skill_to_agent": true,
-  "tests/test_skill_hub.py::test_list_agent_skills": true,
-  "tests/test_skill_hub.py::test_execute_skill": true,
   "tests/test_llm_routing.py::test_route_preferred_provider": true,
   "tests/test_llm_routing.py::test_route_no_model_raises": true,
   "tests/test_llm_routing.py::test_route_logs_decision": true,
@@ -54,9 +46,9 @@
   "tests/test_review_publish_api.py::test_update_content_partial": true,
   "tests/test_review_publish_api.py::test_regenerate_content": true,
   "tests/test_review_publish_api.py::test_regenerate_content_still_visible_in_list": true,
-  "tests/test_task_hub.py::test_start_workflow_drives_to_human_wait": true,
-  "tests/test_task_hub.py::test_start_workflow_light_template": true,
   "tests/test_content_templates.py::test_create_content_template_orm": true,
   "tests/test_engagement_collect.py::test_collect_engagement_for_task": true,
-  "tests/test_battle_report_generate.py::test_generate_battle_report_empty": true
+  "tests/test_battle_report_generate.py::test_generate_battle_report_empty": true,
+  "tests/test_workflow_real_nodes.py::test_marketing_methodology_output_format": true,
+  "tests/test_account_pool.py::test_create_pool_account": true
 }

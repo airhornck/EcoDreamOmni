@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { usePlatformRulesStore, type PlatformRule, type EvaluateResult } from '../stores/platformRulesStore'
+import { usePageCopilot } from '../hooks/usePageCopilot'
 import { PageHeader } from '../components/common/PageHeader'
 import { Card, CardContent, CardHeader } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
@@ -237,7 +238,7 @@ function TestRunPanel() {
   }
 
   return (
-    <Card>
+    <Card className="min-w-0 overflow-hidden">
       <CardHeader className="flex items-center gap-2">
         <Play className="w-4 h-4 text-primary" />
         <h3 className="text-base font-semibold">规则试跑</h3>
@@ -459,13 +460,12 @@ function RuleForm({
 /* ── Detail Drawer ── */
 
 function DetailDrawer({
-  rule, onClose, onEdit,
+  rule, onClose,
 }: {
   rule: PlatformRule
   onClose: () => void
-  onEdit: () => void
 }) {
-  const { fetchRuleHistory, ruleHistory, historyLoading, deleteRule } = usePlatformRulesStore()
+  const { fetchRuleHistory, ruleHistory, historyLoading } = usePlatformRulesStore()
   const [activeTab, setActiveTab] = useState<'info' | 'history'>('info')
 
   useEffect(() => {
@@ -473,10 +473,8 @@ function DetailDrawer({
   }, [rule.id, fetchRuleHistory])
 
   return (
-    <div className="fixed inset-0 z-50 flex">
-      <div className="flex-1 bg-black/50" onClick={onClose} />
-      <div className="w-[28rem] bg-card border-l border-border shadow-xl flex flex-col h-full">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+    <aside className="w-80 xl:w-[28rem] flex-shrink-0 border-l border-border bg-card shadow-xl flex flex-col sticky top-0 max-h-full overflow-hidden">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-border">
           <h3 className="text-base font-semibold">规则详情</h3>
           <button onClick={onClose} className="p-1 hover:bg-secondary rounded">
             <X className="w-4 h-4 text-muted-foreground" />
@@ -543,25 +541,6 @@ function DetailDrawer({
                 </pre>
               </div>
 
-              <div className="flex gap-2 pt-2">
-                <Button variant="secondary" className="flex-1" onClick={onEdit}>
-                  <Pencil className="w-4 h-4" />
-                  编辑
-                </Button>
-                <Button
-                  variant="danger"
-                  className="flex-1"
-                  onClick={() => {
-                    if (confirm('确定删除该规则？')) {
-                      deleteRule(rule.id)
-                      onClose()
-                    }
-                  }}
-                >
-                  <Trash2 className="w-4 h-4" />
-                  删除
-                </Button>
-              </div>
             </>
           )}
 
@@ -586,8 +565,7 @@ function DetailDrawer({
             </div>
           )}
         </div>
-      </div>
-    </div>
+    </aside>
   )
 }
 
@@ -606,6 +584,51 @@ export function PlatformRulesPage() {
   useEffect(() => {
     fetchRules(selectedPlatform)
   }, [selectedPlatform, fetchRules])
+
+  usePageCopilot(
+    [
+      {
+        id: 'rule-create',
+        type: 'decision',
+        title: '➕ 新建平台规则',
+        description: '创建一条新的 L1-L4 风控规则',
+        priority: 1,
+        actions: [{ id: 'create_rule', label: '新建', variant: 'primary' }],
+      },
+      {
+        id: 'rule-test',
+        type: 'decision',
+        title: '🧪 规则试跑',
+        description: '输入内容并测试当前平台规则命中情况',
+        priority: 2,
+        actions: [{ id: 'test_rule', label: '试跑', variant: 'secondary' }],
+      },
+      {
+        id: 'rule-toggle',
+        type: 'decision',
+        title: '🔁 切换首条规则',
+        description: '启用/禁用列表中的第一条规则',
+        priority: 3,
+        actions: [{ id: 'toggle_rule', label: '切换', variant: 'secondary' }],
+      },
+    ],
+    async (_cardId, actionId) => {
+      if (actionId === 'create_rule') {
+        setFormMode('create')
+        setEditingRule(undefined)
+        setShowForm(true)
+      } else if (actionId === 'test_rule') {
+        document.getElementById('rule-test-panel')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      } else if (actionId === 'toggle_rule') {
+        const first = rules[0]
+        if (first) {
+          await updateRule(first.id, { enabled: !first.enabled })
+        } else {
+          alert('当前没有可切换的规则')
+        }
+      }
+    }
+  )
 
   const detailRule = useMemo(
     () => rules.find((r) => r.id === detailRuleId) || null,
@@ -662,8 +685,11 @@ export function PlatformRulesPage() {
         <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm">{error}</div>
       )}
 
-      {/* Platform Filter */}
-      <div className="flex gap-2">
+      {/* Main content + side panel layout */}
+      <div className="flex gap-6 items-start">
+        <div className="flex-1 min-w-0 space-y-6">
+          {/* Platform Filter */}
+          <div className="flex gap-2">
         {platforms.map((p) => {
           const Icon = p.icon
           const active = selectedPlatform === p.key
@@ -706,7 +732,7 @@ export function PlatformRulesPage() {
       )}
 
       {/* Rule List */}
-      <Card>
+      <Card className="min-w-0 overflow-hidden">
         <CardHeader className="flex items-center gap-2">
           <Scale className="w-4 h-4 text-primary" />
           <h2 className="text-base font-semibold">规则列表</h2>
@@ -780,18 +806,16 @@ export function PlatformRulesPage() {
           </div>
         </CardContent>
       </Card>
+        </div>
 
-      {/* Detail Drawer */}
+      {/* Detail Drawer -- inline layout to avoid overlap with Copilot panel */}
       {detailRule && (
         <DetailDrawer
           rule={detailRule}
           onClose={() => setDetailRuleId(null)}
-          onEdit={() => {
-            setDetailRuleId(null)
-            openEdit(detailRule)
-          }}
         />
       )}
     </div>
+  </div>
   )
 }

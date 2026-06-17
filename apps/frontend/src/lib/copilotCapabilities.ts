@@ -21,6 +21,9 @@ export const FRONTEND_NAVIGATE_MAP: Record<string, NavigateCapability> = {
   publish: { type: 'navigate', target: '/review' },
 
   // Generate
+  create_task: { type: 'navigate', target: '/generate/create' },
+  quick_create: { type: 'navigate', target: '/generate/create' },
+  open_wizard: { type: 'navigate', target: '/generate/create' },
   browse_templates: { type: 'navigate', target: '/templates' },
 
   // Analytics
@@ -56,12 +59,14 @@ export const FRONTEND_NAVIGATE_MAP: Record<string, NavigateCapability> = {
   recommend: { type: 'navigate', target: '/keywords' },
 
   // Templates
-  use: { type: 'navigate', target: '/templates' },
-  create_tpl: { type: 'navigate', target: '/templates' },
+  use: { type: 'navigate', target: '/strategy-elements' },
+  create_tpl: { type: 'navigate', target: '/strategy-elements' },
 
-  // Workflows
-  create_wf: { type: 'navigate', target: '/workflows' },
-  run_wf: { type: 'navigate', target: '/workflows' },
+  // Strategy Elements
+  create_element: { type: 'navigate', target: '/strategy-elements' },
+  go_lab: { type: 'navigate', target: '/lab' },
+  apply_to_task: { type: 'navigate', target: '/generate/create' },
+  manage_strategy_elements: { type: 'navigate', target: '/strategy-elements' },
 
   // Rules
   add_rule: { type: 'navigate', target: '/rules' },
@@ -74,6 +79,11 @@ export const QUICK_ACTION_NAVIGATE_MAP: Record<string, NavigateCapability> = {
   '分析最近7天爆款趋势': { type: 'navigate', target: '/analytics' },
   '优化这条文案的标题': { type: 'navigate', target: '/lab' },
   '检查合规风险': { type: 'navigate', target: '/review' },
+  // 默认兜底快捷动作（后端 action-cards 失败时）
+  '新建任务': { type: 'navigate', target: '/generate/create' },
+  '新建内容': { type: 'navigate', target: '/generate/create' },
+  '查看全部': { type: 'navigate', target: '/generate' },
+  '查看趋势': { type: 'navigate', target: '/analytics' },
 }
 
 export function isNavigateAction(actionId: string): boolean {

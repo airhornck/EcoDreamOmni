@@ -110,6 +110,11 @@ class TaskResponse(BaseModel):
     content_strategy: Optional[Dict[str, Any]] = None
     methodology_stage_id: Optional[str] = None
     timeline_event_id: Optional[str] = None
+    # ── Publish audit fields (P0 Fix) ──
+    published_url: Optional[str] = None
+    platform_post_id: Optional[str] = None
+    published_at: Optional[str] = None
+    publish_error: Optional[str] = None
     # 富化字段（当前阶段先返回 None，后续 Phase 完善 JOIN 查询）
     account_name: Optional[str] = None
     persona_name: Optional[str] = None
@@ -252,6 +257,11 @@ def _to_task_response(t: task_hub.Task) -> TaskResponse:
         cron_job_id=t.cron_job_id,
         trace_id=t.trace_id,
         execution_id=t.execution_id,
+        # ── Publish audit fields (P0 Fix) ──
+        published_url=t.published_url,
+        platform_post_id=t.platform_post_id,
+        published_at=t.published_at,
+        publish_error=t.publish_error,
     )
 
 
@@ -365,7 +375,7 @@ async def create_task_with_workflow(
     t = await task_hub.create_task(
         db=db,
         name=req.name,
-        workflow_template_id=workflow_template_id,
+        workflow_template_id=workflow_template_id or "content_creation_standard",
         workflow_version=req.workflow_version,
         account_id=req.account_id,
         persona_id=req.persona_id,

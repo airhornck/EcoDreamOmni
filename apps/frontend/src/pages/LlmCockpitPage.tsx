@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useLlmCockpitStore } from '../stores/llmCockpitStore'
+import { useProxyStore, type ProxyEntry } from '../stores/proxyStore'
+import { usePageCopilot } from '../hooks/usePageCopilot'
 import { PageHeader } from '../components/common/PageHeader'
 import { Card, CardContent, CardHeader } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
@@ -20,6 +22,7 @@ import {
   CheckCircle2,
   Search,
   Loader2,
+  Link2,
 } from 'lucide-react'
 
 const PROVIDERS = {
@@ -41,6 +44,7 @@ const PROVIDERS = {
 const TAB_META = [
   { key: 'models' as const, label: '模型管理', icon: Cpu },
   { key: 'scopes' as const, label: '应用范围', icon: Globe },
+  { key: 'proxy' as const, label: '代理配置', icon: Link2 },
   { key: 'costs' as const, label: '成本看板', icon: BarChart3 },
   { key: 'logs' as const, label: '调用日志', icon: ScrollText },
 ]
@@ -83,15 +87,91 @@ export function LlmCockpitPage() {
 
   const [logFilters, setLogFilters] = useState<Record<string, string>>({})
 
+  const {
+    proxies,
+    isLoading: proxiesLoading,
+    error: proxiesError,
+    fetchProxies,
+    createProxy,
+    deleteProxy,
+    testProxy,
+  } = useProxyStore()
+
+  const [showProxyDrawer, setShowProxyDrawer] = useState(false)
+  const [proxyForm, setProxyForm] = useState({
+    name: '',
+    provider: 'custom' as 'custom' | 'brightdata' | 'oxylabs',
+    protocol: 'http' as 'http' | 'https' | 'socks5',
+    host: '',
+    port: '',
+    username: '',
+    password: '',
+    region: '',
+    rotation_type: 'static' as 'static' | 'rotating',
+  })
+  const [testingProxyId, setTestingProxyId] = useState<string | null>(null)
+  const [proxyTestResult, setProxyTestResult] = useState<{ id: string; success: boolean; msg: string } | null>(null)
+
   useEffect(() => {
     fetchModels()
   }, [fetchModels])
 
   useEffect(() => {
     if (activeTab === 'scopes') fetchScopeConfigs()
+    if (activeTab === 'proxy') fetchProxies()
     if (activeTab === 'costs') fetchCostSummary(7)
     if (activeTab === 'logs') fetchUsageLogs()
-  }, [activeTab, fetchScopeConfigs, fetchCostSummary, fetchUsageLogs])
+  }, [activeTab, fetchScopeConfigs, fetchProxies, fetchCostSummary, fetchUsageLogs])
+
+  usePageCopilot(
+    [
+      {
+        id: 'model-add',
+        type: 'decision',
+        title: '➕ 新增模型',
+        description: '快速添加一个 AI 模型配置并测试连通性',
+        priority: 1,
+        actions: [{ id: 'add_model', label: '添加', variant: 'primary' }],
+      },
+      {
+        id: 'proxy-add',
+        type: 'decision',
+        title: '🌐 新增代理',
+        description: '添加新的 HTTP/SOCKS5 代理以提升调用稳定性',
+        priority: 2,
+        actions: [{ id: 'add_proxy', label: '添加', variant: 'primary' }],
+      },
+      {
+        id: 'model-cost',
+        type: 'info',
+        title: '📊 成本看板',
+        description: '查看最近 7 天模型调用成本与 token 消耗趋势',
+        priority: 3,
+        actions: [{ id: 'view_cost', label: '查看', variant: 'secondary' }],
+      },
+      {
+        id: 'model-logs',
+        type: 'info',
+        title: '📜 调用日志',
+        description: '浏览模型调用日志、延迟与错误分析',
+        priority: 4,
+        actions: [{ id: 'view_logs', label: '查看', variant: 'secondary' }],
+      },
+    ],
+    async (_cardId, actionId) => {
+      if (actionId === 'add_model') {
+        setActiveTab('models')
+        setShowModelDrawer(true)
+      } else if (actionId === 'add_proxy') {
+        setActiveTab('proxy')
+        setShowProxyDrawer(true)
+      } else if (actionId === 'view_cost') {
+        setActiveTab('costs')
+      } else if (actionId === 'view_logs') {
+        setActiveTab('logs')
+      }
+    }
+  )
 
   const handleCreateModel = async () => {
     if (!modelForm.provider || !modelForm.model_name || !modelForm.api_key) return
@@ -108,12 +188,58 @@ export function LlmCockpitPage() {
     setTestingId(null)
   }
 
+  const resetProxyForm = () => {
+    setProxyForm({
+      name: '',
+      provider: 'custom',
+      protocol: 'http',
+      host: '',
+      port: '',
+      username: '',
+      password: '',
+      region: '',
+      rotation_type: 'static',
+    })
+  }
+
+  const handleCreateProxy = async () => {
+    if (!proxyForm.name.trim() || !proxyForm.host.trim() || !proxyForm.port.trim()) return
+    const success = await createProxy({
+      name: proxyForm.name,
+      provider: proxyForm.provider,
+      protocol: proxyForm.protocol,
+      host: proxyForm.host,
+      port: parseInt(proxyForm.port, 10),
+      username: proxyForm.username,
+      password: proxyForm.password,
+      region: proxyForm.region,
+      rotation_type: proxyForm.rotation_type,
+    })
+    if (success) {
+      setShowProxyDrawer(false)
+      resetProxyForm()
+    }
+  }
+
+  const handleTestProxy = async (proxy: ProxyEntry) => {
+    setTestingProxyId(proxy.id)
+    setProxyTestResult(null)
+    const result = await testProxy(proxy.id)
+    setProxyTestResult({ id: proxy.id, success: result.success, msg: result.error || '连接成功' })
+    setTestingProxyId(null)
+  }
+
+  const handleToggleProxyActive = async (proxy: ProxyEntry) => {
+    const { updateProxy } = useProxyStore.getState()
+    await updateProxy(proxy.id, { is_active: !proxy.is_active })
+  }
+
   const globalScope = scopeConfigs.find((s) => s.scope_type === 'global')
   const nodeScopes = scopeConfigs.filter((s) => s.scope_type === 'node')
 
   return (
     <div className="space-y-6">
-      <PageHeader title="LLM Cockpit" subtitle="模型管理、应用范围、成本监控与调用日志" />
+      <PageHeader title="AI 引擎" subtitle="模型管理、代理配置、应用范围、成本监控与调用日志" />
 
       {error && (
         <AlertBanner variant="danger" title="操作失败" description={error} onDismiss={clearError} />
@@ -267,7 +393,7 @@ export function LlmCockpitPage() {
             </Card>
           )}
 
-          <div className="bg-card rounded-xl border border-border overflow-hidden">
+          <div className="bg-card rounded-xl border border-border overflow-hidden min-w-0">
             <table className="w-full text-sm">
               <thead className="bg-muted">
                 <tr>
@@ -362,7 +488,7 @@ export function LlmCockpitPage() {
             </Card>
           )}
 
-          <div className="bg-card rounded-xl border border-border overflow-hidden">
+          <div className="bg-card rounded-xl border border-border overflow-hidden min-w-0">
             <table className="w-full text-sm">
               <thead className="bg-muted">
                 <tr>
@@ -436,7 +562,7 @@ export function LlmCockpitPage() {
                 <h3 className="text-base font-semibold">编辑节点覆盖</h3>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                   <div className="space-y-1">
                     <label className="text-xs font-medium text-muted-foreground">模型</label>
                     <select
@@ -534,7 +660,7 @@ export function LlmCockpitPage() {
                 </Card>
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                 <Card>
                   <CardHeader>
                     <h3 className="text-base font-semibold">按模型占比</h3>
@@ -665,7 +791,7 @@ export function LlmCockpitPage() {
             </div>
           </div>
 
-          <div className="bg-card rounded-xl border border-border overflow-hidden">
+          <div className="bg-card rounded-xl border border-border overflow-hidden min-w-0">
             <table className="w-full text-sm">
               <thead className="bg-muted">
                 <tr>
@@ -708,6 +834,200 @@ export function LlmCockpitPage() {
                         title="暂无调用日志"
                         description="调整筛选条件或稍后查看"
                       />
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
+
+      {/* Proxies Tab */}
+      {activeTab === 'proxy' && (
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-foreground">代理配置</h2>
+            <Button
+              size="sm"
+              onClick={() => {
+                setShowProxyDrawer(true)
+                resetProxyForm()
+              }}
+            >
+              <Plus className="w-4 h-4" />
+              新增代理
+            </Button>
+          </div>
+
+          {proxiesError && (
+            <AlertBanner variant="danger" title="操作失败" description={proxiesError} />
+          )}
+
+          {showProxyDrawer && (
+            <Card>
+              <CardHeader>
+                <h3 className="text-base font-semibold">新增代理</h3>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <input
+                    type="text"
+                    placeholder="代理名称 *"
+                    value={proxyForm.name}
+                    onChange={(e) => setProxyForm({ ...proxyForm, name: e.target.value })}
+                    className="w-full h-10 px-3 rounded-lg border border-border bg-background text-sm"
+                  />
+                  <select
+                    value={proxyForm.provider}
+                    onChange={(e) => setProxyForm({ ...proxyForm, provider: e.target.value as typeof proxyForm.provider })}
+                    className="h-10 px-3 rounded-lg border border-border bg-background text-sm"
+                  >
+                    <option value="custom">自定义</option>
+                    <option value="brightdata">Bright Data</option>
+                    <option value="oxylabs">Oxylabs</option>
+                  </select>
+                </div>
+                <div className="grid grid-cols-3 gap-3">
+                  <select
+                    value={proxyForm.protocol}
+                    onChange={(e) => setProxyForm({ ...proxyForm, protocol: e.target.value as typeof proxyForm.protocol })}
+                    className="h-10 px-3 rounded-lg border border-border bg-background text-sm"
+                  >
+                    <option value="http">HTTP</option>
+                    <option value="https">HTTPS</option>
+                    <option value="socks5">SOCKS5</option>
+                  </select>
+                  <input
+                    type="text"
+                    placeholder="主机地址 *"
+                    value={proxyForm.host}
+                    onChange={(e) => setProxyForm({ ...proxyForm, host: e.target.value })}
+                    className="w-full h-10 px-3 rounded-lg border border-border bg-background text-sm"
+                  />
+                  <input
+                    type="number"
+                    placeholder="端口 *"
+                    value={proxyForm.port}
+                    onChange={(e) => setProxyForm({ ...proxyForm, port: e.target.value })}
+                    className="w-full h-10 px-3 rounded-lg border border-border bg-background text-sm"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <input
+                    type="text"
+                    placeholder="用户名（可选）"
+                    value={proxyForm.username}
+                    onChange={(e) => setProxyForm({ ...proxyForm, username: e.target.value })}
+                    className="w-full h-10 px-3 rounded-lg border border-border bg-background text-sm"
+                  />
+                  <input
+                    type="password"
+                    placeholder="密码（可选）"
+                    value={proxyForm.password}
+                    onChange={(e) => setProxyForm({ ...proxyForm, password: e.target.value })}
+                    className="w-full h-10 px-3 rounded-lg border border-border bg-background text-sm"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <input
+                    type="text"
+                    placeholder="地区（可选）"
+                    value={proxyForm.region}
+                    onChange={(e) => setProxyForm({ ...proxyForm, region: e.target.value })}
+                    className="w-full h-10 px-3 rounded-lg border border-border bg-background text-sm"
+                  />
+                  <select
+                    value={proxyForm.rotation_type}
+                    onChange={(e) => setProxyForm({ ...proxyForm, rotation_type: e.target.value as typeof proxyForm.rotation_type })}
+                    className="h-10 px-3 rounded-lg border border-border bg-background text-sm"
+                  >
+                    <option value="static">静态</option>
+                    <option value="rotating">轮换</option>
+                  </select>
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Button variant="ghost" size="sm" onClick={() => setShowProxyDrawer(false)}>
+                    取消
+                  </Button>
+                  <Button size="sm" onClick={handleCreateProxy}>
+                    保存
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          <div className="bg-card rounded-xl border border-border overflow-hidden min-w-0">
+            <table className="w-full text-sm">
+              <thead className="bg-muted">
+                <tr>
+                  <th className="text-left px-4 py-3 font-medium text-muted-foreground">名称</th>
+                  <th className="text-left px-4 py-3 font-medium text-muted-foreground">协议</th>
+                  <th className="text-left px-4 py-3 font-medium text-muted-foreground">地址</th>
+                  <th className="text-left px-4 py-3 font-medium text-muted-foreground">地区</th>
+                  <th className="text-left px-4 py-3 font-medium text-muted-foreground">轮换</th>
+                  <th className="text-left px-4 py-3 font-medium text-muted-foreground">健康</th>
+                  <th className="text-right px-4 py-3 font-medium text-muted-foreground">操作</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {proxies.map((p) => (
+                  <tr key={p.id} className="hover:bg-muted/50">
+                    <td className="px-4 py-3 text-foreground font-medium">{p.name}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{p.protocol.toUpperCase()}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{p.host}:{p.port}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{p.region || '-'}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{p.rotation_type === 'rotating' ? '轮换' : '静态'}</td>
+                    <td className="px-4 py-3">
+                      <Badge variant={p.health_status === 'healthy' ? 'success' : p.health_status === 'unhealthy' ? 'danger' : 'warning'}>
+                        {p.health_status === 'healthy' ? '健康' : p.health_status === 'unhealthy' ? '异常' : '未知'}
+                      </Badge>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => handleTestProxy(p)}
+                          className="p-1.5 hover:bg-primary/10 rounded text-primary"
+                          title="测试连接"
+                        >
+                          {testingProxyId === p.id ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <CheckCircle2 className="w-4 h-4" />
+                          )}
+                        </button>
+                        <button
+                          onClick={() => handleToggleProxyActive(p)}
+                          className="p-1.5 hover:bg-secondary rounded"
+                          title={p.is_active ? '停用' : '启用'}
+                        >
+                          {p.is_active ? (
+                            <span className="text-xs text-success">启用</span>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">停用</span>
+                          )}
+                        </button>
+                        <button
+                          onClick={() => deleteProxy(p.id)}
+                          className="p-1.5 hover:bg-destructive/10 rounded text-destructive"
+                          title="删除"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                      {proxyTestResult?.id === p.id && (
+                        <div className={`text-xs mt-1 ${proxyTestResult.success ? 'text-success' : 'text-destructive'}`}>
+                          {proxyTestResult.msg}
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+                {proxies.length === 0 && !proxiesLoading && (
+                  <tr>
+                    <td colSpan={7} className="px-4 py-8">
+                      <EmptyState icon={Link2} title="暂无代理" description="添加第一个代理服务器" />
                     </td>
                   </tr>
                 )}

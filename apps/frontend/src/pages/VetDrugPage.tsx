@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useVetDrugStore, type VetDrug } from '../stores/vetDrugStore'
+import { usePageCopilot } from '../hooks/usePageCopilot'
 import { PageHeader } from '../components/common/PageHeader'
 import { Card, CardContent, CardHeader } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
@@ -66,6 +67,57 @@ export function VetDrugPage() {
     const warnings = await useVetDrugStore.getState().fetchExpiryWarnings(90)
     setExpiryWarnings(warnings)
   }
+
+  // Copilot 联动（放在 setShowWarnings/loadExpiryWarnings 声明之后）
+  usePageCopilot(
+    [
+      {
+        id: 'vet-create',
+        type: 'decision',
+        title: '➕ 新增兽药批文',
+        description: '录入新的兽药批准文号及产品信息',
+        priority: 1,
+        actions: [{ id: 'create_drug', label: '新增', variant: 'primary' }],
+      },
+      {
+        id: 'vet-validate',
+        type: 'decision',
+        title: '🛡️ 宣称校验',
+        description: '校验产品宣称适应症是否在批文范围内',
+        priority: 2,
+        actions: [{ id: 'validate_claim', label: '校验', variant: 'primary' }],
+      },
+      {
+        id: 'vet-expiry',
+        type: 'info',
+        title: '⏰ 到期预警',
+        description: '查看 90 天内即将过期或已失效的批文',
+        priority: 3,
+        actions: [{ id: 'expiry_warnings', label: '查看', variant: 'secondary' }],
+      },
+      {
+        id: 'vet-import',
+        type: 'decision',
+        title: '📤 CSV 批量导入',
+        description: '通过 CSV 批量导入兽药批文数据',
+        priority: 4,
+        actions: [{ id: 'bulk_import', label: '导入', variant: 'secondary' }],
+      },
+    ],
+    async (_cardId, actionId) => {
+      if (actionId === 'create_drug') {
+        setShowCreate(true)
+      } else if (actionId === 'validate_claim') {
+        setShowValidate(true)
+      } else if (actionId === 'expiry_warnings') {
+        setShowWarnings(true)
+        await loadExpiryWarnings()
+      } else if (actionId === 'bulk_import') {
+        const input = document.querySelector('input[type="file"]') as HTMLInputElement | null
+        input?.click()
+      }
+    }
+  )
 
   const handleValidate = async () => {
     if (!validateForm.approval_number.trim() || !validateForm.indications.trim()) return

@@ -146,7 +146,43 @@ async def seed_default_agents(db: AsyncSession) -> int:
             skills=["text_generate_skill", "keyword_inject_skill", "rag_retrieval_skill", "cover_generate_skill"],
             supported_platforms=["xiaohongshu"],
             supported_formats=["图文"],
-            config={"default_workflow_template_id": "content_creation_note_image", "workflow_version": 1},
+            config={
+                "default_workflow_template_id": "content_creation_note_image",
+                "workflow_version": 2,
+                "platform_format_snapshot": {
+                    "platform_id": "xiaohongshu",
+                    "format_name": "图文",
+                    "title_constraints": {
+                        "max_length": 20,
+                        "recommended": "15-20字",
+                        "recommended_patterns": ["数字+痛点", "场景+解决方案", "对比+结论"],
+                    },
+                    "body_constraints": {
+                        "max_length": 1000,
+                        "recommended": "300-800字",
+                        "max_paragraphs": 15,
+                        "max_emojis": 20,
+                        "line_break_style": "loose",
+                    },
+                    "tag_constraints": {
+                        "max_count": 10,
+                        "max_length_per_tag": 20,
+                    },
+                    "cover_constraints": {
+                        "aspect_ratio": "3:4",
+                        "min_width": 720,
+                        "min_height": 960,
+                        "recommended_per_post": "6-9",
+                        "max_images_per_post": 18,
+                    },
+                },
+                "safety_injection": {
+                    "pre_check_agents": ["vetdrug-validate"],
+                    "post_check_agents": ["compliance-guard"],
+                    "rule_layers": ["l1_static", "l2_keyword"],
+                    "required_disclaimers": ["本品不能替代药品"],
+                },
+            },
         ),
         AgentInfo(
             id="content_forge_xhs_video",

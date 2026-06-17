@@ -159,4 +159,45 @@ describe('LlmCockpitPage', () => {
     render(<LlmCockpitPage />)
     expect(screen.getByText('Network error')).toBeInTheDocument()
   })
+
+  it('uses xl breakpoint for cost dashboard two-column layout', () => {
+    const state = mockStore({
+      activeTab: 'costs',
+      costSummary: {
+        period_days: 7,
+        total_calls: 100,
+        total_input_tokens: 1000,
+        total_output_tokens: 500,
+        estimated_cost_cny: 10,
+        by_model: [{ model_id: 'm1', model_name: 'GPT-4o', calls: 50, cost_cny: 5 }],
+        by_node: [{ node_id: 'n1', calls: 50, cost_cny: 5 }],
+        trend: [{ date: '2024-01-01', calls: 50, cost_cny: 5 }],
+      },
+    })
+    vi.mocked(useLlmCockpitStore).mockReturnValue(state)
+    const { container } = render(<LlmCockpitPage />)
+    const twoColGrid = container.querySelector('.grid.grid-cols-1.xl\\:grid-cols-2')
+    expect(twoColGrid).toBeInTheDocument()
+  })
+
+  it('table wrappers have shrink protection', () => {
+    const state = mockStore({
+      activeTab: 'models',
+      models: [
+        {
+          id: 'm1',
+          provider: 'deepseek',
+          model_name: 'deepseek-chat',
+          api_key_masked: '••••••••',
+          endpoint_base_url: 'https://api.deepseek.com',
+          status: 'active',
+          data_training_opt_out: true,
+        },
+      ],
+    })
+    vi.mocked(useLlmCockpitStore).mockReturnValue(state)
+    const { container } = render(<LlmCockpitPage />)
+    const tableWrappers = container.querySelectorAll('.bg-card.rounded-xl.border.border-border.overflow-hidden.min-w-0')
+    expect(tableWrappers.length).toBeGreaterThanOrEqual(1)
+  })
 })

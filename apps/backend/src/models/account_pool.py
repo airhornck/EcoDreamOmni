@@ -88,7 +88,6 @@ class AccountPoolEntry:
         return self.posts_today >= self.daily_quota and self.daily_quota > 0
 
 
-# In-memory store (MVP phase)
 _account_pool_db: Dict[str, AccountPoolEntry] = {}
 
 
@@ -96,55 +95,39 @@ def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-def _today_iso() -> str:
-    return datetime.now(timezone.utc).strftime("%Y-%m-%d")
-
-
-def _ensure_daily_reset(entry: AccountPoolEntry) -> bool:
-    """Reset posts_today if last_post_reset is not today. Returns True if reset happened."""
-    today = _today_iso()
-    if entry.last_post_reset != today:
-        entry.posts_today = 0
-        entry.last_post_reset = today
-        entry.updated_at = _now()
-        return True
-    return False
-
-
 def create_pool_entry(
+    entry_id: str,
     platform: str,
     account_id: str,
     nickname: str,
-    cookie: str,
+    cookie_encrypted: str,
     persona: str,
     content_vertical: str,
     lifecycle_phase: str,
-    fingerprint_profile: dict,
-    proxy_config: Optional[dict] = None,
+    fingerprint_profile: Optional[FingerprintProfile] = None,
+    proxy_config: Optional[ProxyConfig] = None,
     health_score: float = 100.0,
+    status: str = "active",
 ) -> AccountPoolEntry:
-    entry_id = secrets.token_urlsafe(16)
-    now = _now()
-    today = _today_iso()
-    fp = FingerprintProfile(**fingerprint_profile) if isinstance(fingerprint_profile, dict) else fingerprint_profile
-    proxy = ProxyConfig(**proxy_config) if isinstance(proxy_config, dict) else proxy_config
-    quota = LIFECYCLE_QUOTAS.get(lifecycle_phase, 1)
+    if lifecycle_phase not in LIFECYCLE_QUOTAS:
+        raise ValueError(f"Invalid lifecycle_phase: {lifecycle_phase}")
     entry = AccountPoolEntry(
         id=entry_id,
         platform=platform,
         account_id=account_id,
         nickname=nickname,
-        cookie_encrypted=_encrypt_cookie(cookie),
+        cookie_encrypted=cookie_encrypted,
         persona=persona,
         content_vertical=content_vertical,
         lifecycle_phase=lifecycle_phase,
-        fingerprint_profile=fp,
-        proxy_config=proxy,
+        fingerprint_profile=fingerprint_profile or FingerprintProfile(user_agent="", viewport={"width": 390, "height": 844}, locale="zh-CN", timezone="Asia/Shanghai"),
+        proxy_config=proxy_config,
         health_score=health_score,
-        created_at=now,
-        updated_at=now,
-        daily_quota=quota,
-        last_post_reset=today,
+        daily_quota=LIFECYCLE_QUOTAS[lifecycle_phase],
+        last_post_reset=datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+        created_at=_now(),
+        updated_at=_now(),
+        status=status,
     )
     _account_pool_db[entry_id] = entry
     return entry
@@ -171,28 +154,20 @@ def update_pool_entry(entry_id: str, **kwargs) -> Optional[AccountPoolEntry]:
     if entry is None:
         return None
     # P2 Fix: Invalidate XhsClient cache when cookie or proxy changes
-    cookie_changed = "cookie" in kwargs
+    cookie_changed = "cookie" in kwargs or "cookie_encrypted" in kwargs
     proxy_changed = "proxy_config" in kwargs
-
-    if cookie_changed:
-        entry.cookie = kwargs.pop("cookie")
-    if "fingerprint_profile" in kwargs:
-        entry.fingerprint_profile = FingerprintProfile(**kwargs.pop("fingerprint_profile"))
-    if proxy_changed:
-        pc = kwargs.pop("proxy_config")
-        entry.proxy_config = ProxyConfig(**pc) if pc else None
-    for key, value in kwargs.items():
-        if hasattr(entry, key) and key not in ("cookie", "fingerprint_profile", "proxy_config"):
-            setattr(entry, key, value)
-    entry.updated_at = _now()
-
-    # Invalidate cached client so next publish uses new config
     if cookie_changed or proxy_changed:
         try:
             from src.services.xhs_publisher import invalidate_xhs_client_cache
             invalidate_xhs_client_cache(entry.cookie)
         except Exception:
             pass
+    for key, value in kwargs.items():
+        if key == "cookie":
+            entry.cookie = value
+        elif hasattr(entry, key):
+            setattr(entry, key, value)
+    entry.updated_at = _now()
     return entry
 
 
@@ -224,42 +199,80 @@ async def load_pool_from_db(db) -> int:
     """
     from sqlalchemy import select
     from src.models.account_pool_orm import AccountPoolEntryORM
+    import logging
+
+    logger = logging.getLogger(__name__)
 
     result = await db.execute(select(AccountPoolEntryORM))
     rows = result.scalars().all()
     _account_pool_db.clear()
+    loaded = 0
     for row in rows:
-        fp = FingerprintProfile(**row.fingerprint_profile) if row.fingerprint_profile else FingerprintProfile(user_agent="", viewport={"width": 390, "height": 844}, locale="zh-CN", timezone="Asia/Shanghai")
-        proxy = ProxyConfig(**row.proxy_config) if row.proxy_config else None
-        entry = AccountPoolEntry(
-            id=row.id,
-            platform=row.platform,
-            account_id=row.account_id,
-            nickname=row.nickname,
-            cookie_encrypted=row.cookie_encrypted,
-            persona=row.persona,
-            content_vertical=row.content_vertical,
-            lifecycle_phase=row.lifecycle_phase,
-            fingerprint_profile=fp,
-            proxy_config=proxy,
-            health_score=row.health_score,
-            posts_today=row.posts_today,
-            posts_week=row.posts_week,
-            posts_month=row.posts_month,
-            violation_count=row.violation_count,
-            last_login_days=row.last_login_days,
-            status=row.status,
-            anomaly_flags=row.anomaly_flags or [],
-            created_at=row.created_at.isoformat() if row.created_at else _now(),
-            updated_at=row.updated_at.isoformat() if row.updated_at else _now(),
-            daily_quota=row.daily_quota,
-            last_post_reset=row.last_post_reset,
-            auto_engagement_fetch=row.auto_engagement_fetch,
-            engagement_fetches_today=row.engagement_fetches_today,
-            last_engagement_fetch_reset=row.last_engagement_fetch_reset,
-        )
-        _account_pool_db[entry.id] = entry
-    return len(rows)
+        try:
+            # Handle fingerprint_profile - may be dict or None
+            fp_data = row.fingerprint_profile
+            if isinstance(fp_data, str):
+                import json
+                fp_data = json.loads(fp_data)
+            if fp_data and isinstance(fp_data, dict):
+                fp = FingerprintProfile(
+                    user_agent=fp_data.get("user_agent", ""),
+                    viewport=fp_data.get("viewport", {"width": 390, "height": 844}),
+                    locale=fp_data.get("locale", "zh-CN"),
+                    timezone=fp_data.get("timezone", "Asia/Shanghai"),
+                    canvas_noise=fp_data.get("canvas_noise", False),
+                    webgl_noise=fp_data.get("webgl_noise", False),
+                )
+            else:
+                fp = FingerprintProfile(user_agent="", viewport={"width": 390, "height": 844}, locale="zh-CN", timezone="Asia/Shanghai")
+
+            # Handle proxy_config - may be dict or None
+            proxy_data = row.proxy_config
+            if isinstance(proxy_data, str):
+                import json
+                proxy_data = json.loads(proxy_data)
+            if proxy_data and isinstance(proxy_data, dict):
+                proxy = ProxyConfig(
+                    proxy_id=proxy_data.get("proxy_id", ""),
+                    type=proxy_data.get("type", ""),
+                    region=proxy_data.get("region", ""),
+                )
+            else:
+                proxy = None
+
+            entry = AccountPoolEntry(
+                id=row.id,
+                platform=row.platform,
+                account_id=row.account_id,
+                nickname=row.nickname,
+                cookie_encrypted=row.cookie_encrypted or "",
+                persona=row.persona or "",
+                content_vertical=row.content_vertical or "",
+                lifecycle_phase=row.lifecycle_phase or "cold_start",
+                fingerprint_profile=fp,
+                proxy_config=proxy,
+                health_score=row.health_score if row.health_score is not None else 100.0,
+                posts_today=row.posts_today if row.posts_today is not None else 0,
+                posts_week=row.posts_week if row.posts_week is not None else 0,
+                posts_month=row.posts_month if row.posts_month is not None else 0,
+                violation_count=row.violation_count if row.violation_count is not None else 0,
+                last_login_days=row.last_login_days if row.last_login_days is not None else 0,
+                status=row.status or "active",
+                anomaly_flags=row.anomaly_flags or [],
+                daily_quota=row.daily_quota if row.daily_quota is not None else 0,
+                last_post_reset=row.last_post_reset or "",
+                auto_engagement_fetch=row.auto_engagement_fetch if row.auto_engagement_fetch is not None else False,
+                engagement_fetches_today=row.engagement_fetches_today if row.engagement_fetches_today is not None else 0,
+                last_engagement_fetch_reset=row.last_engagement_fetch_reset or "",
+                created_at=row.created_at.isoformat() if row.created_at else _now(),
+                updated_at=row.updated_at.isoformat() if row.updated_at else _now(),
+            )
+            _account_pool_db[entry.id] = entry
+            loaded += 1
+        except Exception as exc:
+            logger.warning("Failed to load account pool entry %s: %s", row.id, exc)
+            continue
+    return loaded
 
 
 async def save_pool_entry_to_db(db, entry: AccountPoolEntry) -> None:
@@ -355,3 +368,16 @@ async def sync_pool_to_db(db) -> int:
     for entry in _account_pool_db.values():
         await save_pool_entry_to_db(db, entry)
     return len(_account_pool_db)
+
+
+# ─── Daily quota reset ───
+
+
+def _ensure_daily_reset(entry: AccountPoolEntry) -> None:
+    """Reset posts_today if last_post_reset is not today."""
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    if entry.last_post_reset != today:
+        entry.posts_today = 0
+        entry.engagement_fetches_today = 0
+        entry.last_post_reset = today
+        entry.updated_at = _now()

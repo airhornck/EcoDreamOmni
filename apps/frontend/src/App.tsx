@@ -2,6 +2,7 @@ import { Suspense, lazy } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom'
 import { LoginPage } from './pages/LoginPage'
 import { DashboardPage } from './pages/DashboardPage'
+import { ProfilePage } from './pages/ProfilePage'
 import { WorkspaceLayout } from './components/layout/WorkspaceLayout'
 import { useAuthStore } from './stores/authStore'
 import { useCopilotPageSync } from './hooks/useCopilotPageSync'
@@ -33,7 +34,6 @@ const AgentOrchestraPage = lazy(() => import('./pages/AgentOrchestraPage').then(
 const LlmCockpitPage = lazy(() => import('./pages/LlmCockpitPage').then(m => ({ default: m.LlmCockpitPage })))
 
 // 编排与调度
-const WorkflowCockpitPage = lazy(() => import('./pages/WorkflowCockpitPage').then(m => ({ default: m.WorkflowCockpitPage })))
 const CronCockpitPage = lazy(() => import('./pages/CronCockpitPage').then(m => ({ default: m.CronCockpitPage })))
 
 // 系统配置
@@ -44,8 +44,7 @@ const SettingsPage = lazy(() => import('./pages/SettingsPage').then(m => ({ defa
 const AssetPoolPage = lazy(() => import('./pages/AssetPoolPage').then(m => ({ default: m.AssetPoolPage })))
 const TimelinePage = lazy(() => import('./pages/TimelinePage').then(m => ({ default: m.TimelinePage })))
 const VetDrugPage = lazy(() => import('./pages/VetDrugPage').then(m => ({ default: m.VetDrugPage })))
-const KeywordLibraryPage = lazy(() => import('./pages/KeywordLibraryPage').then(m => ({ default: m.KeywordLibraryPage })))
-const TemplateLibraryPage = lazy(() => import('./pages/TemplateLibraryPage').then(m => ({ default: m.TemplateLibraryPage })))
+const StrategyElementsPage = lazy(() => import('./pages/StrategyElementsPage').then(m => ({ default: m.StrategyElementsPage })))
 
 function PageLoader() {
   return (
@@ -108,23 +107,22 @@ export function AppRoutes() {
         {/* 实验室 */}
         <Route path="/lab" element={<ProtectedRoute><Suspense fallback={<PageLoader />}><LabPage /></Suspense></ProtectedRoute>} />
 
-        {/* 关键词库 */}
-        <Route path="/keywords" element={<ProtectedRoute><Suspense fallback={<PageLoader />}><KeywordLibraryPage /></Suspense></ProtectedRoute>} />
-
-        {/* 模板库 */}
-        <Route path="/templates" element={<ProtectedRoute><Suspense fallback={<PageLoader />}><TemplateLibraryPage /></Suspense></ProtectedRoute>} />
+        {/* 策略元素（关键词库 + 模板库合并） */}
+        <Route path="/strategy-elements" element={<ProtectedRoute><Suspense fallback={<PageLoader />}><StrategyElementsPage /></Suspense></ProtectedRoute>} />
 
         {/* 设置 */}
         <Route path="/settings" element={<ProtectedRoute><Suspense fallback={<PageLoader />}><SettingsPage /></Suspense></ProtectedRoute>} />
+        <Route path="/settings/profile" element={<ProtectedRoute><Suspense fallback={<PageLoader />}><ProfilePage /></Suspense></ProtectedRoute>} />
 
         {/* ── 子功能路由（保留独立入口）── */}
         <Route path="/compliance" element={<ProtectedRoute><Suspense fallback={<PageLoader />}><CompliancePage /></Suspense></ProtectedRoute>} />
         <Route path="/publisher" element={<ProtectedRoute><Suspense fallback={<PageLoader />}><PublisherPage /></Suspense></ProtectedRoute>} />
         <Route path="/engagement-tracking" element={<ProtectedRoute><Suspense fallback={<PageLoader />}><EngagementTrackingPage /></Suspense></ProtectedRoute>} />
         <Route path="/skillhub" element={<ProtectedRoute><Suspense fallback={<PageLoader />}><SkillHubPage /></Suspense></ProtectedRoute>} />
-        <Route path="/workflow-cockpit" element={<ProtectedRoute><Suspense fallback={<PageLoader />}><WorkflowCockpitPage /></Suspense></ProtectedRoute>} />
+        {/* 工作流驾驶舱已随 TaskHub v4.0 Agent-First 改造废弃，相关能力由 /generate 覆盖 */}
+        <Route path="/workflow-cockpit" element={<Navigate to="/agents" replace />} />
         <Route path="/cron-cockpit" element={<ProtectedRoute><Suspense fallback={<PageLoader />}><CronCockpitPage /></Suspense></ProtectedRoute>} />
-        <Route path="/workflows" element={<ProtectedRoute><Suspense fallback={<PageLoader />}><WorkflowCockpitPage /></Suspense></ProtectedRoute>} />
+        <Route path="/workflows" element={<Navigate to="/agents" replace />} />
         <Route path="/rules" element={<ProtectedRoute><Suspense fallback={<PageLoader />}><PlatformRulesPage /></Suspense></ProtectedRoute>} />
         <Route path="/platform-rules" element={<ProtectedRoute><Suspense fallback={<PageLoader />}><PlatformRulesPage /></Suspense></ProtectedRoute>} />
         <Route path="/platform-rules/schema" element={<ProtectedRoute><Suspense fallback={<PageLoader />}><PlatformSchemaPage /></Suspense></ProtectedRoute>} />
@@ -150,6 +148,10 @@ export function AppRoutes() {
         <Route path="/agent-orchestra" element={<Navigate to="/agents" replace />} />
         <Route path="/llm-cockpit" element={<Navigate to="/models" replace />} />
         <Route path="/playground" element={<Navigate to="/lab" replace />} />
+
+        {/* 旧路由重定向：关键词库 / 模板库 → 策略元素 */}
+        <Route path="/keywords" element={<Navigate to="/strategy-elements" replace />} />
+        <Route path="/templates" element={<Navigate to="/strategy-elements" replace />} />
       </Route>
     </Routes>
   )

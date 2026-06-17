@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useProxyStore, type ProxyEntry } from '../stores/proxyStore'
+import { usePageCopilot } from '../hooks/usePageCopilot'
 import { PageHeader } from '../components/common/PageHeader'
 import { Card, CardContent, CardHeader } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
@@ -88,6 +89,59 @@ export function ProxyConfigPage() {
     await updateProxy(proxy.id, { is_active: !proxy.is_active })
   }
 
+  // Copilot 联动（放在 handleTest/toggleActive 声明之后，避免 lint 访问前置变量）
+  usePageCopilot(
+    [
+      {
+        id: 'proxy-create',
+        type: 'decision',
+        title: '➕ 新增代理',
+        description: '添加新的 HTTP/SOCKS5 代理配置',
+        priority: 1,
+        actions: [{ id: 'create_proxy', label: '添加', variant: 'primary' }],
+      },
+      {
+        id: 'proxy-test',
+        type: 'decision',
+        title: '🧪 测试首个代理',
+        description: '对列表中的第一条代理进行连通性测试',
+        priority: 2,
+        actions: [{ id: 'test_first_proxy', label: '测试', variant: 'secondary' }],
+      },
+      {
+        id: 'proxy-toggle',
+        type: 'decision',
+        title: '🔁 切换首条代理状态',
+        description: '启用/禁用列表中的第一条代理',
+        priority: 3,
+        actions: [{ id: 'toggle_first_proxy', label: '切换', variant: 'secondary' }],
+      },
+      {
+        id: 'proxy-to-engine',
+        type: 'info',
+        title: '🚀 前往 AI 引擎',
+        description: '代理管理已合并至 AI 引擎，推荐统一入口',
+        priority: 4,
+        actions: [{ id: 'goto_engine', label: '前往', variant: 'secondary' }],
+      },
+    ],
+    async (_cardId, actionId) => {
+      if (actionId === 'create_proxy') {
+        setShowCreate(true)
+      } else if (actionId === 'test_first_proxy') {
+        const first = proxies[0]
+        if (first) await handleTest(first)
+        else alert('当前没有可测试的代理')
+      } else if (actionId === 'toggle_first_proxy') {
+        const first = proxies[0]
+        if (first) await toggleActive(first)
+        else alert('当前没有可切换的代理')
+      } else if (actionId === 'goto_engine') {
+        window.location.href = '/models'
+      }
+    }
+  )
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -104,6 +158,20 @@ export function ProxyConfigPage() {
       {error && (
         <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm">{error}</div>
       )}
+
+      <div className="p-3 rounded-lg bg-info/10 text-info text-sm flex items-center justify-between">
+        <span>代理配置已合并到「AI 引擎」，建议从左侧导航进入统一管理。</span>
+        <a
+          href="/models"
+          className="font-medium hover:underline"
+          onClick={(e) => {
+            e.preventDefault()
+            window.location.href = '/models'
+          }}
+        >
+          前往 AI 引擎 →
+        </a>
+      </div>
 
       {showCreate && (
         <Card>

@@ -1,0 +1,1 @@
+import{i as e,t}from"./react-DSvSf3Zy.js";import{B as n}from"./index-D2zNr9AK.js";var r=e(t(),1);function i(e,t){let{setPageActionCards:i,setPageActionHandler:a}=n(),o=(0,r.useRef)(t);(0,r.useEffect)(()=>{o.current=t},[t]);let s=(0,r.useMemo)(()=>e,[JSON.stringify(e)]);(0,r.useEffect)(()=>(i(s),a((e,t,n)=>o.current(e,t,n)),()=>{i([]),a(null)}),[i,a,s])}export{i as t};

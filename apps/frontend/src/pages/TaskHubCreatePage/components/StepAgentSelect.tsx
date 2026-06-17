@@ -1,6 +1,47 @@
-import { Sparkles } from 'lucide-react'
+import { Sparkles, ShieldCheck } from 'lucide-react'
 import { Badge } from '../../../components/ui/Badge'
 import type { Agent } from '../../../types/api'
+
+function AgentConstraintTags({ config }: { config: Record<string, unknown> }) {
+  const snapshot = config?.platform_format_snapshot as Record<string, unknown> | undefined
+  const safety = config?.safety_injection as Record<string, unknown> | undefined
+  const tags: string[] = []
+
+  if (snapshot?.platform_id && snapshot?.format_name) {
+    tags.push(`${snapshot.platform_id} · ${snapshot.format_name}`)
+  }
+
+  const titleConstraints = snapshot?.title_constraints as Record<string, unknown> | undefined
+  const bodyConstraints = snapshot?.body_constraints as Record<string, unknown> | undefined
+  if (titleConstraints?.max_length) {
+    tags.push(`标题≤${titleConstraints.max_length}字`)
+  }
+  if (bodyConstraints?.recommended) {
+    tags.push(`正文${bodyConstraints.recommended}`)
+  }
+
+  const preCheck = safety?.pre_check_agents as string[] | undefined
+  const postCheck = safety?.post_check_agents as string[] | undefined
+  if (preCheck?.length || postCheck?.length) {
+    const checks = [...(preCheck || []), ...(postCheck || [])]
+    tags.push(`合规预检:${checks.join('/')}`)
+  }
+
+  if (tags.length === 0) return null
+  return (
+    <div className="mt-2 flex flex-wrap gap-1">
+      {tags.map((tag) => (
+        <span
+          key={tag}
+          className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] bg-secondary text-secondary-foreground"
+        >
+          <ShieldCheck className="w-3 h-3" />
+          {tag}
+        </span>
+      ))}
+    </div>
+  )
+}
 
 interface StepAgentSelectProps {
   agents: Agent[]
@@ -8,10 +49,11 @@ interface StepAgentSelectProps {
   recommendedAgentId: string | null
   platform: string
   contentFormat: string
+  safetyConstraintCount?: number
   error?: string
   onSelect: (agentId: string) => void
   onSave?: () => void
-  onCancel?: () => void
+  onClear?: () => void
 }
 
 export function StepAgentSelect({
@@ -20,10 +62,11 @@ export function StepAgentSelect({
   recommendedAgentId,
   platform,
   contentFormat,
+  safetyConstraintCount = 0,
   error,
   onSelect,
   onSave,
-  onCancel,
+  onClear,
 }: StepAgentSelectProps) {
   const filteredAgents = agents.filter(
     (a) =>
@@ -39,7 +82,7 @@ export function StepAgentSelect({
         {recommendedAgentId && (
           <Badge variant="default" className="text-[10px] gap-0.5">
             <Sparkles className="w-3 h-3" />
-            已智能推荐
+            平台+格式最优匹配
           </Badge>
         )}
       </div>
@@ -47,6 +90,11 @@ export function StepAgentSelect({
       <p className="text-xs text-muted-foreground">
         系统根据 <strong>{platform || '全部平台'}</strong> +{' '}
         <strong>{contentFormat || '全部格式'}</strong> 筛选了以下可用 Agent
+        {safetyConstraintCount > 0 && (
+          <span className="ml-2 text-primary">
+            · 已绑定 {safetyConstraintCount} 条安全约束
+          </span>
+        )}
       </p>
 
       {/* Agent 卡片网格 */}
@@ -67,7 +115,7 @@ export function StepAgentSelect({
             >
               {isRecommended && (
                 <span className="absolute -top-2 -right-2 px-2 py-0.5 rounded-full text-[10px] font-medium text-white bg-purple-600">
-                  ✨ 推荐
+                  ✨ 最优匹配
                 </span>
               )}
               <div className="flex items-start gap-3">
@@ -85,6 +133,7 @@ export function StepAgentSelect({
                 <span>成功率 {(agent.success_rate * 100).toFixed(0)}%</span>
                 <span>近1h {agent.recent_tasks_1h} 任务</span>
               </div>
+              <AgentConstraintTags config={agent.config || {}} />
               <div className="mt-2 flex flex-wrap gap-1">
                 {agent.skills?.slice(0, 3).map((skill) => (
                   <span
@@ -102,15 +151,15 @@ export function StepAgentSelect({
 
       {error && <p className="text-xs text-destructive">{error}</p>}
 
-      {(onSave || onCancel) && (
+      {(onSave || onClear) && (
         <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
-          {onCancel && (
+          {onClear && (
             <button
               type="button"
-              onClick={onCancel}
+              onClick={onClear}
               className="px-3 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:bg-muted transition-colors"
             >
-              取消
+              清除
             </button>
           )}
           {onSave && (
@@ -119,7 +168,7 @@ export function StepAgentSelect({
               onClick={onSave}
               className="px-3 py-1.5 rounded-md text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
             >
-              确定
+              暂存节点
             </button>
           )}
         </div>

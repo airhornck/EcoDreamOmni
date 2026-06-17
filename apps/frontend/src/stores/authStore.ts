@@ -1,12 +1,22 @@
 import { create } from 'zustand'
 
+export interface UserProfile {
+  id: string
+  email: string
+  username: string
+  role: string
+  avatar?: string
+  remark?: string
+}
+
 interface AuthState {
   isAuthenticated: boolean
   isLoading: boolean
   error: string | null
-  user: { id: string; email: string; username: string; role: string } | null
+  user: UserProfile | null
   login: (email: string, password: string) => Promise<boolean>
   logout: () => void
+  updateUser: (updates: Partial<Omit<UserProfile, 'id' | 'email' | 'role'>>) => void
   clearError: () => void
 }
 
@@ -26,6 +36,12 @@ function safeParseUser(raw: string | null): AuthState['user'] | null {
   } catch {
     localStorage.removeItem('user')
     return null
+  }
+}
+
+function persistUser(user: AuthState['user']) {
+  if (user) {
+    localStorage.setItem('user', JSON.stringify(user))
   }
 }
 
@@ -70,6 +86,15 @@ export const useAuthStore = create<AuthState>((set) => ({
     localStorage.removeItem('token')
     localStorage.removeItem('user')
     set({ isAuthenticated: false, user: null, error: null })
+  },
+
+  updateUser: (updates) => {
+    set((state) => {
+      if (!state.user) return state
+      const next = { ...state.user, ...updates }
+      persistUser(next)
+      return { user: next }
+    })
   },
 
   clearError: () => set({ error: null }),

@@ -97,6 +97,11 @@ class Task:
     content_strategy: Optional[Dict[str, Any]] = None
     methodology_stage_id: Optional[str] = None
     timeline_event_id: Optional[str] = None
+    # ── Publish audit fields (P0 Fix: persist publish results) ──
+    published_url: Optional[str] = None
+    platform_post_id: Optional[str] = None
+    published_at: Optional[str] = None
+    publish_error: Optional[str] = None
 
 
 @dataclass
@@ -181,6 +186,11 @@ def _db_to_task(orm: TaskORM) -> Task:
         content_strategy=orm.content_strategy,
         methodology_stage_id=orm.methodology_stage_id,
         timeline_event_id=str(orm.timeline_event_id) if orm.timeline_event_id else None,
+        # ── Publish audit fields (P0 Fix) ──
+        published_url=orm.published_url,
+        platform_post_id=orm.platform_post_id,
+        published_at=_iso_or_none(orm.published_at),
+        publish_error=orm.publish_error,
     )
 
 
@@ -222,6 +232,11 @@ def _task_to_orm(task: Task) -> TaskORM:
         content_strategy=task.content_strategy,
         methodology_stage_id=task.methodology_stage_id,
         timeline_event_id=UUID(task.timeline_event_id) if task.timeline_event_id else None,
+        # ── Publish audit fields (P0 Fix) ──
+        published_url=task.published_url,
+        platform_post_id=task.platform_post_id,
+        published_at=datetime.fromisoformat(task.published_at) if task.published_at else None,
+        publish_error=task.publish_error,
     )
 
 
@@ -260,6 +275,11 @@ def _update_orm_from_task(orm: TaskORM, task: Task) -> None:
     orm.content_strategy = task.content_strategy
     orm.methodology_stage_id = task.methodology_stage_id
     orm.timeline_event_id = UUID(task.timeline_event_id) if task.timeline_event_id else None
+    # ── Publish audit fields (P0 Fix) ──
+    orm.published_url = task.published_url
+    orm.platform_post_id = task.platform_post_id
+    orm.published_at = datetime.fromisoformat(task.published_at) if task.published_at else None
+    orm.publish_error = task.publish_error
 
 
 # ─── Cache access (for Agent layer) ───

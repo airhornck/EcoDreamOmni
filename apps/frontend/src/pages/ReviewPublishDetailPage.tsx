@@ -39,7 +39,7 @@ export function ReviewPublishDetailPage() {
   // ─── Data Fetching ───
   useEffect(() => {
     if (taskId) fetchDetail(taskId)
-  }, [taskId])
+  }, [taskId, fetchDetail])
 
   // ─── Copilot Action Handler — 透传后端统一网关，仅保留 UI 副作用 ───
   const handleCopilotAction = useCallback(
@@ -78,12 +78,44 @@ export function ReviewPublishDetailPage() {
       }
 
       // 其他所有 Action 统一透传到后端 execute 网关
-      const result = await executeCopilotAction({
-        card_id: cardId,
-        action_id: actionId,
-        inputs: payload,
-        payload: { task_id: taskId, publish_mode: actionId === 'publish_now' ? 'immediate' : actionId === 'schedule' ? 'scheduled' : undefined },
-      }) as Record<string, unknown>
+      let result: Record<string, unknown>
+      try {
+        result = await executeCopilotAction({
+          card_id: cardId,
+          action_id: actionId,
+          inputs: payload,
+          payload: { task_id: taskId, publish_mode: actionId === 'publish_now' ? 'immediate' : actionId === 'schedule' ? 'scheduled' : undefined },
+        }) as Record<string, unknown>
+      } catch (err) {
+        // 如果 execute 网关失败，尝试直接调用 decideTask API
+        if (cardId.startsWith('review-decision') && actionId === 'approve') {
+          const { useReviewPublishStore } = await import('../stores/reviewPublishStore')
+          const store = useReviewPublishStore.getState()
+          const decisionResult = await store.decideTask(taskId, 'approve')
+          if (decisionResult.success) {
+            result = {
+              copilot_followup: {
+                message: '审核已通过！要现在发布还是定时发布？',
+                suggested_cards: [
+                  {
+                    type: 'decision',
+                    title: '发布确认',
+                    actions: [
+                      { id: 'publish_now', label: '立即发布', variant: 'primary' },
+                      { id: 'schedule', label: '定时发布', variant: 'secondary' },
+                    ],
+                  },
+                ],
+              },
+            }
+          } else {
+            // fallback 也失败：使用 decideTask 设置的错误信息，不再抛出未处理异常
+            return
+          }
+        } else {
+          throw err
+        }
+      }
 
       // 处理后端返回的 copilot_followup（如审核通过后的发布确认 Cards）
       const followup = result?.copilot_followup as Record<string, unknown> | undefined
@@ -111,7 +143,15 @@ export function ReviewPublishDetailPage() {
         navigate('/review')
       }
     },
-    [taskId],
+    [
+      taskId,
+      executeCopilotAction,
+      fetchDetail,
+      getCoverStatus,
+      navigate,
+      setPageActionCards,
+      updateContent,
+    ],
   )
 
   // ─── Copilot Action Cards — 上下文由 useCopilotPageSync 统一注入 ───
@@ -158,7 +198,16 @@ export function ReviewPublishDetailPage() {
       setPageActionCards([])
       setPageActionHandler(null)
     }
-  }, [taskId, currentDetail?.status, handleCopilotAction])
+  }, [
+    taskId,
+    currentDetail,
+    currentDetail?.status,
+    fetchActionCards,
+    handleCopilotAction,
+    reportCopilotContext,
+    setPageActionCards,
+    setPageActionHandler,
+  ])
 
   // ─── Content Change Handlers ───
   const handleContentChange = useCallback(
@@ -166,7 +215,7 @@ export function ReviewPublishDetailPage() {
       if (!taskId) return
       updateContent(taskId, patch)
     },
-    [taskId],
+    [taskId, updateContent],
   )
 
   const handleCoverSelect = useCallback(
@@ -175,7 +224,7 @@ export function ReviewPublishDetailPage() {
       updateContent(taskId, { cover_image_url: url })
       setCoverModalOpen(false)
     },
-    [taskId],
+    [taskId, updateContent],
   )
 
   // ─── Loading & Error ───
@@ -222,6 +271,22 @@ export function ReviewPublishDetailPage() {
           <AlertTriangle className="w-4 h-4 shrink-0" />
           <span className="flex-1">{error}</span>
           <button onClick={clearError} className="text-xs underline hover:no-underline">关闭</button>
+        </div>
+      )}
+
+      {/* Status Alert Banner — 非审核中状态提示 */}
+      {currentDetail.status !== 'human_wait' && (
+        <div className="mb-4 p-3 rounded-lg bg-amber-50 border border-amber-200 flex items-center gap-2 text-sm text-amber-800 shrink-0">
+          <AlertTriangle className="w-4 h-4 shrink-0" />
+          <span className="flex-1">
+            {currentDetail.status === 'approved_waiting_publish'
+              ? '该任务已审核通过，当前处于待发布状态。如需发布，请使用右侧发布确认操作。'
+              : currentDetail.status === 'rejected'
+                ? '该任务已被驳回。'
+                : currentDetail.status === 'revision_requested'
+                  ? '该任务已被打回修改。'
+                  : `当前状态：${currentDetail.status}`}
+          </span>
         </div>
       )}
 

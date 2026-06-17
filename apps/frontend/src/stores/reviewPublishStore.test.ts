@@ -1,9 +1,19 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { useReviewPublishStore } from './reviewPublishStore'
 
-// Mock authHeaders
+// Mock authHeaders & apiClient (wraps global.fetch with a micro-task delay so isDeciding assertions work)
 vi.mock('../lib/api', () => ({
   authHeaders: () => ({ Authorization: 'Bearer test' }),
+  apiClient: vi.fn(async (endpoint: string, options: RequestInit = {}) => {
+    // yield once so synchronous callers can observe intermediate state
+    await Promise.resolve()
+    const res = await fetch(endpoint, options)
+    if (!res.ok) {
+      const errBody = await res.json().catch(() => ({}))
+      throw new Error(errBody.message || errBody.detail || `请求失败: ${res.status}`)
+    }
+    return res.json()
+  }),
 }))
 
 describe('reviewPublishStore — fetchConclusions', () => {
@@ -59,7 +69,7 @@ describe('reviewPublishStore — fetchConclusions', () => {
     const store = useReviewPublishStore.getState()
     await store.fetchConclusions()
 
-    expect(useReviewPublishStore.getState().error).toContain('获取审核结论失败: 500')
+    expect(useReviewPublishStore.getState().error).toContain('Server error')
     expect(useReviewPublishStore.getState().isLoading).toBe(false)
   })
 })
@@ -77,7 +87,7 @@ describe('reviewPublishStore — decideTask', () => {
   it('should set isDeciding while calling decideTask', async () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
-      json: async () => ({ status: 'APPROVED_WAITING_PUBLISH' }),
+      json: async () => ({ success: true, status: 'APPROVED_WAITING_PUBLISH' }),
     } as Response)
 
     const store = useReviewPublishStore.getState()
@@ -94,7 +104,7 @@ describe('reviewPublishStore — decideTask', () => {
   it('should call correct endpoint for reject with reason', async () => {
     global.fetch = vi.fn().mockResolvedValue({
       ok: true,
-      json: async () => ({ status: 'REJECTED' }),
+      json: async () => ({ success: true, status: 'REJECTED' }),
     } as Response)
 
     const store = useReviewPublishStore.getState()
@@ -104,7 +114,7 @@ describe('reviewPublishStore — decideTask', () => {
       '/api/human-in-the-loop/tasks/task_1/reject',
       expect.objectContaining({
         method: 'POST',
-        body: JSON.stringify({ reason: '违规内容' }),
+        body: JSON.stringify({ reason: '违规内容', copilot_suggested: true }),
       })
     )
   })

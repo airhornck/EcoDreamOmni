@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAssetPoolStore } from '../stores/assetPoolStore'
+import { usePageCopilot } from '../hooks/usePageCopilot'
 import { PageHeader } from '../components/common/PageHeader'
 import { Card, CardContent, CardHeader } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
@@ -14,6 +16,7 @@ const typeIcons: Record<string, React.ElementType> = {
 }
 
 export function AssetPoolPage() {
+  const navigate = useNavigate()
   const { assets, isLoading, error, fetchAssets, createAsset, deleteAsset } = useAssetPoolStore()
   const [showCreate, setShowCreate] = useState(false)
   const [name, setName] = useState('')
@@ -24,6 +27,45 @@ export function AssetPoolPage() {
   useEffect(() => {
     fetchAssets()
   }, [fetchAssets])
+
+  usePageCopilot(
+    [
+      {
+        id: 'asset-upload',
+        type: 'decision',
+        title: '📤 上传素材',
+        description: '添加新的图片、视频或文档素材',
+        priority: 1,
+        actions: [{ id: 'upload_asset', label: '上传', variant: 'primary' }],
+      },
+      {
+        id: 'asset-auto-tag',
+        type: 'decision',
+        title: '🏷️ AI 批量打标签',
+        description: '为未打标签的素材自动生成标签',
+        priority: 2,
+        actions: [{ id: 'auto_tag_assets', label: '开始打标签', variant: 'primary' }],
+      },
+      {
+        id: 'asset-apply-task',
+        type: 'suggestion',
+        title: '🚀 应用到任务',
+        description: '前往内容生产创建新任务',
+        priority: 3,
+        actions: [{ id: 'apply_to_task', label: '去创建任务', variant: 'secondary' }],
+      },
+    ],
+    (_cardId, actionId) => {
+      if (actionId === 'upload_asset') {
+        setShowCreate(true)
+      } else if (actionId === 'auto_tag_assets') {
+        // TODO: 接入 AI 批量打标签能力
+        alert('AI 批量打标签能力即将上线')
+      } else if (actionId === 'apply_to_task') {
+        navigate('/generate/create')
+      }
+    }
+  )
 
   const handleCreate = async () => {
     if (!name.trim() || !url.trim()) return
@@ -95,7 +137,7 @@ export function AssetPoolPage() {
         </Card>
       )}
 
-      <Card>
+      <Card className="min-w-0 overflow-hidden">
         <CardHeader className="flex items-center gap-2">
           <FolderOpen className="w-4 h-4 text-primary" />
           <h2 className="text-base font-semibold">素材列表</h2>
@@ -105,7 +147,7 @@ export function AssetPoolPage() {
           {!isLoading && assets.length === 0 && (
             <EmptyState icon={FolderOpen} title="暂无素材" description="添加你的第一个素材资源" />
           )}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
             {assets.map((asset) => {
               const Icon = typeIcons[asset.type] || FileText
               return (

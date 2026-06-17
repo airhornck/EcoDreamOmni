@@ -21,7 +21,7 @@ export function QuickActionBar({ onActionClick }: QuickActionBarProps) {
       <div className="flex flex-wrap gap-2">
         {quickActions.map((action) => {
           // 根据动作类型分配不同颜色
-          const isPrimary = action === '下一步' || action === '确认创建'
+          const isPrimary = action === '下一步' || action === '确认部署'
           const isDanger = action === '取消'
           return (
             <button

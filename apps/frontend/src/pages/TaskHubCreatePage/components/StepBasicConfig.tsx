@@ -15,6 +15,7 @@ interface StepBasicConfigProps {
   onUpdateField: (key: string, value: unknown) => void
   onSave?: () => void
   onCancel?: () => void
+  onClear?: () => void
 }
 
 export function StepBasicConfig({
@@ -32,6 +33,7 @@ export function StepBasicConfig({
   onUpdateField,
   onSave,
   onCancel,
+  onClear,
 }: StepBasicConfigProps) {
   return (
     <div className="space-y-5">
@@ -132,7 +134,7 @@ export function StepBasicConfig({
         </select>
       </div>
 
-      {(onSave || onCancel) && (
+      {(onSave || onCancel || onClear) && (
         <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
           {onCancel && (
             <button
@@ -141,6 +143,15 @@ export function StepBasicConfig({
               className="px-3 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:bg-muted transition-colors"
             >
               取消
+            </button>
+          )}
+          {onClear && (
+            <button
+              type="button"
+              onClick={onClear}
+              className="px-3 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:bg-muted transition-colors"
+            >
+              清除
             </button>
           )}
           {onSave && (

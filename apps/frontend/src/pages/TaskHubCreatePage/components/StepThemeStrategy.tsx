@@ -21,6 +21,7 @@ interface StepThemeStrategyProps {
   onUpdateField: (key: string, value: unknown) => void
   onSave?: () => void
   onCancel?: () => void
+  onClear?: () => void
 }
 
 export function StepThemeStrategy({
@@ -35,6 +36,7 @@ export function StepThemeStrategy({
   onUpdateField,
   onSave,
   onCancel,
+  onClear,
 }: StepThemeStrategyProps) {
   const {
     elements: cachedElements,
@@ -135,7 +137,7 @@ export function StepThemeStrategy({
         </div>
       </div>
 
-      {(onSave || onCancel) && (
+      {(onSave || onCancel || onClear) && (
         <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
           {onCancel && (
             <button
@@ -146,13 +148,22 @@ export function StepThemeStrategy({
               取消
             </button>
           )}
+          {onClear && (
+            <button
+              type="button"
+              onClick={onClear}
+              className="px-3 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:bg-muted transition-colors"
+            >
+              清除
+            </button>
+          )}
           {onSave && (
             <button
               type="button"
               onClick={onSave}
               className="px-3 py-1.5 rounded-md text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
             >
-              保存配置
+              暂存节点
             </button>
           )}
         </div>

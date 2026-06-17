@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Zap, Compass, Send, Monitor } from 'lucide-react'
 import { useTaskHubStore } from '../stores/taskHubStore'
 import { useStrategyStore } from '../stores/strategyStore'
@@ -20,6 +20,7 @@ import {
 } from './TaskHubCreatePage/components/StepSummary'
 import { AGENT_RECOMMENDATIONS, PLATFORM_ID_LABELS } from './TaskHubCreatePage/constants'
 import { fetchStrategyElementRecommendations } from '../api/strategyApi'
+import { useStrategyElement } from '../hooks/useStrategyQueries'
 import { showToast } from '../lib/toast'
 
 const STEP_META = [
@@ -54,6 +55,7 @@ interface FormData {
 
 export function TaskHubCreatePage() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const {
     accounts,
     personas,
@@ -74,6 +76,7 @@ export function TaskHubCreatePage() {
   const {
     currentStrategy,
     clearStrategy,
+    addElementToStrategy,
   } = useStrategyStore()
 
   const {
@@ -82,6 +85,22 @@ export function TaskHubCreatePage() {
     setWelcomeMessage,
     setPageActionHandler,
   } = useAICopilotStore()
+
+  const strategyElementId = searchParams.get('strategyElementId')
+  const { data: seedElement, isSuccess: seedElementLoaded } = useStrategyElement(
+    strategyElementId ?? '',
+    !!strategyElementId
+  )
+
+  // 从策略元素页带入初始元素，仅执行一次后清理 URL
+  useEffect(() => {
+    if (strategyElementId && seedElementLoaded && seedElement) {
+      addElementToStrategy(seedElement.element_id, { priority: 5 })
+      const nextParams = new URLSearchParams(searchParams)
+      nextParams.delete('strategyElementId')
+      navigate({ pathname: '/generate/create', search: nextParams.toString() }, { replace: true })
+    }
+  }, [strategyElementId, seedElementLoaded, seedElement, addElementToStrategy, searchParams, navigate])
 
   // ★ 画布焦点状态：默认展开 Step 1
   const [activeStep, setActiveStep] = useState<number>(0)
@@ -257,28 +276,6 @@ export function TaskHubCreatePage() {
 
     if (activeStep === 1) {
       const cards: PageActionCard[] = []
-      const elementCount = currentStrategy.elements.length
-
-      // 策略摘要
-      cards.push({
-        id: 'strategy-summary',
-        type: 'info',
-        title: '🎯 策略组合',
-        description:
-          elementCount > 0
-            ? `已选择 ${elementCount} 个策略元素，优先级已按拖拽顺序自动计算。`
-            : '尚未选择策略元素。可从左侧元素库添加，或点击下方「智能推荐」。',
-        priority: 1,
-      })
-
-      // 元素库来源说明
-      cards.push({
-        id: 'strategy-element-source',
-        type: 'info',
-        title: '📚 元素库来源',
-        description: '策略元素来自 Playground 爆款分析自动提取，或由管理员手动创建并审核发布。每个元素都经过平台适配验证。',
-        priority: 2,
-      })
 
       // 智能推荐
       if (formData.name && formData.platform) {
@@ -289,21 +286,6 @@ export function TaskHubCreatePage() {
           description: `基于「${formData.name}」主题和「${platformDisplayName}」平台推荐策略元素`,
           priority: 3,
           actions: [{ id: 'recommend_elements', label: '获取推荐', variant: 'primary' }],
-        })
-      }
-
-      // 快捷操作
-      if (elementCount > 0) {
-        cards.push({
-          id: 'strategy-actions',
-          type: 'suggestion',
-          title: '⚡ 快捷操作',
-          description: '管理当前策略组合',
-          priority: 4,
-          actions: [
-            { id: 'clear_strategy', label: '清空', variant: 'ghost' },
-            { id: 'save_strategy_set', label: '保存为组合', variant: 'secondary' },
-          ],
         })
       }
 
@@ -324,13 +306,13 @@ export function TaskHubCreatePage() {
       ]
     }
 
-    // Step 3: 发布确认 — 显示确认创建 Action Card
+    // Step 3: 发布确认 — 显示确认部署 Action Card
     const cards: PageActionCard[] = []
 
     cards.push({
-      id: 'confirm-create',
+      id: 'confirm-deploy',
       type: 'decision',
-      title: '✅ 确认创建',
+      title: '✅ 确认部署',
       description: [
         `任务名称：${formData.name || '（未填写）'}`,
         `平台：${platformDisplayName}`,
@@ -340,24 +322,13 @@ export function TaskHubCreatePage() {
       ].join('\n'),
       priority: 1,
       actions: [
-        { id: 'confirm', label: '确认创建', variant: 'primary' },
+        { id: 'confirm_deploy', label: '确认部署', variant: 'primary' },
         { id: 'back', label: '返回修改', variant: 'secondary' },
       ],
     })
 
-    const recommendedAgent = agents.find((a) => a.id === recommendedAgentId)
-    if (recommendedAgent) {
-      cards.push({
-        id: 'agent-recommend-wizard',
-        type: 'info',
-        title: '🤖 推荐 Agent',
-        description: `根据「${platformDisplayName} + ${formData.contentFormat}」配置，推荐「${recommendedAgent.name}」`,
-        priority: 2,
-      })
-    }
-
     return cards
-  }, [activeStep, formData, platformDisplayName, agents, accounts, recommendedAgentId, currentStrategy.elements.length])
+  }, [activeStep, formData, platformDisplayName, agents, accounts, currentStrategy.elements.length])
 
   /** 获取 Quick Actions */
   const buildQuickActions = useCallback((): string[] => {
@@ -366,7 +337,7 @@ export function TaskHubCreatePage() {
     if (activeStep < 3) actions.push('下一步')
     if (activeStep === 1 && formData.name && formData.platform) actions.push('获取推荐')
     if (activeStep === 1 && currentStrategy.elements.length > 0) actions.push('清空策略')
-    if (activeStep === 3) actions.push('确认创建')
+    if (activeStep === 3) actions.push('确认部署')
     actions.push('取消')
     return actions
   }, [activeStep, formData.name, formData.platform, currentStrategy.elements.length])
@@ -377,7 +348,7 @@ export function TaskHubCreatePage() {
     if (activeStep === 0) return '配置任务基础信息，完成后进入主题与策略'
     if (activeStep === 1) return '我可基于主题推荐策略元素，或在左侧元素库中手动添加'
     if (activeStep === 2) return '已为你筛选可用 Agent，选择后进入发布确认'
-    return '请检查配置信息，确认无误后点击「确认创建」'
+    return '请检查配置信息，确认无误后点击「确认部署」'
   }, [activeStep])
 
   /** Copilot Action Handler */
@@ -442,7 +413,7 @@ export function TaskHubCreatePage() {
         }
         return
       }
-      if (actionId === 'confirm' || actionId === '确认创建') {
+      if (actionId === 'confirm' || actionId === '确认创建' || actionId === 'confirm_deploy' || actionId === '确认部署') {
         const errs = validateForm()
         if (Object.keys(errs).length > 0) {
           setErrors(errs)
@@ -455,21 +426,32 @@ export function TaskHubCreatePage() {
           return
         }
 
+        const strategyElementIds = currentStrategy.elements.map((el) => el.element_id)
+        const safetyConstraintElementIds = currentStrategy.elements
+          .filter((el) => el.element_type === 'safety_constraint')
+          .map((el) => el.element_id)
+
         const taskPayload = {
           name: formData.name,
           platform: formData.platform,
           content_format: formData.contentFormat,
           account_id: formData.accountId,
-          persona_id: formData.personaId || undefined,
+          persona_id: formData.personaId || '',
           persona_story_id: formData.storyId || undefined,
-          current_node_id: formData.nodeId || undefined,
+          node_id: formData.nodeId || undefined,
           agent_id: formData.agentId,
           content_series_id: formData.contentSeriesId || undefined,
-          schedule_mode: formData.scheduleMode,
           scheduled_at: formData.scheduleMode === 'scheduled' ? formData.scheduledAt : undefined,
+          cron_schedule: formData.scheduleMode === 'cron' ? formData.cronSchedule : undefined,
+          cron_date_start: formData.scheduleMode === 'cron' && formData.cronMode === 'custom' ? formData.cronDateStart : undefined,
+          cron_date_end: formData.scheduleMode === 'cron' && formData.cronMode === 'custom' ? formData.cronDateEnd : undefined,
           priority: formData.priority,
           content_strategy: formData.contentStrategy ? JSON.parse(formData.contentStrategy) : undefined,
-          prompt_variables: formData.promptVars,
+          prompt_variables: {
+            ...formData.promptVars,
+            strategy_element_ids: strategyElementIds,
+            safety_constraint_element_ids: safetyConstraintElementIds,
+          },
         }
 
         const ok = await createTask(taskPayload)
@@ -537,8 +519,8 @@ export function TaskHubCreatePage() {
       <Stepper currentStep={activeStep} onStepClick={expandStep} />
 
       {/* 画布区域 */}
-      <div className="flex-1 min-h-0 overflow-hidden">
-        <div className="h-full overflow-x-auto overflow-y-hidden">
+      <div className="flex-1 min-h-0 overflow-auto relative">
+        <div className="h-full overflow-x-auto overflow-y-auto">
           <div className="flex items-start justify-start min-w-max h-full px-6 py-8 gap-0">
             <StepNodeCard
               stepIndex={0}
@@ -572,6 +554,18 @@ export function TaskHubCreatePage() {
                 onUpdateField={handleUpdateField}
                 onSave={() => collapseStep()}
                 onCancel={() => collapseStep()}
+                onClear={() => {
+                  setFormData((prev) => ({
+                    ...prev,
+                    name: '',
+                    platform: '',
+                    contentFormat: '',
+                    accountId: '',
+                    priority: 50,
+                  }))
+                  setErrors({})
+                  setRecommendedAgentId(null)
+                }}
               />
             </StepNodeCard>
 
@@ -604,6 +598,18 @@ export function TaskHubCreatePage() {
                 onUpdateField={handleUpdateField}
                 onSave={() => collapseStep()}
                 onCancel={() => collapseStep()}
+                onClear={() => {
+                  const store = useStrategyStore.getState()
+                  store.clearStrategy()
+                  setFormData((prev) => ({
+                    ...prev,
+                    personaId: '',
+                    storyId: '',
+                    nodeId: '',
+                    contentStrategy: '',
+                  }))
+                  setStoryNodes([])
+                }}
               />
             </StepNodeCard>
 
@@ -629,13 +635,23 @@ export function TaskHubCreatePage() {
                 recommendedAgentId={recommendedAgentId}
                 platform={formData.platform}
                 contentFormat={formData.contentFormat}
+                safetyConstraintCount={
+                  currentStrategy.elements.filter((el) => el.element_type === 'safety_constraint').length
+                }
                 error={errors.agentId}
                 onSelect={(agentId) => {
                   updateField('agentId', agentId)
                   updateField('promptVars', {})
                 }}
                 onSave={() => collapseStep()}
-                onCancel={() => collapseStep()}
+                onClear={() => {
+                  setFormData((prev) => ({
+                    ...prev,
+                    agentId: '',
+                    promptVars: {},
+                  }))
+                  setRecommendedAgentId(null)
+                }}
               />
             </StepNodeCard>
 
@@ -681,8 +697,8 @@ export function TaskHubCreatePage() {
                 agents={agents}
                 onUpdateField={handleUpdateField}
                 onSave={() => {
-                  // 复用 Copilot 确认创建逻辑
-                  copilotHandlerRef.current('confirm-create', 'confirm', {})
+                  // 复用 Copilot 确认部署逻辑
+                  copilotHandlerRef.current('confirm-deploy', 'confirm_deploy', {})
                 }}
                 onCancel={() => collapseStep()}
               />

@@ -28,6 +28,7 @@ class AgentListItem(BaseModel):
     skills: List[str]
     supported_platforms: List[str]
     supported_formats: List[str]
+    config: Dict[str, Any]
     success_rate: float
     recent_tasks_1h: int
     status: str
@@ -62,6 +63,7 @@ def _to_agent_list_item(a: af.AgentInfo) -> AgentListItem:
         skills=a.skills or [],
         supported_platforms=a.supported_platforms or [],
         supported_formats=a.supported_formats or [],
+        config=a.config or {},
         success_rate=a.success_rate,
         recent_tasks_1h=a.recent_tasks_1h,
         status=a.status,

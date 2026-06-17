@@ -54,7 +54,7 @@ interface LlmCockpitState {
   usageLogs: UsageLog[]
   isLoading: boolean
   error: string | null
-  activeTab: 'models' | 'scopes' | 'costs' | 'logs'
+  activeTab: 'models' | 'scopes' | 'costs' | 'logs' | 'proxy'
   fetchModels: () => Promise<void>
   createModel: (data: {
     provider: string
@@ -72,7 +72,7 @@ interface LlmCockpitState {
   removeNodeOverride: (config_id: string) => Promise<boolean>
   fetchCostSummary: (period_days?: number) => Promise<void>
   fetchUsageLogs: (filters?: Record<string, string>) => Promise<void>
-  setActiveTab: (tab: 'models' | 'scopes' | 'costs' | 'logs') => void
+  setActiveTab: (tab: 'models' | 'scopes' | 'costs' | 'logs' | 'proxy') => void
   clearError: () => void
 }
 

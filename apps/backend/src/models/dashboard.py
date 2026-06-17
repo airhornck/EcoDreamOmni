@@ -54,11 +54,11 @@ _dashboard_data = {
         avgHealthScore=87.0,
     ),
     "quick_actions": [
-        QuickAction(id="gen", label="内容锻造", icon="FileText", href="/content-forge", badge=10),
-        QuickAction(id="pub", label="发布管理", icon="Send", href="/publisher", badge=15),
-        QuickAction(id="review", label="合规审核", icon="ShieldCheck", href="/compliance", badge=5),
-        QuickAction(id="report", label="数据报表", icon="BarChart3", href="/data-analyst"),
-        QuickAction(id="account", label="账号池", icon="Settings", href="/account-pool"),
+        QuickAction(id="generate", label="内容生产", icon="Sparkles", href="/generate"),
+        QuickAction(id="review", label="审核发布", icon="ClipboardCheck", href="/review", badge=5),
+        QuickAction(id="accounts", label="账号矩阵", icon="Users", href="/accounts"),
+        QuickAction(id="analytics", label="数据报表", icon="BarChart3", href="/analytics"),
+        QuickAction(id="agents", label="Agent 舰队", icon="Bot", href="/agents"),
     ],
     "alerts": [
         Alert(

@@ -57,6 +57,7 @@ class WorkflowNode:
     timer_seconds: Optional[int] = None
     skill_id: Optional[str] = None
     depends_on: List[int] = field(default_factory=list)
+    inputs: List[Dict[str, Any]] = field(default_factory=list)
 
 
 @dataclass
@@ -428,6 +429,7 @@ def create_template(
             timer_seconds=n.get("timer_seconds"),
             skill_id=n.get("skill_id"),
             depends_on=n.get("depends_on", []),
+            inputs=n.get("inputs", []),
         )
         parsed_nodes.append(node)
 
@@ -530,7 +532,11 @@ def reload_presets() -> int:
 
 # ─── Execution Engine ───
 
-def start_execution(task_id: str, template_id: str) -> WorkflowExecution:
+def start_execution(
+    task_id: str,
+    template_id: str,
+    prompt_variables: Optional[Dict[str, Any]] = None,
+) -> WorkflowExecution:
     tmpl = _template_db.get(template_id)
     if not tmpl:
         raise ValueError(f"Template not found: {template_id}")
@@ -544,7 +550,7 @@ def start_execution(task_id: str, template_id: str) -> WorkflowExecution:
         template_version=tmpl.version,
         status=WorkflowStatus.RUNNING,
         current_node_index=0,
-        context={},
+        context=dict(prompt_variables or {}),
         started_at=now,
         created_at=now,
     )

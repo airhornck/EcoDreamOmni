@@ -4,6 +4,14 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import "./index.css";
 import App from "./App.tsx";
 import { Toaster } from "./components/ui/Toaster";
+import { setupAuthIntercept } from "./lib/authIntercept";
+import { suppressExtensionErrors } from "./lib/suppressExtensionErrors";
+
+// 全局 401 拦截：过期/无效 token 自动登出并回登录页
+setupAuthIntercept();
+
+// 屏蔽浏览器扩展 content script 注入导致的无关节面报错（如 share-modal.js）
+suppressExtensionErrors();
 
 const queryClient = new QueryClient({
   defaultOptions: {

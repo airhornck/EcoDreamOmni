@@ -59,7 +59,7 @@ export function AgentFleetMini() {
     return (
       <EmptyState
         icon={Cpu}
-        title="Agent 舰队"
+        title="Agent 驾驶舱"
         description="暂无 Agent 状态数据"
       />
     )
@@ -74,7 +74,7 @@ export function AgentFleetMini() {
         return (
           <Link
             key={agent.id}
-            to="/agent-orchestra"
+            to="/agents"
             className="p-3 bg-card rounded-xl border border-border hover:border-primary/30 hover:shadow-sm transition-all"
           >
             <div className="flex items-center gap-2 mb-2">

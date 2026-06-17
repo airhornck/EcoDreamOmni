@@ -47,7 +47,7 @@ export function ReviewPublishCenterPage() {
   // ─── Data Fetching ───
   useEffect(() => {
     fetchConclusions(activeTab === 'all' ? undefined : activeTab)
-  }, [activeTab])
+  }, [activeTab, fetchConclusions])
 
   // ─── Copilot Action Handler ───
   // 审核列表页面需要自定义 handler 处理"批量审核""AI 分析"等操作

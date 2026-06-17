@@ -57,7 +57,7 @@ function GlobalCommandPalette() {
       onSelect: () => navigate('/assets'),
     },
     {
-      id: 'nav-agents', label: 'Agent 舰队', group: '页面跳转',
+      id: 'nav-agents', label: 'Agent 驾驶舱', group: '页面跳转',
       icon: <Cpu className="w-4 h-4" />,
       shortcut: 'G 7',
       onSelect: () => navigate('/agents'),

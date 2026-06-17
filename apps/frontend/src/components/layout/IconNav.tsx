@@ -8,12 +8,13 @@ import {
   Image,
   Bot,
   Brain,
-  Workflow,
   ClipboardList,
   BookOpen,
+  Layers,
   Settings,
   type LucideIcon,
 } from 'lucide-react'
+import { UserMenuDropdown } from './UserMenuDropdown'
 
 interface IconNavItem {
   path: string
@@ -28,13 +29,11 @@ const navItems: IconNavItem[] = [
   { path: '/analytics', label: '数据报表', icon: BarChart3 },
   { path: '/accounts', label: '账号矩阵', icon: Users },
   { path: '/assets', label: '素材库', icon: Image },
-  { path: '/agents', label: 'Agent 舰队', icon: Bot },
-  { path: '/models', label: '模型中心', icon: Brain },
-  { path: '/workflows', label: '工作流', icon: Workflow },
+  { path: '/agents', label: 'Agent 驾驶舱', icon: Bot },
+  { path: '/models', label: 'AI 引擎', icon: Brain },
   { path: '/rules', label: '平台规则', icon: ClipboardList },
+  { path: '/strategy-elements', label: '策略元素', icon: Layers },
   { path: '/lab', label: '实验室', icon: BookOpen },
-  { path: '/keywords', label: '关键词库', icon: BookOpen },
-  { path: '/templates', label: '模板库', icon: BookOpen },
   { path: '/settings', label: '设置', icon: Settings },
 ]
 
@@ -87,14 +86,20 @@ export function IconNav() {
 
       {/* User avatar */}
       <div className="mt-auto w-full space-y-1 pb-2">
-        <button className="w-full flex items-center gap-3 px-3 py-2.5 text-muted-foreground hover:text-foreground transition-all">
-          <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-[10px] text-primary flex-shrink-0">
-            U
-          </div>
-          <span className="text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-            管理员
-          </span>
-        </button>
+        <UserMenuDropdown
+          trigger={
+            <div className="w-full flex items-center gap-3 px-3 py-2.5 text-muted-foreground hover:text-foreground transition-all">
+              <div className="w-5 h-5 rounded-full bg-primary/20 flex items-center justify-center text-[10px] text-primary flex-shrink-0">
+                U
+              </div>
+              <span className="text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                管理员
+              </span>
+            </div>
+          }
+          align="left"
+          usePortal
+        />
       </div>
     </nav>
   )

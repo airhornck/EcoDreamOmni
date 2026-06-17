@@ -25,6 +25,10 @@ nodes:
   node_type: AGENT
   node_name: 合规预检
   agent_id: vetdrug-validate
+  inputs:
+    - from: task.prompt_variables.vetdrug_claims
+    - from: task.prompt_variables.safety_constraint_element_ids
+    - from: task.strategy_elements
   fail_strategy: FAIL_FAST
 - node_index: 4
   node_type: SKILL
@@ -52,6 +56,10 @@ nodes:
   node_type: AGENT
   node_name: 合规审核
   agent_id: compliance-guard
+  inputs:
+    - from: task.platform_rules
+    - from: task.prompt_variables.safety_constraint_element_ids
+    - from: task.strategy_elements
   fail_strategy: FAIL_FAST
 - node_index: 9
   node_type: AGENT

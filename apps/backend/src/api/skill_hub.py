@@ -21,6 +21,7 @@ class SkillCreate(BaseModel):
     tags: List[str] = []
     version: str = "1.0.0"
     metadata: dict = {}
+    modality_support: dict = {"text": True}
 
 
 class SkillUpdate(BaseModel):

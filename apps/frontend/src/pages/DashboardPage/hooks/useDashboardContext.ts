@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useAICopilotStore } from "../../../stores/aiCopilotStore";
 import { apiClient } from "../../../lib/api";
+import { resolveNavigateAction } from "../../../lib/copilotCapabilities";
 
 export interface DashboardActionHandler {
   navigate: (path: string) => void;
@@ -59,6 +60,15 @@ export function useDashboardContext(
     // Register action handler
     setPageActionHandler(async (cardId, actionId) => {
       if (!handler) return;
+
+      // 1. 先走前端纯导航能力表（覆盖默认兜底卡片如 dashboard-create-task / create_task）
+      const navCap = resolveNavigateAction(actionId);
+      if (navCap) {
+        handler.navigate(navCap.target);
+        return;
+      }
+
+      // 2. 后端动态卡片自定义逻辑
       if (cardId === "dash-new-task" && actionId === "create") {
         handler.navigate("/generate/create");
       } else if (cardId === "dash-quick-generate" && actionId === "generate") {

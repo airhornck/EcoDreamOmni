@@ -44,12 +44,12 @@ services:
     env_file:
       - ./apps/backend/.env
     environment:
-      - COOKIE_VAULT_KEY=${COOKIE_VAULT_KEY:-ecodream-default-key}
+      - COOKIE_VAULT_KEY=${COOKIE_VAULT_KEY:-ecodream-omni-cookie-vault-key-32b!}
       - DATABASE_URL=postgresql+asyncpg://ecodream:ecodream@postgres:5432/ecodream
       - REDIS_URL=redis://redis:6379/0
     volumes:
       - ./apps/backend/src:/app/src
-    command: ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    command: ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
     depends_on:
       postgres:
         condition: service_healthy

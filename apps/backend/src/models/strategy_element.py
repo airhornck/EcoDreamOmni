@@ -30,6 +30,7 @@ class ElementType(str, Enum):
     PLATFORM_STYLE = "platform_style"
     BRAND_KNOWLEDGE = "brand_knowledge"
     CUSTOM_FRAGMENT = "custom_fragment"
+    SAFETY_CONSTRAINT = "safety_constraint"
 
 
 class ElementSource(str, Enum):

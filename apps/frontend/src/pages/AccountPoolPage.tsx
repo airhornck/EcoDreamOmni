@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useAccountPoolStore, type AccountEntry } from '../stores/accountPoolStore'
 import { useProxyStore } from '../stores/proxyStore'
 import { useTaskHubStore } from '../stores/taskHubStore'
+import { usePageCopilot } from '../hooks/usePageCopilot'
 import { PageHeader } from '../components/common/PageHeader'
 import { Card, CardContent, CardHeader } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
@@ -237,6 +238,7 @@ export function AccountPoolPage() {
   }
 
   const openEditDrawer = (account: AccountEntry) => {
+    setDetailAccountId(null)
     setFormMode('edit')
     setEditingAccountId(account.id)
     setAccountId(account.account_id || account.username || '')
@@ -251,6 +253,43 @@ export function AccountPoolPage() {
     setAutoEngagementFetch(account.auto_engagement_fetch || false)
     setFormDrawerOpen(true)
   }
+
+  // Copilot 联动
+  usePageCopilot(
+    [
+      {
+        id: 'account-add',
+        type: 'decision',
+        title: '➕ 添加素人账号',
+        description: '新增平台账号到矩阵中',
+        priority: 1,
+        actions: [{ id: 'add_account', label: '添加账号', variant: 'primary' }],
+      },
+      {
+        id: 'account-schedule',
+        type: 'decision',
+        title: '📅 生成发布计划',
+        description: '基于账号历史数据生成最优发布时间表',
+        priority: 2,
+        actions: [{ id: 'generate_schedule', label: '生成计划', variant: 'primary' }],
+      },
+      {
+        id: 'account-health',
+        type: 'info',
+        title: '💚 账号健康度',
+        description: '查看矩阵中账号的健康分、风险等级与违规历史',
+        priority: 3,
+      },
+    ],
+    async (_cardId, actionId) => {
+      if (actionId === 'add_account') {
+        openCreateDrawer()
+      } else if (actionId === 'generate_schedule') {
+        // TODO: 接入发布计划生成能力
+        alert('发布计划生成能力即将上线')
+      }
+    }
+  )
 
   const closeFormDrawer = () => {
     setFormDrawerOpen(false)
@@ -325,8 +364,11 @@ export function AccountPoolPage() {
         <div className="p-3 rounded-lg bg-destructive/10 text-destructive text-sm">{error}</div>
       )}
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {/* Main content + side panel layout */}
+      <div className="flex gap-6 items-start">
+        <div className="flex-1 min-w-0 space-y-6">
+          {/* Stats */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard label="总账号数" value={stats.total} icon={Users} />
         <StatCard label="活跃账号" value={stats.active} icon={ShieldCheck} />
         <StatCard label="平均健康分" value={stats.avg_health_score} icon={BarChart3} />
@@ -460,22 +502,11 @@ export function AccountPoolPage() {
           </div>
         </CardContent>
       </Card>
+        </div>
 
-      {/* Detail Drawer Backdrop */}
+      {/* Detail Side Panel -- inline layout to avoid overlap with Copilot panel */}
       {detailAccountId && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40"
-          onClick={() => setDetailAccountId(null)}
-        />
-      )}
-
-      {/* Detail Drawer */}
-      <div
-        className={cn(
-          'fixed right-0 top-0 h-full w-96 bg-card border-l border-border shadow-xl z-50 transform transition-transform duration-300 flex flex-col',
-          detailAccountId ? 'translate-x-0' : 'translate-x-full'
-        )}
-      >
+        <aside className="w-80 xl:w-96 flex-shrink-0 border-l border-border bg-card shadow-xl flex flex-col sticky top-0 max-h-full overflow-hidden">
         <div className="flex items-center justify-between px-5 py-4 border-b border-border">
           <h3 className="text-base font-semibold">账号详情</h3>
           <button onClick={() => setDetailAccountId(null)} className="p-1 hover:bg-secondary rounded">
@@ -593,12 +624,24 @@ export function AccountPoolPage() {
               </div>
 
               {/* Proxy Binding */}
-              {detailAccount.proxy_config?.proxy_id && (
-                <div className="space-y-1.5">
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
                   <label className="text-sm font-medium flex items-center gap-1">
                     <Globe className="w-4 h-4 text-muted-foreground" />
                     绑定代理
                   </label>
+                  <a
+                    href="/models"
+                    className="text-xs text-primary hover:underline"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      window.location.href = '/models'
+                    }}
+                  >
+                    前往 AI 引擎管理代理 →
+                  </a>
+                </div>
+              {detailAccount.proxy_config?.proxy_id && (
                   <div className="rounded-lg border border-border bg-secondary/30 p-3 text-sm">
                     {(() => {
                       const p = proxies.find((px) => px.id === detailAccount.proxy_config?.proxy_id)
@@ -618,8 +661,8 @@ export function AccountPoolPage() {
                       )
                     })()}
                   </div>
-                </div>
               )}
+              </div>
 
               {/* Weekly Posts */}
               <div className="space-y-2">
@@ -682,64 +725,15 @@ export function AccountPoolPage() {
                 </div>
               )}
 
-              {/* Quick Actions */}
-              <div className="flex gap-2 pt-2 border-t border-border">
-                <Button
-                  variant="secondary"
-                  className="flex-1"
-                  onClick={() => {
-                    setDetailAccountId(null)
-                    openEditDrawer(detailAccount)
-                  }}
-                >
-                  <Pencil className="w-4 h-4" />
-                  编辑
-                </Button>
-                {detailAccount.status !== 'suspended' && (
-                  <Button
-                    variant="outline"
-                    className="flex-1"
-                    onClick={() => handleToggleStatus(detailAccount)}
-                  >
-                    {detailAccount.status === 'active' ? (
-                      <>
-                        <Pause className="w-4 h-4" />
-                        暂停
-                      </>
-                    ) : (
-                      <>
-                        <Play className="w-4 h-4" />
-                        恢复
-                      </>
-                    )}
-                  </Button>
-                )}
-                <Button
-                  variant="danger"
-                  className="flex-1"
-                  onClick={() => handleDelete(detailAccount.id)}
-                >
-                  <Trash2 className="w-4 h-4" />
-                  删除
-                </Button>
-              </div>
             </>
           )}
         </div>
-      </div>
-
-      {/* Form Drawer Backdrop */}
-      {formDrawerOpen && (
-        <div className="fixed inset-0 bg-black/50 z-40" onClick={closeFormDrawer} />
+      </aside>
       )}
 
-      {/* Form Drawer */}
-      <div
-        className={cn(
-          'fixed right-0 top-0 h-full w-96 bg-card border-l border-border shadow-xl z-50 transform transition-transform duration-300 flex flex-col',
-          formDrawerOpen ? 'translate-x-0' : 'translate-x-full'
-        )}
-      >
+      {/* Form Side Panel -- inline layout to avoid overlap with Copilot panel */}
+      {formDrawerOpen && (
+        <aside className="w-80 xl:w-96 flex-shrink-0 border-l border-border bg-card shadow-xl flex flex-col sticky top-0 max-h-full overflow-hidden">
         <div className="flex items-center justify-between px-5 py-4 border-b border-border">
           <h3 className="text-base font-semibold">
             {formMode === 'create' ? '添加账号' : '编辑账号'}
@@ -905,7 +899,9 @@ export function AccountPoolPage() {
             {formMode === 'create' ? '添加' : '保存'}
           </Button>
         </div>
-      </div>
+      </aside>
+      )}
     </div>
+  </div>
   )
 }

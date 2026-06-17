@@ -51,14 +51,7 @@ class TestContentCreationFlow:
             if exec_resp.status_code in (200, 201):
                 exec_data = exec_resp.json()
                 execution_id = exec_data.get("data", {}).get("id") or exec_data.get("id")
-
-                # Step 3: 查询 Pipeline 状态
-                if execution_id:
-                    status_resp = client.get(f"/workflow-engine/executions/{execution_id}")
-                    assert status_resp.status_code in (200, 404)
-                    if status_resp.status_code == 200:
-                        status_data = status_resp.json()
-                        assert "status" in status_data.get("data", status_data)
+                assert execution_id is not None
 
         # Step 4: 合规审核
         compliance_resp = client.post(

@@ -13,66 +13,27 @@ export interface Agent {
   updated_at: string
 }
 
-export interface WorkflowStep {
-  agent_id: string
-  name: string
-  input_from: string
-  output_to: string
-}
-
-export interface Workflow {
-  id: string
-  name: string
-  description: string
-  steps: WorkflowStep[]
-  status: string
-  created_at: string
-}
-
-export interface Pipeline {
-  id: string
-  workflow_id: string
-  status: string
-  current_step: number
-  context: Record<string, unknown>
-  results: unknown[]
-  created_at: string
-  updated_at: string
-}
-
 interface AgentOrchestraState {
   agents: Agent[]
-  workflows: Workflow[]
-  pipelines: Pipeline[]
   isLoading: boolean
   error: string | null
-  activeTab: 'agents' | 'workflows' | 'pipelines'
   fetchAgents: () => Promise<void>
   createAgent: (payload: Partial<Agent>) => Promise<Agent | null>
-  fetchWorkflows: () => Promise<void>
-  createWorkflow: (payload: Partial<Workflow>) => Promise<Workflow | null>
-  createPipeline: (workflowId: string, context: Record<string, unknown>) => Promise<Pipeline | null>
   updateAgent: (id: string, payload: Partial<Agent>) => Promise<Agent | null>
   deleteAgent: (id: string) => Promise<boolean>
-  setActiveTab: (tab: 'agents' | 'workflows' | 'pipelines') => void
   setError: (msg: string | null) => void
   clearError: () => void
 }
 
-
-
 export const useAgentOrchestraStore = create<AgentOrchestraState>((set) => ({
   agents: [],
-  workflows: [],
-  pipelines: [],
   isLoading: false,
   error: null,
-  activeTab: 'agents',
 
   fetchAgents: async () => {
     set({ isLoading: true, error: null })
     try {
-      const res = await fetch('/agents', { headers: authHeaders() })
+      const res = await fetch('/api/agent-orchestra/agents', { headers: authHeaders() })
       if (!res.ok) throw new Error(`Agents: ${res.status}`)
       const data = await res.json()
       set({ agents: data.agents || [], isLoading: false })
@@ -83,7 +44,7 @@ export const useAgentOrchestraStore = create<AgentOrchestraState>((set) => ({
 
   createAgent: async (payload) => {
     try {
-      const res = await fetch('/agents', {
+      const res = await fetch('/api/agent-orchestra/agents', {
         method: 'POST',
         headers: authHeaders(),
         body: JSON.stringify(payload),
@@ -98,54 +59,9 @@ export const useAgentOrchestraStore = create<AgentOrchestraState>((set) => ({
     }
   },
 
-  fetchWorkflows: async () => {
-    try {
-      const res = await fetch('/api/workflows', { headers: authHeaders() })
-      if (!res.ok) throw new Error(`Workflows: ${res.status}`)
-      const data = await res.json()
-      set({ workflows: data.workflows || [] })
-    } catch (err) {
-      set({ error: err instanceof Error ? err.message : '加载工作流失败' })
-    }
-  },
-
-  createWorkflow: async (payload) => {
-    try {
-      const res = await fetch('/api/workflows', {
-        method: 'POST',
-        headers: authHeaders(),
-        body: JSON.stringify(payload),
-      })
-      if (!res.ok) throw new Error(`CreateWF: ${res.status}`)
-      const wf = await res.json()
-      set((s) => ({ workflows: [wf, ...s.workflows] }))
-      return wf
-    } catch (err) {
-      set({ error: err instanceof Error ? err.message : '创建工作流失败' })
-      return null
-    }
-  },
-
-  createPipeline: async (workflowId, context) => {
-    try {
-      const res = await fetch('/api/pipelines', {
-        method: 'POST',
-        headers: authHeaders(),
-        body: JSON.stringify({ workflow_id: workflowId, context }),
-      })
-      if (!res.ok) throw new Error(`Pipeline: ${res.status}`)
-      const pipe = await res.json()
-      set((s) => ({ pipelines: [pipe, ...s.pipelines] }))
-      return pipe
-    } catch (err) {
-      set({ error: err instanceof Error ? err.message : '执行流水线失败' })
-      return null
-    }
-  },
-
   updateAgent: async (id, payload) => {
     try {
-      const res = await fetch(`/agents/${id}`, {
+      const res = await fetch(`/api/agent-orchestra/agents/${id}`, {
         method: 'PUT',
         headers: authHeaders(),
         body: JSON.stringify(payload),
@@ -164,7 +80,7 @@ export const useAgentOrchestraStore = create<AgentOrchestraState>((set) => ({
 
   deleteAgent: async (id) => {
     try {
-      const res = await fetch(`/agents/${id}`, {
+      const res = await fetch(`/api/agent-orchestra/agents/${id}`, {
         method: 'DELETE',
         headers: authHeaders(),
       })
@@ -179,7 +95,6 @@ export const useAgentOrchestraStore = create<AgentOrchestraState>((set) => ({
     }
   },
 
-  setActiveTab: (tab) => set({ activeTab: tab }),
   setError: (msg) => set({ error: msg }),
   clearError: () => set({ error: null }),
 }))

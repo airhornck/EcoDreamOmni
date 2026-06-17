@@ -45,7 +45,7 @@ class TestAgentUpdate:
         agent = ao.create_agent(name="Old Name", role="planner", description="desc")
 
         response = client.put(
-            f"/agents/{agent.id}",
+            f"/agent-orchestra/agents/{agent.id}",
             json={"name": "New Name", "role": "generator", "description": "new desc", "skills": ["sk1"], "config": {}},
             headers={"Authorization": f"Bearer {token}"},
         )
@@ -59,7 +59,7 @@ class TestAgentUpdate:
     def test_update_agent_not_found(self, client):
         token = get_auth_token(client)
         response = client.put(
-            "/agents/nonexistent",
+            "/agent-orchestra/agents/nonexistent",
             json={"name": "X", "role": "planner", "description": "", "skills": [], "config": {}},
             headers={"Authorization": f"Bearer {token}"},
         )
@@ -74,7 +74,7 @@ class TestAgentDelete:
         agent = ao.create_agent(name="ToDelete", role="planner")
 
         response = client.delete(
-            f"/agents/{agent.id}",
+            f"/agent-orchestra/agents/{agent.id}",
             headers={"Authorization": f"Bearer {token}"},
         )
         assert response.status_code == 204
@@ -83,7 +83,7 @@ class TestAgentDelete:
     def test_delete_agent_not_found(self, client):
         token = get_auth_token(client)
         response = client.delete(
-            "/agents/nonexistent",
+            "/agent-orchestra/agents/nonexistent",
             headers={"Authorization": f"Bearer {token}"},
         )
         assert response.status_code == 404

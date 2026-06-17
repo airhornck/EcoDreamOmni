@@ -17,6 +17,7 @@ export type ElementType =
   | 'platform_style'
   | 'brand_knowledge'
   | 'custom_fragment'
+  | 'safety_constraint'
 
 export type ElementSource = 'manual' | 'viral_analyzer' | 'ai_generated' | 'system'
 export type ElementStatus = 'active' | 'deprecated' | 'draft'
@@ -133,6 +134,7 @@ export const ELEMENT_TYPE_LABELS: Record<ElementType, string> = {
   platform_style: '平台风格',
   brand_knowledge: '品牌知识',
   custom_fragment: '自定义片段',
+  safety_constraint: '内容安全约束',
 }
 
 export const ELEMENT_TYPE_ICONS: Record<ElementType, string> = {
@@ -152,4 +154,5 @@ export const ELEMENT_TYPE_ICONS: Record<ElementType, string> = {
   platform_style: '🎨',
   brand_knowledge: '📚',
   custom_fragment: '✏️',
+  safety_constraint: '🛡️',
 }

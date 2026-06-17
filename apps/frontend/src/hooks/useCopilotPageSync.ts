@@ -84,5 +84,13 @@ export function useCopilotPageSync() {
       setQuickActions([])
       setPageActionHandler(null)
     }
-  }, [location.pathname])
+  }, [
+    location.pathname,
+    fallbackHandler,
+    setContext,
+    setPageActionCards,
+    setPageActionHandler,
+    setQuickActions,
+    setWelcomeMessage,
+  ])
 }

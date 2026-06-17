@@ -33,6 +33,7 @@ export function StepNodeCard({
   return (
     <div
       ref={cardRef}
+      data-testid={`step-node-${stepIndex}`}
       onClick={(e) => {
         // 点击已展开节点的内部表单区域时不触发收起或切换
         if (isActive) {

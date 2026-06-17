@@ -10,7 +10,6 @@ const mockStore = {
   accounts: [] as unknown[],
   personas: [] as unknown[],
   personaStories: [] as unknown[],
-  workflowTemplates: [] as unknown[],
   isLoading: false,
   isFormLoading: false,
   error: null as string | null,
@@ -20,7 +19,6 @@ const mockStore = {
   fetchAccounts: vi.fn(),
   fetchPersonas: vi.fn(),
   fetchPersonaStories: vi.fn(),
-  fetchWorkflowTemplates: vi.fn(),
   createTask: vi.fn(),
   updateTaskStatus: vi.fn(),
   deleteTask: vi.fn(),
@@ -42,7 +40,6 @@ describe('TaskHubPage', () => {
     mockStore.accounts = []
     mockStore.personas = []
     mockStore.personaStories = []
-    mockStore.workflowTemplates = []
     mockStore.isLoading = false
     mockStore.isFormLoading = false
     mockStore.error = null
@@ -60,7 +57,7 @@ describe('TaskHubPage', () => {
     expect(screen.getAllByText('DLQ')[0]).toBeInTheDocument()
   })
 
-  it('renders task list items with status badge and action buttons', () => {
+  it('renders task list items with status badge', () => {
     mockStore.tasks = [
       {
         id: 't1',
@@ -82,21 +79,16 @@ describe('TaskHubPage', () => {
     expect(screen.getByText('生成猫咪内容')).toBeInTheDocument()
     expect(screen.getByText('运行中')).toBeInTheDocument()
     expect(screen.getByText('P1')).toBeInTheDocument()
-    expect(screen.getByTitle('暂停')).toBeInTheDocument()
   })
 
-  it('navigates to task-hub/create when clicking 新建任务', () => {
+  it('shows Copilot-driven empty state instead of page-level 新建任务 button (Mode C)', () => {
     render(
       <MemoryRouter>
         <TaskHubPage />
       </MemoryRouter>
     )
-    const newTaskBtn = screen.getByRole('button', { name: /新建任务/i })
-    expect(newTaskBtn).toBeInTheDocument()
-    // Button should be a link-like navigation, not opening drawer
-    fireEvent.click(newTaskBtn)
-    // Since we can't easily assert navigate in MemoryRouter without mock,
-    // we just verify the button exists and is clickable
+    expect(screen.queryByRole('button', { name: /新建任务/i })).not.toBeInTheDocument()
+    expect(screen.getByText('请在右侧 Copilot 面板中操作')).toBeInTheDocument()
   })
 
   it('switches to series tab and renders content series', () => {

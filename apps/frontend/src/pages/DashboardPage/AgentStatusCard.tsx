@@ -38,7 +38,7 @@ export function AgentStatusCard({ status, isLoading }: AgentStatusCardProps) {
           <EmptyState
             icon={Cpu}
             title="暂无 Agent 数据"
-            description="Agent 舰队上线后即可查看状态"
+            description="Agent 驾驶舱上线后即可查看状态"
           />
         ) : (
           <div className="grid grid-cols-2 gap-3">

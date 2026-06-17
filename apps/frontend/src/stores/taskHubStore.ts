@@ -78,27 +78,6 @@ export interface PersonaStoryNode {
   label?: string
 }
 
-export interface WorkflowTemplateOption {
-  id: string
-  name: string
-  description?: string
-  source_preset?: string
-  version?: string
-  status?: string
-  owner?: string
-  nodes?: unknown[]
-  created_at?: string
-  variables?: WorkflowVariable[]
-}
-
-export interface WorkflowVariable {
-  key: string
-  label: string
-  type: 'string' | 'number' | 'boolean' | 'text'
-  required?: boolean
-  default?: string | number | boolean
-}
-
 export interface FieldConstraint {
   name: string
   label: string
@@ -136,7 +115,6 @@ interface TaskHubState {
   accounts: AccountOption[]
   personas: PersonaOption[]
   personaStories: PersonaStoryOption[]
-  workflowTemplates: WorkflowTemplateOption[]  // ★ deprecated，v4.0 后由 Agent 内部决定
   platformSchemas: PlatformSchema[]
   agents: Agent[]                               // ★ v4.0 Agent-First 新增
   isLoading: boolean
@@ -149,7 +127,6 @@ interface TaskHubState {
   fetchPersonas: () => Promise<void>
   fetchPersonaStories: (personaId: string) => Promise<void>
   fetchPersonaStoryNodes: (storyId: string) => Promise<PersonaStoryNode[]>
-  fetchWorkflowTemplates: () => Promise<void>   // ★ deprecated
   fetchAgents: () => Promise<void>              // ★ v4.0 Agent-First 新增
   fetchPlatformSchemas: () => Promise<void>
   createTask: (data: Record<string, unknown>) => Promise<boolean>
@@ -169,7 +146,6 @@ export const useTaskHubStore = create<TaskHubState>((set, get) => ({
   accounts: [],
   personas: [],
   personaStories: [],
-  workflowTemplates: [],
   platformSchemas: [],
   agents: [],
   isLoading: false,
@@ -182,7 +158,8 @@ export const useTaskHubStore = create<TaskHubState>((set, get) => ({
       const res = await fetch('/api/task-hub/tasks', { headers: authHeaders() })
       if (!res.ok) throw new Error(`获取任务列表失败: ${res.status}`)
       const data = await res.json()
-      set({ tasks: Array.isArray(data) ? data : (data.tasks || []), isLoading: false })
+      // v4.0 后端返回 { items: TaskResponse[], copilot_summary: ... }
+      set({ tasks: Array.isArray(data) ? data : (data.items || []), isLoading: false })
     } catch (err) {
       set({ isLoading: false, error: err instanceof Error ? err.message : '未知错误' })
     }
@@ -254,18 +231,6 @@ export const useTaskHubStore = create<TaskHubState>((set, get) => ({
     } catch (err) {
       set({ error: err instanceof Error ? err.message : '获取节点失败' })
       return []
-    }
-  },
-
-  fetchWorkflowTemplates: async () => {
-    // ★ deprecated: v4.0 Agent-First 后，工作流模板由 Agent 内部决定
-    try {
-      const res = await fetch('/api/workflow-engine/templates', { headers: authHeaders() })
-      if (!res.ok) throw new Error(`获取工作流模板失败: ${res.status}`)
-      const data = await res.json()
-      set({ workflowTemplates: Array.isArray(data) ? data : (data.templates || []) })
-    } catch (err) {
-      set({ error: err instanceof Error ? err.message : '获取工作流模板失败' })
     }
   },
 

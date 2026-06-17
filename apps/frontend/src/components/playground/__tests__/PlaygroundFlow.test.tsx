@@ -1,57 +1,128 @@
-import { describe, it, expect, vi } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { render, screen, fireEvent } from '@testing-library/react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { LabPage } from '../../../pages/PlaygroundPage'
 import { usePlaygroundStore } from '../../../stores/playgroundStore'
 
-// Mock fetch for parse/generate
-vi.stubGlobal(
-  'fetch',
-  vi.fn(() =>
-    Promise.resolve({
-      ok: true,
-      json: () => Promise.resolve({}),
-    })
-  )
-)
+const mockAnalyze = vi.fn()
+const mockTemplate = vi.fn()
+
+vi.mock('../../../hooks/useViralAnalyze', () => ({
+  useViralAnalyze: () => ({
+    mutateAsync: mockAnalyze,
+    isPending: false,
+    error: null,
+  }),
+}))
+
+vi.mock('../../../hooks/useViralTemplate', () => ({
+  useViralTemplate: () => ({
+    mutateAsync: mockTemplate,
+    isPending: false,
+    error: null,
+  }),
+}))
+
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+})
+
+const renderWithQueryClient = (ui: React.ReactNode) =>
+  render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>)
 
 describe('Lab · 爆款笔记分析 E2E Flow', () => {
   beforeEach(() => {
     usePlaygroundStore.getState().reset()
+    queryClient.clear()
+    mockAnalyze.mockReset()
+    mockTemplate.mockReset()
   })
 
-  it('renders all 6 zones', () => {
-    render(<LabPage />)
+  it('renders the viral analyzer capability by default', () => {
+    renderWithQueryClient(<LabPage />)
 
-    expect(screen.getByText('爆款输入')).toBeInTheDocument()
-    expect(screen.getByText('结构解析')).toBeInTheDocument()
-    expect(screen.getByText('模板生成')).toBeInTheDocument()
-    expect(screen.getByText('变量替换')).toBeInTheDocument()
-    expect(screen.getByText('对比预览')).toBeInTheDocument()
-    expect(screen.getByText('一键生成')).toBeInTheDocument()
+    // Capability nav shows all 4 capabilities
+    expect(screen.getByText('爆款笔记分析')).toBeInTheDocument()
+    expect(screen.getByText('标题优化器')).toBeInTheDocument()
+    expect(screen.getByText('封面生成器')).toBeInTheDocument()
+    expect(screen.getByText('A/B 测试')).toBeInTheDocument()
+
+    // Default active capability renders the note editor tab
+    expect(screen.getByText('笔记编辑')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('粘贴笔记正文...')).toBeInTheDocument()
   })
 
-  it('parses viral content and shows structure', async () => {
-    render(<LabPage />)
+  it('switches between lab tabs', () => {
+    renderWithQueryClient(<LabPage />)
 
-    const textInput = screen.getByPlaceholderText('或直接粘贴爆款文案内容...')
-    fireEvent.change(textInput, { target: { value: '我家狗狗驱虫花了好多钱...' } })
+    fireEvent.click(screen.getByText('报告详情'))
+    expect(screen.getByText('报告详情')).toBeInTheDocument()
 
-    const parseBtn = screen.getByText('AI 结构解析')
-    fireEvent.click(parseBtn)
+    fireEvent.click(screen.getByText('模板预览'))
+    expect(screen.getByText('模板预览')).toBeInTheDocument()
+  })
 
-    await waitFor(() => {
-      expect(screen.getByText('Hook 模式')).toBeInTheDocument()
+  it('shows analysis preview when a report is loaded', () => {
+    usePlaygroundStore.setState({
+      analysisReport: {
+        note_id: 'note_1',
+        structure_type: '清单体',
+        structure_confidence: 0.92,
+        viral_score: 88,
+        scoring_breakdown: {
+          completeness: 35,
+          keyword_richness: 30,
+          emotion_curve: 20,
+          interaction_weight: 15,
+          emoji_strategy: 10,
+        },
+        keyword_matches: {
+          structure: [],
+          function: [],
+          emotion: [],
+          industry: [],
+          effect: [],
+        },
+        title_analysis: {
+          pattern: '数字清单',
+          contains_number: true,
+          contains_question: false,
+          length: 18,
+        },
+        hook_analysis: {
+          hook_type: '痛点共鸣',
+          hook_text: '驱虫花了好多钱',
+          effectiveness: 0.85,
+        },
+        body_analysis: {
+          sections: 3,
+          avg_section_length: 120,
+          has_story: true,
+          has_data: true,
+        },
+        cta_analysis: {
+          cta_type: '互动引导',
+          cta_text: '评论区交流',
+          effectiveness: 0.8,
+        },
+        emoji_analysis: {
+          emoji_count: 4,
+          emoji_density: '适中',
+          top_emojis: ['😱', '✅', '💡', '🎯'],
+        },
+        emotion_curve: [
+          { segment: 1, emotion: '惊讶', intensity: 0.8 },
+          { segment: 2, emotion: '信任', intensity: 0.7 },
+        ],
+        success_factors: ['结构清晰', '痛点精准', '数据支撑'],
+      },
+      activeTab: 'preview',
+      copilotState: 'analyzed',
     })
-  })
 
-  it('selects template and shows variables', async () => {
-    render(<LabPage />)
+    renderWithQueryClient(<LabPage />)
 
-    const select = screen.getByRole('combobox')
-    fireEvent.change(select, { target: { value: 'tmpl_001' } })
-
-    await waitFor(() => {
-      expect(screen.getByDisplayValue('省钱狗爸')).toBeInTheDocument()
-    })
+    expect(screen.getByText('识别结构类型')).toBeInTheDocument()
+    expect(screen.getByText('清单体')).toBeInTheDocument()
   })
 })

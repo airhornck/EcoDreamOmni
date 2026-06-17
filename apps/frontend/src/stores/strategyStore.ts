@@ -231,6 +231,7 @@ export const useStrategyStore = create<StrategyState & StrategyActions>()(
           if (state.currentStrategy.elements.some((el) => el.element_id === elementId)) {
             return state
           }
+          const element = state.elements.find((el) => el.element_id === elementId)
           return {
             currentStrategy: {
               ...state.currentStrategy,
@@ -238,6 +239,7 @@ export const useStrategyStore = create<StrategyState & StrategyActions>()(
                 ...state.currentStrategy.elements,
                 {
                   element_id: elementId,
+                  element_type: element?.element_type,
                   priority: options.priority ?? 5,
                   override_variables: options.override_variables ?? {},
                 },

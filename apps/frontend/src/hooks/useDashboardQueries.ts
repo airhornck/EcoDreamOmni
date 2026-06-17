@@ -6,10 +6,15 @@ import type {
   Alert,
   ActivityEntry,
   AgentStatus,
-  StoryProgress,
   EngagementTrend,
-  HitRate,
+  QuickAction,
 } from "../stores/dashboardStore";
+interface AgentListItem {
+  id: string;
+  status: string;
+  success_rate?: number;
+  recent_tasks_1h?: number;
+}
 
 const dashboardKeys = {
   all: ["dashboard"] as const,
@@ -19,10 +24,8 @@ const dashboardKeys = {
   activityLog: () => [...dashboardKeys.all, "activity-log"] as const,
   smartTopics: () => [...dashboardKeys.all, "smart-topics"] as const,
   agentStatus: () => [...dashboardKeys.all, "agent-status"] as const,
-  storyProgress: () => [...dashboardKeys.all, "story-progress"] as const,
   engagementTrend: (days: number) =>
     [...dashboardKeys.all, "engagement-trend", days] as const,
-  hitRate: () => [...dashboardKeys.all, "hit-rate"] as const,
 };
 
 export function useDashboardOverview() {
@@ -71,6 +74,18 @@ export function useDashboardActivityLog() {
   });
 }
 
+export function useDashboardQuickActions() {
+  return useQuery({
+    queryKey: dashboardKeys.all,
+    queryFn: async () => {
+      const res = await apiClient<{ actions: QuickAction[] }>(
+        "/dashboard/quick-actions",
+      );
+      return res.actions ?? [];
+    },
+  });
+}
+
 export function useDashboardSmartTopics() {
   return useQuery({
     queryKey: dashboardKeys.smartTopics(),
@@ -98,25 +113,39 @@ export function useDashboardAgentStatus() {
   return useQuery({
     queryKey: dashboardKeys.agentStatus(),
     queryFn: async () => {
-      const res = await apiClient<{ status: AgentStatus }>("/agents");
-      return res.status ?? null;
-    },
-  });
-}
+      const res = await apiClient<AgentStatus | AgentListItem[]>("/agents");
 
-export function useDashboardStoryProgress() {
-  return useQuery({
-    queryKey: dashboardKeys.storyProgress(),
-    queryFn: async () => {
-      const res = await apiClient<{
-        items?: StoryProgress[];
-        stories?: StoryProgress[];
-      }>("/persona-stories?status=active");
-      const items = res.items ?? res.stories ?? [];
-      return items.filter(
-        (item) =>
-          item.currentNodeIndex !== undefined || item.totalNodes !== undefined,
+      // 兼容旧版 { status } 格式（测试与过渡期）
+      if (res && typeof res === "object" && "status" in res) {
+        return (res as { status: AgentStatus }).status ?? null;
+      }
+
+      // 新版 /agents 返回 Agent 列表，派生出状态概览
+      const agents = Array.isArray(res) ? res : [];
+      const activeAgents = agents.length;
+      const pendingMessages = agents.reduce(
+        (sum, a) => sum + (a.recent_tasks_1h ?? 0),
+        0,
       );
+      const avgSuccessRate =
+        activeAgents === 0
+          ? 0
+          : agents.reduce((sum, a) => sum + (a.success_rate ?? 0), 0) /
+            activeAgents;
+      const allHealthy = agents.every((a) => a.status === "ACTIVE");
+
+      const status: AgentStatus = {
+        activeAgents,
+        pendingMessages,
+        successRate1h: avgSuccessRate,
+        lastExecutionStatus:
+          activeAgents === 0
+            ? "idle"
+            : allHealthy
+              ? "success"
+              : "failure",
+      };
+      return status;
     },
   });
 }
@@ -133,14 +162,3 @@ export function useDashboardEngagementTrend(days = 7) {
   });
 }
 
-export function useDashboardHitRate() {
-  return useQuery({
-    queryKey: dashboardKeys.hitRate(),
-    queryFn: async () => {
-      const res = await apiClient<{ rates: HitRate[] }>(
-        "/predictions/hit-rate",
-      );
-      return res.rates ?? [];
-    },
-  });
-}

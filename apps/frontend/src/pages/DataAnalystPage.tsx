@@ -243,11 +243,11 @@ export function DataAnalystPage() {
       )}
 
       {/* ─── 2. 数据可视化图表区（双栏） ─── */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         {/* 左栏 */}
         <div className="space-y-6">
           {/* 近30日发布趋势 */}
-          <Card>
+          <Card className="min-w-0 overflow-hidden">
             <CardHeader>
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-2">
@@ -276,7 +276,7 @@ export function DataAnalystPage() {
               {publishTrend.length === 0 ? (
                 <EmptyState icon={LineChartIcon} title="暂无趋势数据" description="数据导入后将展示发布趋势" />
               ) : (
-                <div className="h-64">
+                <div className="h-64 min-w-0">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={trendData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -310,7 +310,7 @@ export function DataAnalystPage() {
           </Card>
 
           {/* 平台分布饼图 */}
-          <Card>
+          <Card className="min-w-0 overflow-hidden">
             <CardHeader>
               <div className="flex items-center gap-2">
                 <PieChartIcon className="w-4 h-4 text-primary" />
@@ -321,7 +321,7 @@ export function DataAnalystPage() {
               {platformDistribution.length === 0 ? (
                 <EmptyState icon={PieChartIcon} title="暂无平台数据" description="数据导入后将展示平台分布" />
               ) : (
-                <div className="h-64">
+                <div className="h-64 min-w-0">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
@@ -359,7 +359,7 @@ export function DataAnalystPage() {
         {/* 右栏 */}
         <div className="space-y-6">
           {/* 互动量分布 */}
-          <Card>
+          <Card className="min-w-0 overflow-hidden">
             <CardHeader>
               <div className="flex items-center gap-2">
                 <BarChart3 className="w-4 h-4 text-primary" />
@@ -370,7 +370,7 @@ export function DataAnalystPage() {
               {engagementDistribution.length === 0 ? (
                 <EmptyState icon={BarChart3} title="暂无互动数据" description="数据导入后将展示互动量分布" />
               ) : (
-                <div className="h-64">
+                <div className="h-64 min-w-0">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={engagementDistribution} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -399,7 +399,7 @@ export function DataAnalystPage() {
           </Card>
 
           {/* MAPE趋势 */}
-          <Card>
+          <Card className="min-w-0 overflow-hidden">
             <CardHeader>
               <div className="flex items-center gap-2">
                 <AreaChartIcon className="w-4 h-4 text-primary" />
@@ -410,7 +410,7 @@ export function DataAnalystPage() {
               {mapeTrend.length === 0 ? (
                 <EmptyState icon={AreaChartIcon} title="暂无MAPE数据" description="预测模型运行后将展示MAPE趋势" />
               ) : (
-                <div className="h-64">
+                <div className="h-64 min-w-0">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={mapeTrend} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
                       <defs>
@@ -527,7 +527,7 @@ export function DataAnalystPage() {
           ) : (
             <>
               {/* 横向柱状图 */}
-              <div className="h-56">
+              <div className="h-56 min-w-0">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={accountComparison}

@@ -1123,7 +1123,41 @@ async def start_workflow(db: Any, task_id: str) -> Optional[Task]:
     await transition_task(db, task_id, "running")
 
     # Start workflow execution
-    execution = we.start_execution(task_id, workflow_template_id)
+    execution = we.start_execution(task_id, workflow_template_id, prompt_variables=task.prompt_variables)
+
+    # Inject strategy elements (including safety constraints) into execution context
+    # so that compliance nodes can read structured constraints directly.
+    prompt_vars = task.prompt_variables or {}
+    strategy_element_ids = prompt_vars.get("strategy_element_ids") or []
+    safety_constraint_ids = prompt_vars.get("safety_constraint_element_ids") or []
+    if strategy_element_ids or safety_constraint_ids:
+        try:
+            from sqlalchemy import select
+            from src.models.strategy_element import StrategyElementORM
+
+            all_ids = list(set(strategy_element_ids + safety_constraint_ids))
+            stmt = select(StrategyElementORM).where(StrategyElementORM.element_id.in_(all_ids))
+            result = await db.execute(stmt)
+            elements = result.scalars().all()
+            strategy_elements_data = []
+            safety_constraints_data = []
+            for el in elements:
+                item = {
+                    "element_id": el.element_id,
+                    "element_type": el.element_type,
+                    "name": el.name,
+                    "content": el.content or {},
+                    "platform": el.platform,
+                    "content_format": el.content_format,
+                }
+                strategy_elements_data.append(item)
+                if el.element_type == "safety_constraint":
+                    safety_constraints_data.append(item)
+            execution.context["strategy_elements"] = strategy_elements_data
+            execution.context["safety_constraints"] = safety_constraints_data
+        except Exception as exc:
+            logging.getLogger(__name__).warning("Failed to inject strategy elements into workflow context: %s", exc)
+
     task = await update_task(db, task_id, execution_id=execution.id)
 
     # Drive execution until human approval, completion, or failure

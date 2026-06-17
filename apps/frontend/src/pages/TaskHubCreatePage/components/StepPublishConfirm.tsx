@@ -200,7 +200,7 @@ export function StepPublishConfirm({
             onClick={onSave}
             className="px-3 py-1.5 rounded-md text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
           >
-            激活流水线并部署
+            确认部署
           </button>
         )}
       </div>

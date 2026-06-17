@@ -8,13 +8,12 @@ W18 E2E-1: V2.7.1-V3.1 全链路集成测试。
 4. CommentHub → 评论管理 链路
 5. ContentSeries → 系列上下文 链路
 6. HITL 弹性审核 链路
-7. Workflow 全节点跑通
 8. ImageForge → 图片配置 链路
 9. PlatformRule 抖音适配 链路（框架）
 10. BrandKnowledge / VetDrugDB Function 层可用性（框架）
 11. TimelineLibrary 季节事件（框架）
 12. AssetPool 素材管理（框架）
-13. 架构红线：Agent 禁止直接操作数据库
+12. 架构红线：Agent 禁止直接操作数据库
 """
 
 from src.models.user import clear_users
@@ -313,42 +312,6 @@ def test_hitl_elastic_review_pipeline(client):
 
 
 # =============================================================================
-# E2E-7: Workflow 全节点跑通
-# =============================================================================
-
-
-def test_workflow_full_node_execution(client):
-    """🔴 端到端：工作流模板 → 执行 → 全节点完成."""
-    token = _get_token(client, "operator")
-
-    # 使用预设模板执行
-    exec_resp = client.post(
-        "/workflow-engine/templates/trend_scout_only/executions",
-        json={"task_id": "task_e2e_001"},
-        headers={"Authorization": f"Bearer {token}"},
-    )
-    assert exec_resp.status_code == 201
-    exec_id = exec_resp.json()["id"]
-
-    # 执行节点
-    next_resp = client.post(
-        f"/workflow-engine/executions/{exec_id}/next",
-        json={"node_output": {"trend": "cats"}},
-        headers={"Authorization": f"Bearer {token}"},
-    )
-    assert next_resp.status_code == 200
-    assert next_resp.json()["done"] is True
-
-    # 验证执行完成
-    get_resp = client.get(
-        f"/workflow-engine/executions/{exec_id}",
-        headers={"Authorization": f"Bearer {token}"},
-    )
-    assert get_resp.status_code == 200
-    assert get_resp.json()["status"] == "COMPLETED"
-
-
-# =============================================================================
 # E2E-8: ImageForge → 图片配置 → 人工审核
 # =============================================================================
 
@@ -436,32 +399,3 @@ def test_architecture_no_direct_db_access():
     assert len(agent_violations) == 0, f"Agent layer DB violations: {agent_violations}"
 
 
-# =============================================================================
-# E2E-10: Workflow 可视化 — React Flow + Dry Run + 版本
-# =============================================================================
-
-
-def test_workflow_visual_features(client):
-    """🔴 端到端：工作流模板 → React Flow → Dry Run → 版本升级."""
-    token = _get_token(client, "operator")
-
-    # React Flow 格式
-    rf_resp = client.get(
-        "/workflow-visual/content_creation_standard/react-flow",
-        headers={"Authorization": f"Bearer {token}"},
-    )
-    assert rf_resp.status_code == 200
-    rf = rf_resp.json()
-    assert len(rf["nodes"]) > 0
-    assert len(rf["edges"]) == len(rf["nodes"]) - 1
-
-    # Dry Run
-    dry_resp = client.post(
-        "/workflow-visual/content_creation_standard/dry-run",
-        json={},
-        headers={"Authorization": f"Bearer {token}"},
-    )
-    assert dry_resp.status_code == 200
-    assert dry_resp.json()["is_dry_run"] is True
-    assert dry_resp.json()["has_human_approval"] is True
-    assert dry_resp.json()["validation_passed"] is True

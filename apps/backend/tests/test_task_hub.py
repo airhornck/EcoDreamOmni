@@ -27,6 +27,15 @@ from src.services import workflow_engine as we
 we.load_presets()
 
 
+def _human_approval_index(template_id: str) -> int:
+    """Return the node index of the first HUMAN_APPROVAL node in a template."""
+    tmpl = we.get_template(template_id)
+    for node in tmpl.nodes:
+        if node.node_type == we.NodeType.HUMAN_APPROVAL:
+            return node.node_index
+    raise ValueError(f"No HUMAN_APPROVAL node in template {template_id}")
+
+
 pytestmark = pytest.mark.asyncio(loop_scope="function")
 
 
@@ -347,11 +356,11 @@ async def test_start_workflow_drives_to_human_wait(db: AsyncSession):
     assert t is not None
     assert t.status == TaskStatus.HUMAN_WAIT
     assert t.execution_id is not None
-    assert t.current_node_index == 6  # HUMAN_APPROVAL node index
+    assert t.current_node_index == _human_approval_index("content_creation_standard")
 
 
 async def test_start_workflow_light_template(db: AsyncSession):
-    """Light template has HUMAN_APPROVAL at node 3."""
+    """Light template has HUMAN_APPROVAL at a fixed index."""
     t = await th.create_task(
         db=db,
         name="Light Task",
@@ -362,7 +371,7 @@ async def test_start_workflow_light_template(db: AsyncSession):
     )
     t = await th.start_workflow(db, t.id)
     assert t.status == TaskStatus.HUMAN_WAIT
-    assert t.current_node_index == 3
+    assert t.current_node_index == _human_approval_index("content_creation_light")
 
 
 async def test_human_decision_approve_resumes_workflow(db: AsyncSession):

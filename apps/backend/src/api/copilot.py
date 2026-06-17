@@ -46,7 +46,7 @@ _action_router = CopilotActionRouter()
 # ───────────────────────────────────────────────
 
 class CopilotContextRequest(BaseModel):
-    session_id: str
+    session_id: Optional[str] = None
     page: str
     page_title: Optional[str] = None
     selected_items: List[str] = Field(default_factory=list)
@@ -634,8 +634,10 @@ async def update_context(
     now = datetime.now(timezone.utc)
     expires = now + timedelta(minutes=30)
 
+    session_id = req.session_id or str(uuid.uuid4())
+
     stmt = select(CopilotContextSessionORM).where(
-        CopilotContextSessionORM.session_id == req.session_id,
+        CopilotContextSessionORM.session_id == session_id,
         CopilotContextSessionORM.user_id == user.id,
     )
     result = await db.execute(stmt)
@@ -651,7 +653,7 @@ async def update_context(
     else:
         session = CopilotContextSessionORM(
             user_id=user.id,
-            session_id=req.session_id,
+            session_id=session_id,
             page=req.page,
             selected_items=req.selected_items,
             selected_content=req.selected_content,

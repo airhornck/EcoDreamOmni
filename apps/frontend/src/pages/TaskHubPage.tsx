@@ -6,13 +6,13 @@ import { Badge, type BadgeVariant } from '../components/ui/Badge'
 import { EmptyState } from '../components/ui/EmptyState'
 import {
   ListTodo,
-  Layers,
-  AlertTriangle,
-  ChevronDown,
-  ChevronUp,
   Clock,
   Zap,
   CalendarClock,
+  Play,
+  Pause,
+  Trash2,
+  Settings,
 } from 'lucide-react'
 
 const statusLabels: Record<string, string> = {
@@ -43,47 +43,27 @@ const statusVariants: Record<string, string> = {
   dlq: 'danger',
 }
 
-const seriesStatusLabels: Record<string, string> = {
-  planning: '规划中',
-  active: '执行中',
-  completed: '已完成',
-}
-
-const seriesStatusVariants: Record<string, BadgeVariant> = {
-  planning: 'info',
-  active: 'primary',
-  completed: 'success',
-}
-
-type TabKey = 'tasks' | 'series' | 'dlq'
+type TabKey = 'tasks'
 
 export function TaskHubPage() {
   const {
     tasks,
-    contentSeries,
-    dlqItems,
     isLoading,
     error,
     fetchTasks,
-    fetchContentSeries,
-    fetchDLQ,
+    updateTaskStatus,
+    startWorkflow,
+    configureTask,
+    deleteTask,
   } = useTaskHubStore()
 
   const [activeTab, setActiveTab] = useState<TabKey>('tasks')
   const [filter, setFilter] = useState('')
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null)
 
-  // Expand series task list
-  const [expandedSeries, setExpandedSeries] = useState<Record<string, boolean>>({})
-
   useEffect(() => {
     fetchTasks()
   }, [fetchTasks])
-
-  useEffect(() => {
-    if (activeTab === 'series') fetchContentSeries()
-    if (activeTab === 'dlq') fetchDLQ()
-  }, [activeTab, fetchContentSeries, fetchDLQ])
 
   const filteredTasks = tasks.filter(
     (t) =>
@@ -92,26 +72,8 @@ export function TaskHubPage() {
       (t.account_name && t.account_name.toLowerCase().includes(filter.toLowerCase()))
   )
 
-  const filteredSeries = contentSeries.filter(
-    (s) =>
-      s.name.toLowerCase().includes(filter.toLowerCase()) ||
-      (s.story_name && s.story_name.toLowerCase().includes(filter.toLowerCase()))
-  )
-
-  const filteredDLQ = dlqItems.filter(
-    (d) =>
-      d.task_name.toLowerCase().includes(filter.toLowerCase()) ||
-      d.error_reason.toLowerCase().includes(filter.toLowerCase())
-  )
-
-  const toggleSeries = (id: string) => {
-    setExpandedSeries((prev) => ({ ...prev, [id]: !prev[id] }))
-  }
-
   const tabs: { key: TabKey; label: string; icon: React.ElementType }[] = [
     { key: 'tasks', label: '任务列表', icon: ListTodo },
-    { key: 'series', label: '系列规划', icon: Layers },
-    { key: 'dlq', label: 'DLQ', icon: AlertTriangle },
   ]
 
   return (
@@ -226,135 +188,56 @@ export function TaskHubPage() {
                       )}
                     </div>
                   </div>
-                  {/* Mode C: 工作区禁止启动/暂停/继续/重试/完成/取消/删除等操作按钮，操作走 Copilot Action Card */}
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Content Series Tab */}
-      {activeTab === 'series' && (
-        <Card>
-          <CardHeader className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Layers className="w-4 h-4 text-primary" />
-              <h2 className="text-base font-semibold">系列规划</h2>
-              <Badge variant="default">{filteredSeries.length}</Badge>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {isLoading && <div className="h-32 animate-pulse bg-secondary/50 rounded-lg" />}
-            {!isLoading && filteredSeries.length === 0 && (
-              <EmptyState icon={Layers} title="暂无系列规划" description="新建任务时可绑定或创建系列" />
-            )}
-            <div className="space-y-2">
-              {filteredSeries.map((series) => {
-                const progress = series.total_tasks > 0 ? Math.round((series.completed_tasks / series.total_tasks) * 100) : 0
-                const expanded = !!expandedSeries[series.id]
-                const seriesTasks = tasks.filter((t) => t.content_series_id === series.id)
-                return (
-                  <div
-                    key={series.id}
-                    className="p-3 rounded-lg border border-border hover:bg-secondary/30 transition-colors"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-sm font-medium text-foreground">{series.name}</span>
-                          <Badge variant={(seriesStatusVariants[series.status] as BadgeVariant) || 'default'}>
-                            {seriesStatusLabels[series.status] || series.status}
-                          </Badge>
-                          {series.story_name && (
-                            <span className="text-xs text-muted-foreground">{series.story_name}</span>
-                          )}
-                        </div>
-                        <div className="mt-2">
-                          <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
-                            <span>
-                              进度 {series.completed_tasks}/{series.total_tasks}
-                            </span>
-                            <span>{progress}%</span>
-                          </div>
-                          <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden">
-                            <div
-                              className="h-full bg-primary transition-all"
-                              style={{ width: `${progress}%` }}
-                            />
-                          </div>
-                        </div>
-                      </div>
+                  <div className="flex items-center gap-1 ml-2">
+                    {(task.status === 'draft' || task.status === 'configuring') && (
                       <button
-                        onClick={() => toggleSeries(series.id)}
-                        className="p-1.5 hover:bg-secondary rounded ml-3"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          configureTask(task.id)
+                        }}
+                        className="p-1.5 hover:bg-secondary rounded text-muted-foreground hover:text-foreground"
+                        title="配置并启动"
                       >
-                        {expanded ? (
-                          <ChevronUp className="w-4 h-4 text-muted-foreground" />
-                        ) : (
-                          <ChevronDown className="w-4 h-4 text-muted-foreground" />
-                        )}
+                        <Settings className="w-4 h-4" />
                       </button>
-                    </div>
-                    {expanded && (
-                      <div className="mt-3 space-y-1 border-t border-border pt-2">
-                        {seriesTasks.length === 0 && (
-                          <p className="text-xs text-muted-foreground">系列内暂无任务</p>
-                        )}
-                        {seriesTasks.map((t) => (
-                          <div
-                            key={t.id}
-                            className="flex items-center justify-between px-2 py-1.5 rounded hover:bg-secondary/50"
-                          >
-                            <span className="text-xs text-foreground">{t.name}</span>
-                            <Badge variant={(statusVariants[t.status] as BadgeVariant) || 'default'}>
-                              {statusLabels[t.status] || t.status}
-                            </Badge>
-                          </div>
-                        ))}
-                      </div>
+                    )}
+                    {(task.status === 'draft' || task.status === 'configuring' || task.status === 'paused') && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          startWorkflow(task.id)
+                        }}
+                        className="p-1.5 hover:bg-secondary rounded text-muted-foreground hover:text-primary"
+                        title="启动"
+                      >
+                        <Play className="w-4 h-4" />
+                      </button>
+                    )}
+                    {task.status === 'running' && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          updateTaskStatus(task.id, 'paused')
+                        }}
+                        className="p-1.5 hover:bg-secondary rounded text-muted-foreground hover:text-warning"
+                        title="暂停"
+                      >
+                        <Pause className="w-4 h-4" />
+                      </button>
+                    )}
+                    {(task.status === 'draft' || task.status === 'configuring' || task.status === 'paused' || task.status === 'failed' || task.status === 'cancelled') && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          deleteTask(task.id)
+                        }}
+                        className="p-1.5 hover:bg-secondary rounded text-muted-foreground hover:text-destructive"
+                        title="删除"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     )}
                   </div>
-                )
-              })}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* DLQ Tab */}
-      {activeTab === 'dlq' && (
-        <Card>
-          <CardHeader className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 text-danger" />
-              <h2 className="text-base font-semibold">死信队列</h2>
-              <Badge variant="danger">{filteredDLQ.length}</Badge>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {isLoading && <div className="h-32 animate-pulse bg-secondary/50 rounded-lg" />}
-            {!isLoading && filteredDLQ.length === 0 && (
-              <EmptyState icon={AlertTriangle} title="DLQ为空" description="当前没有需要处理失败任务" />
-            )}
-            <div className="space-y-2">
-              {filteredDLQ.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex items-start justify-between p-3 rounded-lg border border-border hover:bg-secondary/30 transition-colors"
-                >
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-sm font-medium text-foreground">{item.task_name}</span>
-                      <Badge variant="danger">失败</Badge>
-                      <Badge variant="warning">重试 {item.retry_count}</Badge>
-                    </div>
-                    <div className="mt-1 text-xs text-destructive">{item.error_reason}</div>
-                    <div className="mt-1 text-xs text-muted-foreground">
-                      最后失败: {new Date(item.last_failed_at).toLocaleString()}
-                    </div>
-                  </div>
-                  {/* Mode C: 工作区禁止重试/丢弃操作按钮，操作走 Copilot Action Card */}
                 </div>
               ))}
             </div>

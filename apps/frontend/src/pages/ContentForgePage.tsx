@@ -811,7 +811,13 @@ export function ContentForgePage() {
             <EmptyState
               icon={Hammer}
               title="暂无内容草稿"
-              description="在右侧 Copilot 面板中点击「新建内容」开始创建"
+              description="点击新建内容开始创建，或通过右侧 Copilot 面板操作"
+              action={
+                <Button size="sm" onClick={() => setShowCreate(true)} aria-label="新建内容">
+                  <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+                  新建内容
+                </Button>
+              }
             />
           )}
           <div className="space-y-3">

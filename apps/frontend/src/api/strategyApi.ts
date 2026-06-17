@@ -30,7 +30,7 @@ export async function fetchStrategyElements(
     platform: filters.platform,
     source: filters.source,
     methodology_stage_id: filters.methodology_stage_id,
-    status: filters.status ?? 'active',
+    status: filters.status,
     category: filters.category,
     search: filters.search,
     sort_by: filters.sort_by,
