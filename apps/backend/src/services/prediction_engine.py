@@ -11,7 +11,7 @@ Phase 2+ (W18): QuantileRegressor / XGBoost + SHAP, gated by N_min.
 
 import time
 import numpy as np
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 
 FEATURE_VERSION = "v1.0-mvp-bayesian"

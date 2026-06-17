@@ -126,7 +126,7 @@ def test_build_requests_proxies_from_dict():
 
 def test_pick_proxy_for_region_exact_match():
     p_us = create_proxy(name="US", provider="custom", protocol="http", host="us.proxy", port=80, region="us")
-    p_cn = create_proxy(name="CN", provider="custom", protocol="http", host="cn.proxy", port=80, region="cn")
+    create_proxy(name="CN", provider="custom", protocol="http", host="cn.proxy", port=80, region="cn")
     picked = pick_proxy_for_region("us")
     assert picked is not None
     assert picked.id == p_us.id

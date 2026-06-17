@@ -3,9 +3,20 @@
 Aligned with dev-plan W15: hermes-agent skill compatibility + Tool Registry schema.
 """
 
-from typing import List, Optional
+from pydantic import BaseModel, Field, ConfigDict
+from typing import Dict, List, Optional
+
+from src.services.skill_hub import (
+    SkillDefinition,
+    register,
+    bind_to_agent,
+    get_agent_skills,
+    validate_invocation,
+    get_skill_versions,
+    get_latest_version,
+)
+
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel, ConfigDict
 
 from src.api.auth import get_current_user
 from src.services import skill_hub, skill_binding
@@ -288,19 +299,6 @@ def _skill_to_out(skill: skill_hub.Skill) -> SkillOut:
 # ═══════════════════════════════════════════════════════
 # P3-1: Skill Hub Registration & Validation v4.0
 # ═══════════════════════════════════════════════════════
-
-from pydantic import BaseModel, Field
-from typing import Dict, List, Optional
-
-from src.services.skill_hub import (
-    SkillDefinition,
-    register,
-    bind_to_agent,
-    get_agent_skills,
-    validate_invocation,
-    get_skill_versions,
-    get_latest_version,
-)
 
 
 class RegisterSkillRequest(BaseModel):

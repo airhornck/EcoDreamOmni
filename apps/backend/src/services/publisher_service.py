@@ -4,14 +4,13 @@ Aligned with detailed design §5.7 — L3 evaluation before scheduling.
 """
 
 import logging
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 from asgiref.sync import async_to_sync
 
 from src.core.database import AsyncSessionLocal
 from src.models.publish_task import (
     PublishTask,
-    clear_tasks,
     create_task,
     delete_task,
     get_task,

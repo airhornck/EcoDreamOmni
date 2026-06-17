@@ -14,15 +14,20 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.core.config import settings
 from src.core.database import get_db
 from src.core.dependencies import get_current_user
-from src.core.file_upload import save_upload_file, get_file_type
+from src.core.file_upload import save_upload_file
 from src.models.user import User
 from src.services import asset_pool_function as apf
 
 try:
-    from PIL import Image
+    from PIL import Image  # noqa: F401
     HAS_PILLOW = True
 except ImportError:
     HAS_PILLOW = False
+
+import os
+import uuid
+
+from src.services.stock_photo_client import stock_client
 
 router = APIRouter(prefix="/assets", tags=["assets"])
 
@@ -135,7 +140,7 @@ def _generate_thumbnail(image_path: str, max_size: tuple = (300, 300)) -> str:
         return ""
     try:
         from pathlib import Path
-        from PIL import Image
+        from PIL import Image  # noqa: F401
         import io
         from src.core.storage import get_storage
 
@@ -148,7 +153,6 @@ def _generate_thumbnail(image_path: str, max_size: tuple = (300, 300)) -> str:
 
         # Upload thumbnail via storage layer (local or OSS)
         storage = get_storage()
-        date_dir = datetime.now().strftime("%Y%m")
         thumb_name = f"thumb_{path.name}"
 
         if hasattr(storage, "save_bytes"):
@@ -202,9 +206,6 @@ async def upload_asset_file(
 
 
 # ─── Stock Photo API Integration ───
-
-from src.services.stock_photo_client import stock_client
-import uuid, os
 
 
 class StockSearchRequest(BaseModel):

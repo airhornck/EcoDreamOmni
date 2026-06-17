@@ -9,7 +9,6 @@ import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.services import asset_pool_function as apf
-from src.models.asset_pool_orm import AssetORM
 
 pytestmark = pytest.mark.asyncio(loop_scope="function")
 

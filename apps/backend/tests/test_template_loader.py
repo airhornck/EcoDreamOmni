@@ -1,12 +1,10 @@
 """Tests for template_loader — P8-4."""
 
-import pytest
 from src.core.template_loader import (
     load_all_templates,
     load_template,
     reload_template,
     list_template_ids,
-    _load_yaml,
 )
 from src.services.workflow_engine import NodeType
 

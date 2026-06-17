@@ -3,8 +3,7 @@
 Manages stage templates, KPI targets, and content evaluation.
 """
 
-import secrets
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Dict, List, Optional
 
 
@@ -130,7 +129,7 @@ def list_methodologies() -> List[Dict]:
 
 def list_stages(framework: Optional[str] = None) -> List[MethodologyStage]:
     _initialize_default_stages()
-    from src.services.methodology_5a_service import _initialize_5a_stages, _5a_stage_db, MethodologyStage5A
+    from src.services.methodology_5a_service import _initialize_5a_stages, _5a_stage_db
     _initialize_5a_stages()
     
     stages = list(_stage_db.values())
@@ -160,7 +159,7 @@ def list_stages(framework: Optional[str] = None) -> List[MethodologyStage]:
 
 def list_stages_by_framework(framework_id: str) -> List[MethodologyStage]:
     _initialize_default_stages()
-    from src.services.methodology_5a_service import _initialize_5a_stages, _5a_stage_db, MethodologyStage5A
+    from src.services.methodology_5a_service import _initialize_5a_stages, _5a_stage_db
     _initialize_5a_stages()
     
     aipl_stages = [s for s in _stage_db.values() if s.framework == framework_id]
@@ -192,7 +191,7 @@ def get_stage(stage_id: str) -> Optional[MethodologyStage]:
         return stage
     
     # Try 5A stages
-    from src.services.methodology_5a_service import _initialize_5a_stages, _5a_stage_db, MethodologyStage5A
+    from src.services.methodology_5a_service import _initialize_5a_stages, _5a_stage_db
     _initialize_5a_stages()
     s5a = _5a_stage_db.get(stage_id)
     if s5a:

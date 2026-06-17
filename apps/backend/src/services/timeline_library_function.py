@@ -176,7 +176,6 @@ async def update_event(
     if not event:
         return None
 
-    old_cron = event.cron_expression
     old_job_id = event.cron_job_id
 
     for key, value in kwargs.items():
@@ -264,7 +263,7 @@ async def get_commercial_events(
     tenant_id: Optional[str] = None,
 ) -> List[TimelineEventORM]:
     """获取商业主题事件 — 供Human-in-the-Loop额外审核流程调用."""
-    query = select(TimelineEventORM).where(TimelineEventORM.is_commercial == True)
+    query = select(TimelineEventORM).where(TimelineEventORM.is_commercial)
     if from_date:
         dt = _parse_dt(from_date)
         if dt:

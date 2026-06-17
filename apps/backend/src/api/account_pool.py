@@ -17,7 +17,7 @@ from src.services.account_pool_service import (
     remove_account,
     update_account,
 )
-from src.services.browser_pool import BrowserPool, build_context_config
+from src.services.browser_pool import build_context_config
 
 router = APIRouter(prefix="/account-pool", tags=["account-pool"])
 

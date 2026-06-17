@@ -4,7 +4,7 @@ Aligned with PRD V3.1 §AssetPool / TASK_V2.7.1.
 """
 
 import os
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 import httpx
 

@@ -7,7 +7,6 @@ import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.services import platform_schema_service as pss
-from src.models.platform_schema_orm import PlatformSchemaORM, PlatformContentFormatORM
 
 
 def test_list_yaml_platform_ids():
@@ -194,8 +193,6 @@ def test_validate_content_image_format():
 def get_auth_token(client, role: str = "operator"):
     import uuid
     from src.models.user import clear_users
-    from src.services.platform_schema_service import clear_platform_schemas
-    from src.services.auth_service import register_user
     from tests.conftest import sync_clear_platform_rules
 
     clear_users()

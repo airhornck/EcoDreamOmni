@@ -8,7 +8,6 @@ W16-2 ContentSeries 内容系列化 Red-Green 测试。
 """
 
 from src.models.user import clear_users
-from src.services.auth_service import register_user
 from src.services.content_series import clear_content_series
 
 

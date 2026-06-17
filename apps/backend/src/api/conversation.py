@@ -14,7 +14,7 @@ import logging
 from typing import Any, AsyncGenerator, Dict, Optional
 
 import httpx
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import StreamingResponse
@@ -23,7 +23,6 @@ from src.core.config import settings
 from src.core.database import get_db
 from src.core.dependencies import get_current_user
 from src.models.user import User
-from src.services.llm_client import LLMClient
 from src.services.llm_hub import decrypt_api_key, resolve_model_for_node
 
 logger = logging.getLogger(__name__)

@@ -158,7 +158,7 @@ async def detect_words(
 ) -> List[Dict[str, Any]]:
     """Detect prohibited words in text. Returns list of matched word records."""
     query = select(ProhibitedWordORM).where(
-        ProhibitedWordORM.is_enabled == True
+        ProhibitedWordORM.is_enabled
     ).where(
         (ProhibitedWordORM.platform == platform) | (ProhibitedWordORM.platform == "universal")
     )

@@ -288,7 +288,7 @@ async def test_list_tasks_with_filter(db: AsyncSession):
     await th.queue(db, t2.id)
     await th.start(db, t2.id)
 
-    t3 = await th.create_task(db, "T3", "wf", 1, "a1", "p")
+    await th.create_task(db, "T3", "wf", 1, "a1", "p")
 
     all_tasks = await th.list_tasks(db)
     assert len(all_tasks) >= 3

@@ -4,7 +4,6 @@ Tests for 24h data回流, MAPE, dashboard, calibration, CSV upload, attribution.
 """
 
 from src.models.user import clear_users
-from src.services.auth_service import register_user
 from src.services.data_analyst_service import clear_data_analyst
 
 

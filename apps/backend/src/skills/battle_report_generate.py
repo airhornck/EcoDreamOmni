@@ -8,7 +8,7 @@
 """
 
 import secrets
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timezone, timedelta
 from typing import Dict, List, Optional
 
@@ -17,7 +17,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.models.note_engagement_orm import NoteEngagementORM
 from src.models.publish_task_orm import PublishTaskORM
-from src.models.task_orm import TaskORM
 
 
 @dataclass
@@ -44,7 +43,6 @@ async def generate_battle_report(
     MVP: Structured text report without LLM call.
     Production: Route through LLM Hub for polished report generation.
     """
-    from sqlalchemy import func
 
     since = datetime.now(timezone.utc) - timedelta(days=period_days)
 

@@ -1,6 +1,5 @@
 """Tests for content_generate Skill — Phase 8 P8-2."""
 
-import pytest
 
 from src.skills.content_generate import execute, SKILL_ID, VERSION, REQUIRES_LLM
 

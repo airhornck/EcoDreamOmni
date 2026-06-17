@@ -4,8 +4,7 @@ Optimize titles for engagement.
 MVP: Rule-based title enhancement, no LLM call.
 """
 
-import secrets
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 SKILL_ID = "title_optimize"
 VERSION = "1.0.0"

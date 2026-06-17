@@ -7,6 +7,8 @@ Response schema:
 - feature_version: str
 """
 
+from datetime import datetime, timedelta
+
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status, Header
@@ -177,8 +179,6 @@ def get_model_metrics_endpoint(user: User = Depends(get_current_user)):
 
 
 # ─── Stats & Accuracy Endpoints ───
-
-from datetime import datetime, timedelta
 
 
 @router.get("/stats")

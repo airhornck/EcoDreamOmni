@@ -10,7 +10,6 @@ W16 IMAGE-1 ImageForge 图片配置引擎 Red-Green 测试。
 """
 
 from src.models.user import clear_users
-from src.services.auth_service import register_user
 from src.services.image_forge import clear_image_forge
 
 

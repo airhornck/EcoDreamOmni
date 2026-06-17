@@ -6,7 +6,6 @@ HITL 合并到 RPC 集成测试。
   - 通过 HITL API 操作后，RPC conclusions 实时反映状态变化
 """
 
-import pytest
 import sys
 from pathlib import Path
 
@@ -19,7 +18,6 @@ from src.services import human_in_loop as hil
 def get_auth_token(client):
     import uuid
     from src.models.user import clear_users
-    from src.services.auth_service import register_user
     clear_users()
     th._clear_stores()
     hil._clear_stores()
@@ -155,7 +153,7 @@ class TestHitlRpcIntegration:
     async def test_rpc_all_tab_includes_human_wait(self, client, db):
         """all filter 同时包含 HUMAN_WAIT 和已审核的任务。"""
         token, user_id = get_auth_token(client)
-        t1 = await _create_human_wait_task(db, created_by=user_id, name="Task A")
+        await _create_human_wait_task(db, created_by=user_id, name="Task A")
         t2 = await _create_human_wait_task(db, created_by=user_id, name="Task B")
         await hil.approve_task(db, t2.id, user_id)
 

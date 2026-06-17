@@ -32,7 +32,6 @@ from src.services.viral_analyzer_service import (
     ViralAnalyzerService,
     NoteInput,
     AnalysisReport,
-    ViralTemplate,
     get_viral_analyzer_service,
 )
 from src.models.viral_analyzer_orm import KeywordLibraryORM

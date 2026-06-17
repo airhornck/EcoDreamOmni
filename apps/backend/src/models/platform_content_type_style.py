@@ -6,7 +6,6 @@ Prompt 片段、推荐关键词、语气参数、结构模板等。
 Aligned with docs/契约与数据/02-数据库ER图.md §2.3
 """
 
-import uuid
 from datetime import datetime, timezone
 
 from sqlalchemy import (

@@ -84,8 +84,8 @@ class TestAgentInstance:
 
     def test_list_instances(self):
         fleet = create_fleet(agent_type="test", tenant_id="t1")
-        inst1 = register_instance(fleet.fleet_id, agent_id="a")
-        inst2 = register_instance(fleet.fleet_id, agent_id="b")
+        register_instance(fleet.fleet_id, agent_id="a")
+        register_instance(fleet.fleet_id, agent_id="b")
         assert len(list_instances(fleet.fleet_id)) == 2
 
     def test_update_instance_status(self):
@@ -107,8 +107,8 @@ class TestRouting:
             agent_type="test", tenant_id="t1",
             routing_strategy="round_robin",
         )
-        inst1 = register_instance(fleet.fleet_id, agent_id="a")
-        inst2 = register_instance(fleet.fleet_id, agent_id="b")
+        register_instance(fleet.fleet_id, agent_id="a")
+        register_instance(fleet.fleet_id, agent_id="b")
 
         r1 = route_task(fleet.fleet_id)
         r2 = route_task(fleet.fleet_id)
@@ -136,7 +136,7 @@ class TestRouting:
             routing_strategy="capability_match",
         )
         inst1 = register_instance(fleet.fleet_id, agent_id="a", capabilities=["text", "image"])
-        inst2 = register_instance(fleet.fleet_id, agent_id="b", capabilities=["text"])
+        register_instance(fleet.fleet_id, agent_id="b", capabilities=["text"])
 
         routed = route_task(fleet.fleet_id, required_capabilities=["image"])
         assert routed.instance_id == inst1.instance_id

@@ -11,7 +11,7 @@ Used by ComplianceGuard, PoolPredictor, and Publisher as VERIFY gates.
 """
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 
 @dataclass

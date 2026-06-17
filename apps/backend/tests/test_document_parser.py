@@ -4,7 +4,6 @@ Tests PDF / Word / Excel / CSV text extraction.
 """
 
 import pytest
-from io import BytesIO
 from pathlib import Path
 
 from src.core import document_parser as dp
@@ -51,7 +50,7 @@ class TestParsePdf:
         assert results == []
 
     def test_parse_pdf_with_text(self, tmp_path: Path):
-        from PyPDF2 import PdfWriter, PdfReader
+        from PyPDF2 import PdfWriter
 
         # Create a PDF with text by merging from a simple source
         # (PyPDF2 blank pages have no text, so we simulate with a minimal approach)

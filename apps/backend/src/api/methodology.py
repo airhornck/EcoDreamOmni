@@ -1,5 +1,7 @@
 """MarketingMethodology API — AIPL stage templates and content evaluation."""
 
+from src.services import methodology_5a_service
+
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, ConfigDict
@@ -148,8 +150,6 @@ def evaluate_content(stage_id: str, data: StageEvaluateRequest, user=Depends(get
 
 
 # ===== 5A Methodology Extensions =====
-
-from src.services import methodology_5a_service
 
 
 class StageEvaluate5AResponse(BaseModel):

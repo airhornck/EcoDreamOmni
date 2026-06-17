@@ -6,12 +6,11 @@ Built on top of matrix_ops + harness/subagent:
   - Autonomy: groups can run independently with their own strategy
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 import uuid
 
 from src.services import matrix_ops
-from src.harness import planning
 
 
 @dataclass

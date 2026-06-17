@@ -11,7 +11,6 @@ import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.models.user import clear_users
-from src.services.auth_service import register_user
 from src.services.compliance_engine import clear_evidence
 import src.services.brand_knowledge_function as bkf
 import src.services.platform_rule_function as prf

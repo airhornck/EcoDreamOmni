@@ -19,14 +19,14 @@ import uuid
 from datetime import datetime, timezone, timedelta
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect, status
+from fastapi import APIRouter, Depends, HTTPException, WebSocket, status
 from pydantic import BaseModel, Field
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.database import get_db
 from src.core.dependencies import get_current_user
-from src.core.rbac import is_admin, can_review_task, can_modify_task, can_view_task
+from src.core.rbac import is_admin, can_modify_task, can_view_task
 from src.models.user import User
 from src.models.copilot_orm import CopilotContextSessionORM, AICoverGenerationJobORM, CopilotActionLogORM
 from src.services import task_hub as th_service
@@ -34,11 +34,11 @@ from src.services import human_in_loop as hil_service
 from src.services.publisher_service import create_publish_task
 from src.celery_app import celery_app
 
+from src.services.copilot_action_router import CopilotActionRouter
+
 router = APIRouter(prefix="/ai/copilot", tags=["copilot"])
 
 # Phase 2: MetaOrchestrator bridge
-from src.services.copilot_action_router import CopilotActionRouter
-
 _action_router = CopilotActionRouter()
 
 # ───────────────────────────────────────────────

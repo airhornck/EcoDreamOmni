@@ -10,9 +10,9 @@ Routes:
   GET  /api-platform/rate-limit     — Check rate limit status
 """
 
-from typing import Any, Dict, List, Optional
-from fastapi import APIRouter, HTTPException, Request
-from pydantic import BaseModel, Field
+from typing import List, Optional
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
 
 from src.services import api_platform as ap
 from src.core.tenant_middleware import require_tenant

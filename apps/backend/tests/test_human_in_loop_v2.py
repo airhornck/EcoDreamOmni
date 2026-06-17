@@ -12,7 +12,6 @@ from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.models.task_orm import TaskORM
 from src.models.user import clear_users
-from src.services.auth_service import register_user
 from src.services import human_in_loop as hil
 from src.services import task_hub
 

@@ -1,10 +1,12 @@
 """DataAnalyst API — reports, dashboard, attribution, calibration."""
 
+from datetime import datetime, timedelta
+
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, ConfigDict
-from sqlalchemy import select
+from sqlalchemy import select, String
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.api.auth import get_current_user
@@ -330,8 +332,6 @@ def calibration_check(user=Depends(get_current_user)):
 
 
 # ─── Mock Analytics Endpoints ───
-
-from datetime import datetime, timedelta
 
 
 @router.get("/publish-trend")

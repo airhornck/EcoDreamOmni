@@ -8,7 +8,7 @@
 
 import secrets
 from datetime import datetime, timezone, timedelta
-from typing import Dict, List, Optional
+from typing import Dict, Optional
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -151,7 +151,6 @@ async def get_engagement_summary(
     days: int = 30,
 ) -> Dict:
     """Get aggregated engagement summary for dashboard."""
-    from sqlalchemy import func
 
     since = datetime.now(timezone.utc) - timedelta(days=days)
 

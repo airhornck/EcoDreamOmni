@@ -1,6 +1,5 @@
 """Tests for PromptCompositionEngine."""
 
-import pytest
 
 from src.services.prompt_composition_engine import (
     ContentStrategy,

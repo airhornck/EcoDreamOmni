@@ -174,7 +174,7 @@ def test_publisher_l3_rejects_over_limit_account(client):
         headers={"Authorization": f"Bearer {token}"},
     )
     assert resp1.status_code == 201
-    data1 = resp1.json()
+    resp1.json()
     # After scheduling, the task exists; second task should be skipped by evaluate_l3
     # because daily count from task db >= limit (1)
     hub2 = _create_approved_hub_task(client, token, "d_l3_2", account.id)

@@ -3,9 +3,7 @@ W15-2 MarketingMethodology 5A — Red phase tests.
 Tests for 5A methodology engine (AIPL→5A migration).
 """
 
-import pytest
 from src.models.user import clear_users
-from src.services.auth_service import register_user
 from src.services.methodology_5a_service import clear_5a_methodologies
 
 

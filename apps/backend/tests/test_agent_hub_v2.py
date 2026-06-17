@@ -1,6 +1,5 @@
 """Tests for AgentHub v4.0 Phase 2 P2-4 enhancements."""
 
-import pytest
 
 from src.services import agent_hub as ah
 

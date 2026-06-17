@@ -6,9 +6,9 @@ Routes:
   GET /audit/stats       — Audit statistics
 """
 
-from typing import Any, Dict, List, Optional
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel, Field
+from typing import Any, Dict, Optional
+from fastapi import APIRouter
+from pydantic import BaseModel
 
 from src.services import audit_logger
 
@@ -50,16 +50,16 @@ def query_logs(
         "offset": offset,
         "logs": [
             {
-                "log_id": l.log_id,
-                "tenant_id": l.tenant_id,
-                "actor_id": l.actor_id,
-                "event_type": l.event_type,
-                "resource_type": l.resource_type,
-                "resource_id": l.resource_id,
-                "action": l.action,
-                "timestamp": l.timestamp,
+                "log_id": log.log_id,
+                "tenant_id": log.tenant_id,
+                "actor_id": log.actor_id,
+                "event_type": log.event_type,
+                "resource_type": log.resource_type,
+                "resource_id": log.resource_id,
+                "action": log.action,
+                "timestamp": log.timestamp,
             }
-            for l in logs
+            for log in logs
         ],
     }
 

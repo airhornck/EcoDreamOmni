@@ -14,7 +14,7 @@ from src.core.database import get_db
 from src.core.dependencies import get_current_user
 from src.core.rbac import can_modify_task, can_view_task, is_admin
 from src.models.user import User
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from src.services import human_in_loop, task_hub
 from src.services.account_pool_service import get_account

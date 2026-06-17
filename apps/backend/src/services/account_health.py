@@ -1,6 +1,5 @@
 """Account health scoring engine."""
 
-from typing import Optional
 
 
 def calculate_health_score(

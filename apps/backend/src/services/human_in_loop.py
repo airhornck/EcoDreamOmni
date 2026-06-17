@@ -5,7 +5,7 @@ Aligned with detailed design §10 / PRD V2.6 §10.6.
 """
 
 import secrets
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional

@@ -4,7 +4,6 @@ PRD V2.3 §2.6 / W13 DataAnalyst
 Stores actual engagement metrics fetched from XHS platform API.
 """
 
-import uuid
 from datetime import datetime, timezone
 
 from sqlalchemy import (

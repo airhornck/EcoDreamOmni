@@ -7,7 +7,7 @@ Replaces raw httpx calls in content_generator and other consumers.
 """
 
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 import httpx
 

@@ -3,16 +3,18 @@
 W15: Integrated with BrandKnowledge, VetDrugDB, and PlatformRule Function layers.
 """
 
-from typing import List, Optional
+from datetime import datetime, timedelta
 
-from fastapi import APIRouter, Depends, status
+from typing import List
+
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.database import get_db_optional
 from src.core.dependencies import get_current_user
 from src.models.user import User
-from src.services.compliance_service import check_batch, check_single, get_rules
+from src.services.compliance_service import check_single, get_rules
 import src.services.brand_knowledge_function as bkf
 import src.services.platform_rule_function as prf
 import src.services.prohibited_word_function as pwf
@@ -247,8 +249,6 @@ async def compliance_rules(
 
 
 # ─── Stats & History Endpoints ───
-
-from datetime import datetime, timedelta
 
 _compliance_history: list = [
     {

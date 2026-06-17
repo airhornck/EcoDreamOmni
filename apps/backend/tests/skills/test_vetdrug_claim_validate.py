@@ -1,6 +1,5 @@
 """Tests for vetdrug_claim_validate Skill — Phase 8 P8-1."""
 
-import pytest
 
 from src.skills.vetdrug_claim_validate import execute, SKILL_ID, VERSION
 

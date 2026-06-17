@@ -4,7 +4,6 @@ W10 E2E 全流程联调测试.
 """
 
 from src.models.user import clear_users
-from src.services.auth_service import register_user
 
 
 
@@ -41,7 +40,7 @@ class TestE2EFullPipeline:
             headers=headers,
         )
         assert pa_resp.status_code == 201
-        account_id = pa_resp.json()["id"]
+        pa_resp.json()["id"]
 
         # Step 2: Create account pool entry with fingerprint
         pool_resp = client.post(

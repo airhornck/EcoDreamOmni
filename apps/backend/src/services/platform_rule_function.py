@@ -229,7 +229,7 @@ async def evaluate_content(
     query = (
         select(PlatformRuleORM)
         .where(PlatformRuleORM.platform == platform)
-        .where(PlatformRuleORM.enabled == True)
+        .where(PlatformRuleORM.enabled)
     )
     if tenant_id:
         query = query.where(PlatformRuleORM.tenant_id == tenant_id)

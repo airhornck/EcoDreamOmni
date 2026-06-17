@@ -1,7 +1,6 @@
 """Tests for platform_rule_service — memory fallback path (no DB required)."""
 
 import pytest
-import asyncio
 from src.services import platform_rule_service
 from src.models.account_pool import create_pool_entry, clear_pool_entries
 

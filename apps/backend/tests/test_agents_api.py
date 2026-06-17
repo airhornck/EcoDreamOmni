@@ -6,7 +6,6 @@ Pure unit tests (no DB required) for:
   - Required capabilities derivation
 """
 
-import pytest
 import sys
 from pathlib import Path
 

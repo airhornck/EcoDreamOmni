@@ -4,7 +4,6 @@ Tests for trend report generation and persona clone drafts.
 """
 
 from src.models.user import clear_users
-from src.services.auth_service import register_user
 from src.services.trend_scout_service import clear_trend_scout
 
 

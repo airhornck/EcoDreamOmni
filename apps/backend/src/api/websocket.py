@@ -1,11 +1,15 @@
 """WebSocket API — real-time alert stream + Copilot channel."""
 
+from datetime import datetime, timezone
+
 import asyncio
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Query, Depends
+from pydantic import BaseModel
 from jose import jwt, JWTError
 
 from src.services.alert_stream import get_manager, generate_alert
 from src.core.security import SECRET_KEY, ALGORITHM
+from src.api.auth import get_current_user
 
 router = APIRouter()
 
@@ -46,10 +50,6 @@ async def alert_websocket(websocket: WebSocket, token: str = Query("")):
 
 
 # ─── REST API for alert history ───
-
-from fastapi import Depends
-from pydantic import BaseModel
-from src.api.auth import get_current_user
 
 
 class AlertOut(BaseModel):
@@ -131,7 +131,7 @@ async def _handle_client_messages(websocket: WebSocket, user_id: str):
     while True:
         data = await websocket.receive_json()
         event = data.get("event")
-        payload = data.get("payload", {})
+        data.get("payload", {})
 
         if event == "context.update":
             await websocket.send_json({
@@ -168,5 +168,3 @@ async def _redis_listener(websocket: WebSocket, user_id: str):
             pass
 
 
-# Re-import datetime for websocket module
-from datetime import datetime, timezone

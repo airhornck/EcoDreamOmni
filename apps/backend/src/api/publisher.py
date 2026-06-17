@@ -234,12 +234,12 @@ def xhs_health_check(req: XhsHealthCheckRequest, user: User = Depends(get_curren
     else:
         cookie = settings.REDNOTE_COOKIE
 
-    status = check_xhs_account(cookie)
+    result = check_xhs_account(cookie)
     return XhsAccountStatusResponse(
-        healthy=status["healthy"],
-        reason=status["reason"],
-        user_id=status["user_id"],
-        nickname=status["nickname"],
+        healthy=result["healthy"],
+        reason=result["reason"],
+        user_id=result["user_id"],
+        nickname=result["nickname"],
     )
 
 
@@ -260,10 +260,10 @@ def xhs_account_status(account_id: Optional[str] = None, user: User = Depends(ge
     else:
         cookie = settings.REDNOTE_COOKIE
 
-    status = check_xhs_account(cookie)
+    result = check_xhs_account(cookie)
     return XhsAccountStatusResponse(
-        healthy=status["healthy"],
-        reason=status["reason"],
-        user_id=status["user_id"],
-        nickname=status["nickname"],
+        healthy=result["healthy"],
+        reason=result["reason"],
+        user_id=result["user_id"],
+        nickname=result["nickname"],
     )

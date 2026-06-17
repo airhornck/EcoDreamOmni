@@ -4,7 +4,6 @@ Tests for platform account login, cookie vault, and session management.
 """
 
 from src.models.user import clear_users
-from src.services.auth_service import register_user
 
 
 
@@ -259,7 +258,7 @@ def test_qr_login_poll(client):
     qr_id = start_resp.json()["qr_id"]
 
     response = client.get(
-        f"/platform-accounts/qr-login/poll",
+        "/platform-accounts/qr-login/poll",
         params={"qr_id": qr_id, "platform": "xhs"},
         headers={"Authorization": f"Bearer {token}"},
     )

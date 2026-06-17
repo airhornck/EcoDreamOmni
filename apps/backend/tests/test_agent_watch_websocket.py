@@ -1,13 +1,11 @@
 """Tests for AgentWatch WebSocket StreamEvent — P8-6."""
 
-import pytest
 from src.services.agent_watch_websocket import (
     emit_stream_event,
     get_event_buffer,
     clear_event_buffer,
     build_progress_event,
     build_agent_status_event,
-    StreamEvent,
     subscribe,
     unsubscribe,
 )

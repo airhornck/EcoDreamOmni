@@ -7,7 +7,7 @@ Production: Real platform API data fetch.
 import csv
 import io
 import secrets
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Dict, List, Optional
 
@@ -285,7 +285,7 @@ def get_dashboard_summary() -> Dict:
             "coverage_applicable": False,
         }
 
-    avg_ces = sum(r.actual_metrics.get("ces", 0) for r in reports) / len(reports)
+    sum(r.actual_metrics.get("ces", 0) for r in reports) / len(reports)
     avg_likes = sum(r.actual_metrics.get("likes", 0) for r in reports) / len(reports)
     l3_plus = sum(1 for r in reports if r.actual_metrics.get("ces", 0) >= 35)
     pm_count = sum(int(r.actual_metrics.get("ces", 0) * 0.1) for r in reports)

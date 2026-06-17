@@ -1,6 +1,5 @@
 """Tests for Phase 3 Skills — v4.0 P3-2/P3-3."""
 
-import pytest
 
 from src.skills.content_structural_analysis import execute as structural_execute
 from src.skills.content_rewrite import execute as rewrite_execute

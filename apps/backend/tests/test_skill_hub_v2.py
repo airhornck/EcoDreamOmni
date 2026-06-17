@@ -3,9 +3,7 @@
 import pytest
 
 from src.services.skill_hub import (
-    AgentSkillBinding,
     SkillDefinition,
-    _skill_versions,
     bind_to_agent,
     get_agent_skills,
     get_latest_version,

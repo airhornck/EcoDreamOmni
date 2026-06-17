@@ -4,6 +4,8 @@ from typing import List, Optional
 
 from src.models.account_pool import (
     AccountPoolEntry,
+    FingerprintProfile,
+    ProxyConfig,
     create_pool_entry,
     delete_pool_entry,
     get_pool_entry,
@@ -31,16 +33,26 @@ def create_account(
 ) -> AccountPoolEntry:
     """Create a new pool account. Auto-generates fingerprint if not provided."""
     fp = fingerprint_profile if fingerprint_profile else generate_fingerprint()
+    # Convert dict to FingerprintProfile if needed
+    if isinstance(fp, dict):
+        fp = FingerprintProfile(**fp)
+    pc = None
+    if proxy_config:
+        if isinstance(proxy_config, dict):
+            pc = ProxyConfig(**proxy_config)
+        else:
+            pc = proxy_config
     return create_pool_entry(
-        platform=_normalize_platform(platform),
+        entry_id=account_id,
+        platform=platform,
         account_id=account_id,
         nickname=nickname,
-        cookie=cookie,
+        cookie_encrypted=cookie,
         persona=persona,
         content_vertical=content_vertical,
         lifecycle_phase=lifecycle_phase,
         fingerprint_profile=fp,
-        proxy_config=proxy_config,
+        proxy_config=pc,
     )
 
 

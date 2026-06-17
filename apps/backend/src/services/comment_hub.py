@@ -8,13 +8,11 @@
 - jieba 情感分析
 """
 
-import re
 import secrets
 from dataclasses import dataclass, field
 from datetime import date, datetime, timezone
 from typing import Dict, List, Optional
 
-import jieba
 
 
 # ─── Inducement / 诱导话术关键词 ───

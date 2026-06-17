@@ -11,7 +11,6 @@ Constraints:
   - Phase 2+ can add XGBoost when data volume permits
 """
 
-import time
 import numpy as np
 from typing import Dict, List, Optional
 
@@ -180,7 +179,7 @@ class ModelArena:
         total_n = sum(len(self.quality_log[m]) for m in self.quality_log)
         for model, logs in self.quality_log.items():
             n = max(1, len(logs))
-            avg_quality = np.mean([l["quality_score"] for l in logs]) if logs else 0.5
+            avg_quality = np.mean([log["quality_score"] for log in logs]) if logs else 0.5
             # UCB bonus
             bonus = np.sqrt(2 * np.log(max(1, total_n)) / n)
             score = avg_quality + bonus
@@ -218,9 +217,9 @@ class ModelArena:
                 continue
             report[model] = {
                 "n_predictions": len(logs),
-                "coverage_rate": round(sum(1 for l in logs if l["covered"]) / len(logs), 4),
-                "mean_width": round(np.mean([l["width"] for l in logs]), 2),
-                "mean_quality": round(np.mean([l["quality_score"] for l in logs]), 4),
+                "coverage_rate": round(sum(1 for log in logs if log["covered"]) / len(logs), 4),
+                "mean_width": round(np.mean([log["width"] for log in logs]), 2),
+                "mean_quality": round(np.mean([log["quality_score"] for log in logs]), 4),
             }
         return report
 

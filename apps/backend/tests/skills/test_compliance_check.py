@@ -1,6 +1,5 @@
 """Tests for compliance_check Skill — Phase 8 P8-1."""
 
-import pytest
 
 from src.skills.compliance_check import execute, SKILL_ID, VERSION
 

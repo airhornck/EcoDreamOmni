@@ -4,7 +4,6 @@ Tests for multi-agent orchestration: agents, workflows, pipelines, context passi
 """
 
 from src.models.user import clear_users
-from src.services.auth_service import register_user
 
 
 

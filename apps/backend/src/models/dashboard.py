@@ -1,6 +1,6 @@
 """Dashboard data models and in-memory store (MVP phase)."""
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import List, Optional
 from uuid import uuid4

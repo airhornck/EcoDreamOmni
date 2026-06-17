@@ -11,7 +11,7 @@ V2.7.1新增功能:
 import secrets
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 from enum import Enum
 
 
@@ -146,7 +146,7 @@ def _check_license_status(expiry_str: Optional[str]) -> LicenseStatus:
         elif days_until_expiry <= 30:
             return LicenseStatus.EXPIRING_SOON
         return LicenseStatus.VALID
-    except:
+    except Exception:
         return LicenseStatus.VALID
 
 

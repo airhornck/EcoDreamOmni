@@ -1,6 +1,5 @@
 """Tests for CommentHub Monitor — v4.0 Phase 2 P2-3."""
 
-import pytest
 
 from src.services.comment_hub_monitor import (
     AlertRule,

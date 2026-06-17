@@ -11,7 +11,6 @@ SHAP is deferred to Phase 2+ when data volume permits.
 
 from collections import defaultdict
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 
@@ -268,7 +267,7 @@ def aggregate_account_tier_performance(
 
         # Find best tag for this tier
         best_tag = None
-        tag_ces: Dict[str, List[float]] = defaultdict(list)
+        defaultdict(list)
         # Build engagement lookup from engagement_by_account
         all_engagements: List[Dict[str, float]] = []
         for eng_list in engagement_by_account.values():

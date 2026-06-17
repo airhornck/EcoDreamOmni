@@ -84,8 +84,8 @@ def test_config_versions_increment():
 
 def test_activate_config():
     a = ah.register_agent("A", "TEST")
-    c1 = ah.create_config(a.id, "prod", {"timeout": 30})
-    c2 = ah.create_config(a.id, "prod", {"timeout": 60})
+    ah.create_config(a.id, "prod", {"timeout": 30})
+    ah.create_config(a.id, "prod", {"timeout": 60})
     ah.activate_config(a.id, 1)
     assert ah.get_config(a.id, 1).status == ConfigStatus.ACTIVE
     assert ah.get_active_config(a.id).version == 1
@@ -93,8 +93,8 @@ def test_activate_config():
 
 def test_activate_archives_previous():
     a = ah.register_agent("A", "TEST")
-    c1 = ah.create_config(a.id, "prod", {"timeout": 30})
-    c2 = ah.create_config(a.id, "prod", {"timeout": 60})
+    ah.create_config(a.id, "prod", {"timeout": 30})
+    ah.create_config(a.id, "prod", {"timeout": 60})
     ah.activate_config(a.id, 1)
     ah.activate_config(a.id, 2)
     assert ah.get_config(a.id, 1).status == ConfigStatus.ARCHIVED
@@ -103,8 +103,8 @@ def test_activate_archives_previous():
 
 def test_rollback_config():
     a = ah.register_agent("A", "TEST")
-    c1 = ah.create_config(a.id, "prod", {"timeout": 30})
-    c2 = ah.create_config(a.id, "prod", {"timeout": 60})
+    ah.create_config(a.id, "prod", {"timeout": 30})
+    ah.create_config(a.id, "prod", {"timeout": 60})
     ah.activate_config(a.id, 2)
     ah.rollback_config(a.id, 1)
     assert ah.get_active_config(a.id).version == 1

@@ -14,7 +14,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from src.services import agent_watch as aw
-from src.services.agent_watch import HeartbeatStatus, TraceStatus, SpanStatus, AlertSeverity, AlertType, AlertStatus
+from src.services.agent_watch import HeartbeatStatus, TraceStatus, AlertSeverity, AlertType, AlertStatus
 
 
 @pytest.fixture(autouse=True)

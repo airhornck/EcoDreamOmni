@@ -4,7 +4,6 @@ from typing import Dict, List, Optional
 
 from src.models.content_draft import (
     ContentDraft,
-    clear_drafts,
     create_draft,
     delete_draft,
     get_draft,

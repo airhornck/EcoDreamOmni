@@ -5,9 +5,8 @@ Routes:
   GET /health/detailed  — Detailed health with component status
 """
 
-import time
-from typing import Any, Dict
-from fastapi import APIRouter, Request
+from typing import Dict
+from fastapi import APIRouter
 from fastapi.responses import PlainTextResponse
 
 router = APIRouter(tags=["metrics"])

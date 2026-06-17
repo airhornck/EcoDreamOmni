@@ -1,6 +1,5 @@
 """Tests for Phase 9 Skills — brand_consistency, fingerprint, engagement_predict, publish_schedule, health_score, xhs_note_extraction."""
 
-import pytest
 from src.skills.brand_consistency_check import execute as brand_execute, SKILL_ID as BRAND_ID
 from src.skills.fingerprint_generate import execute as fp_execute, SKILL_ID as FP_ID
 from src.skills.engagement_predict import execute as engage_execute, SKILL_ID as ENGAGE_ID

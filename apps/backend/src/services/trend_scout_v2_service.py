@@ -9,13 +9,11 @@ V2.7.1新增功能:
 
 import secrets
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
 from typing import Dict, List, Optional, Tuple
 
 from src.services import trend_scout_service
 from src.services.trend_scout_service import (
-    TrendReport, TrendItem, RiskSignal,
-    _report_db, _now
+    TrendReport, TrendItem, _report_db, _now
 )
 
 
@@ -260,7 +258,7 @@ def generate_report_html(report: TrendReportV2) -> str:
         </div>
 """
     
-    html += f"""
+    html += """
     </div>
     
     <div class="disclaimer">

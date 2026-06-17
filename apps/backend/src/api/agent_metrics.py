@@ -10,7 +10,7 @@ Routes:
   GET  /agent-metrics/cost/by-content    # Cost breakdown by content
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Optional
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 

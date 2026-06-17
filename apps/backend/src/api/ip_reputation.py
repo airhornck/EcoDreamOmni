@@ -224,14 +224,14 @@ def list_switch_logs(
     logs = ip_reputation.get_switch_logs(account_id=account_id, limit=limit)
     return [
         IPSwitchLogResponse(
-            log_id=l.log_id,
-            account_id=l.account_id,
-            from_ip_id=l.from_ip_id,
-            to_ip_id=l.to_ip_id,
-            reason=l.reason,
-            switched_at=l.switched_at,
+            log_id=log.log_id,
+            account_id=log.account_id,
+            from_ip_id=log.from_ip_id,
+            to_ip_id=log.to_ip_id,
+            reason=log.reason,
+            switched_at=log.switched_at,
         )
-        for l in logs
+        for log in logs
     ]
 
 

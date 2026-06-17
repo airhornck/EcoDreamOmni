@@ -7,14 +7,13 @@
 """
 
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
 from src.api.auth import get_current_user
 from src.services.comment_hub import (
     approve_reply,
     get_account_stats,
-    get_reply,
     list_pending_replies,
     reject_reply,
     submit_reply,

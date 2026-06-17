@@ -4,6 +4,7 @@
 不依赖数据库，仅验证数据结构是否符合前端契约。
 """
 
+import asyncio
 import sys
 from pathlib import Path
 
@@ -11,9 +12,8 @@ backend_root = str(Path(__file__).parent.parent)
 if backend_root not in sys.path:
     sys.path.insert(0, backend_root)
 
-from src.services.workflow_engine import WorkflowNode, NodeType, FailStrategy
-from src.services.task_hub import simulate_node_output
-import asyncio
+from src.services.workflow_engine import WorkflowNode, NodeType, FailStrategy  # noqa: E402
+from src.services.task_hub import simulate_node_output  # noqa: E402
 
 
 def _make_task(name="测试任务", platform="xhs", account_id="acc_1", persona_id="pers_1"):

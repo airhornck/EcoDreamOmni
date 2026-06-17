@@ -1,6 +1,5 @@
 """Tests for rag_retrieval Skill — Phase 8 P8-2."""
 
-import pytest
 
 from src.skills.rag_retrieval import execute, SKILL_ID, VERSION
 

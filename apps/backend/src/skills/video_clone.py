@@ -4,7 +4,7 @@ Clone video structure and style from reference.
 MVP: Return script/template structure (actual video generation in production).
 """
 
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 SKILL_ID = "video_clone"
 VERSION = "1.0.0"

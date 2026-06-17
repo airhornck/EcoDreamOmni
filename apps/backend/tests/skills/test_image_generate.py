@@ -1,6 +1,5 @@
 """Tests for image_generate Skill — Phase 8 P8-2."""
 
-import pytest
 
 from src.skills.image_generate import execute, SKILL_ID, VERSION
 

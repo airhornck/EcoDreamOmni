@@ -4,7 +4,6 @@ Tests for the operations homepage data APIs.
 """
 
 from src.models.user import clear_users
-from src.services.auth_service import register_user
 
 
 

@@ -5,7 +5,6 @@ management so that `skill_hub.py` remains an in-memory service layer.
 """
 
 from datetime import datetime, timezone
-from typing import Dict, List
 
 from sqlalchemy import select
 

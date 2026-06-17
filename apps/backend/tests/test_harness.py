@@ -4,7 +4,6 @@ Red-Green TDD: each test validates a harness module.
 Coverage target: ≥80% of harness/ directory.
 """
 
-import pytest
 
 # Ensure src is on path
 import sys
@@ -254,7 +253,7 @@ def test_state_get_checkpoints():
 def test_state_rollback():
     state.save_checkpoint("sess-state-3", step_number=1, state_data={"v": 1})
     cp2 = state.save_checkpoint("sess-state-3", step_number=2, state_data={"v": 2})
-    cp3 = state.save_checkpoint("sess-state-3", step_number=3, state_data={"v": 3})
+    state.save_checkpoint("sess-state-3", step_number=3, state_data={"v": 3})
     rolled = state.rollback_to_checkpoint("sess-state-3", cp2.checkpoint_id)
     assert rolled is not None
     assert rolled.step_number == 2

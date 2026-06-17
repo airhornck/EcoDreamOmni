@@ -4,7 +4,6 @@ Tests for persona CRUD, clone, and matcher.
 """
 
 from src.models.user import clear_users
-from src.services.auth_service import register_user
 from src.services.persona_pool import clear_persona_pool
 
 

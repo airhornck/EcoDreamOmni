@@ -3,7 +3,6 @@
 import uuid
 
 import pytest
-from fastapi.testclient import TestClient
 from sqlalchemy import delete
 
 from src.models.platform_content_type_style import PlatformContentTypeStyleORM

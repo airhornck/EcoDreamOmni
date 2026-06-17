@@ -6,8 +6,8 @@ Open-source: croniter (Cron parsing), stamina (retry logic simulated).
 
 import secrets
 import threading
-from dataclasses import dataclass, field
-from datetime import datetime, timezone, timedelta
+from dataclasses import dataclass
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 

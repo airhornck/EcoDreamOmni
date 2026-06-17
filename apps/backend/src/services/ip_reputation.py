@@ -20,7 +20,6 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone, timedelta
 from enum import Enum
 from typing import Any, Dict, List, Optional
-import secrets
 import uuid
 
 
@@ -418,7 +417,7 @@ def switch_ip(
 def get_switch_logs(account_id: Optional[str] = None, limit: int = 50) -> List[IPSwitchLog]:
     logs = _switch_logs
     if account_id:
-        logs = [l for l in logs if l.account_id == account_id]
+        logs = [log for log in logs if log.account_id == account_id]
     return logs[-limit:]
 
 

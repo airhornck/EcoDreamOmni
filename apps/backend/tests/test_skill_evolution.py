@@ -1,9 +1,7 @@
 """Tests for Skill Evolution — v4.0 Phase 3 P3-4."""
 
-import pytest
 
 from src.skills.evolution import (
-    SkillQualityScore,
     get_all_scores,
     get_evolution_report,
     get_quality_score,

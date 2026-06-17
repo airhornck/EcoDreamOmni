@@ -7,6 +7,7 @@ from typing import List, Optional
 
 import csv
 import io
+from pathlib import Path
 
 from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from pydantic import BaseModel, ConfigDict

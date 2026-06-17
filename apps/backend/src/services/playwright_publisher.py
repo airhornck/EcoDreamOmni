@@ -76,7 +76,7 @@ def publish_content(
             from src.services.xhs_publisher import publish_to_xhs
 
             return publish_to_xhs(account_id=account_id, content=content)
-        except Exception as exc:
+        except Exception:
             logger.exception("xhs publisher failed, falling back to mock")
             # Fallback to mock so the workflow doesn't hard-break
             return _mock_publish(draft_id, account_id, platform, content)

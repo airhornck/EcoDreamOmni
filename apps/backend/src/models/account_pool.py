@@ -1,6 +1,5 @@
 """AccountPool models, in-memory store, and cookie vault (reuses W3.5 AES-256-GCM)."""
 
-import secrets
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Dict, List, Optional
@@ -93,6 +92,11 @@ _account_pool_db: Dict[str, AccountPoolEntry] = {}
 
 def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
+
+
+def _today_iso() -> str:
+    """Return today's date in ISO format (YYYY-MM-DD)."""
+    return datetime.now(timezone.utc).date().isoformat()
 
 
 def create_pool_entry(

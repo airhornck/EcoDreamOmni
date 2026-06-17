@@ -6,7 +6,7 @@ Aligned with PRD FUNC-2 "PDF/Word/Excel知识导入".
 import csv
 import io
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 
 def parse_pdf(file_path: str) -> List[Dict[str, any]]:

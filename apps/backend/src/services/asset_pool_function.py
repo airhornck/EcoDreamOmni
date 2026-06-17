@@ -7,12 +7,11 @@ API routes should inject `db: AsyncSession = Depends(get_db)` and await these fu
 For test environments without DB, the legacy in-memory service remains available.
 """
 
-import uuid
 from datetime import datetime, timezone
 from typing import Dict, List, Optional, Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, desc, delete
+from sqlalchemy import select, func, delete
 
 from src.models.asset_pool_orm import AssetORM
 
@@ -125,7 +124,7 @@ async def create_asset(
     generate_thumbnail: bool = True,
     **kwargs,
 ) -> AssetORM:
-    now = _now()
+    _now()
 
     expiry_dt = None
     if license_expiry:

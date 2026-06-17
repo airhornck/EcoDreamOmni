@@ -6,7 +6,6 @@ Tests for existing endpoints only; skip tests for not-yet-implemented endpoints.
 import pytest
 import uuid
 from src.models.user import clear_users
-from src.services.auth_service import register_user
 
 
 def get_auth_token(client, role: str = "operator"):
@@ -158,7 +157,7 @@ def test_bulk_import_pdf(client):
     """🔴 PDF bulk import — one entry per page."""
     token = get_auth_token(client)
     from io import BytesIO
-    from PyPDF2 import PdfWriter, PdfReader
+    from PyPDF2 import PdfWriter
 
     writer = PdfWriter()
     writer.add_blank_page(width=612, height=792)

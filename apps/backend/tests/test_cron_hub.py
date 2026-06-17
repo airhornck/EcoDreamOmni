@@ -17,8 +17,8 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from src.services import cron_hub as ch
 from src.services.cron_hub import (
-    JobType, TargetType, ConcurrencyPolicy, JobStatus,
-    ExecutionType, ExecutionStatus, ErrorType, DeadLetterStatus,
+    JobStatus,
+    ExecutionStatus, ErrorType, DeadLetterStatus,
 )
 
 
@@ -259,7 +259,7 @@ def test_full_job_lifecycle():
 
 def test_execute_job_skips_before_date_range():
     """🔴 Job with date_range_start in the future should be SKIPPED."""
-    from datetime import date, timedelta
+    from datetime import date
     future = (date.today() + timedelta(days=7)).isoformat()
     job = ch.create_job(
         name="Future Job",
@@ -275,7 +275,7 @@ def test_execute_job_skips_before_date_range():
 
 def test_execute_job_skips_after_date_range():
     """🔴 Job with date_range_end in the past should be SKIPPED."""
-    from datetime import date, timedelta
+    from datetime import date
     past = (date.today() - timedelta(days=7)).isoformat()
     job = ch.create_job(
         name="Past Job",
@@ -291,7 +291,7 @@ def test_execute_job_skips_after_date_range():
 
 def test_execute_job_runs_within_date_range():
     """🔴 Job with date range covering today should RUN."""
-    from datetime import date, timedelta
+    from datetime import date
     start = (date.today() - timedelta(days=3)).isoformat()
     end = (date.today() + timedelta(days=3)).isoformat()
     job = ch.create_job(

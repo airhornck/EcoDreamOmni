@@ -7,7 +7,6 @@ Roles:
   operator → can only view/modify/review own tasks
 """
 
-import pytest
 from starlette.testclient import TestClient
 
 

@@ -1,9 +1,8 @@
 import logging
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI, Request
-
-logger = logging.getLogger(__name__)
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
@@ -30,11 +29,14 @@ from src.api import (
     agent_fleet,
     agent_watch_ws,
 )
-from src.core.database import engine, AsyncSessionLocal
+from src.core.database import engine
 from src.core.middleware import RequestIDMiddleware, StructuredLoggingMiddleware
 from src.core.tenant_middleware import TenantContextMiddleware
 from src.core.telemetry import init_tracing, instrument_fastapi, instrument_celery, instrument_redis
 from src.models.orm_user import UserORM
+from src.core.file_upload import UPLOAD_DIR
+
+logger = logging.getLogger(__name__)
 
 # Initialize OpenTelemetry
 tracer = init_tracing()
@@ -260,7 +262,6 @@ async def lifespan(app: FastAPI):
         from src.services import proxy_service as ps
         if not ps.list_proxies():
             proxy_id_http = ""
-            proxy_id_socks5 = ""
 
             if settings.PROXY_HTTP_HOST and settings.PROXY_HTTP_PORT:
                 proxy_http = ps.create_proxy(
@@ -291,7 +292,6 @@ async def lifespan(app: FastAPI):
                     region="default",
                     rotation_type=settings.PROXY_ROTATION_TYPE,
                 )
-                proxy_id_socks5 = proxy_socks5.id
                 logger.info("Auto-created SOCKS5 proxy: %s:%s", settings.PROXY_SOCKS5_HOST, settings.PROXY_SOCKS5_PORT)
                 async with AsyncSessionLocal() as db:
                     await persist_proxy_to_db(db, proxy_socks5)
@@ -454,13 +454,12 @@ app.include_router(strategy_sets.router)
 app.include_router(meta_orchestrator.router)
 app.include_router(comment_hub_v2.router)
 app.include_router(mcp_gateway.router)
+
 app.include_router(agent_fleet.router)
 app.include_router(agent_watch_ws.router)
 
 # Static file serving for uploads (local storage mode — Phase 1)
 # In Phase 2 (OSS migration), this mount will be removed and files served via CDN.
-from pathlib import Path
-from src.core.file_upload import UPLOAD_DIR
 
 Path(UPLOAD_DIR).mkdir(parents=True, exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")

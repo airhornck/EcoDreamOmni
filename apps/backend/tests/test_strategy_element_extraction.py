@@ -1,6 +1,5 @@
 """Tests for ViralAnalyzer Strategy Element Extraction."""
 
-import pytest
 
 from src.services.viral_analyzer_service import (
     AnalysisReport,

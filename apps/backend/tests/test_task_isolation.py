@@ -3,7 +3,6 @@
 🔴 Phase: Write failing tests for created_by isolation.
 """
 
-import pytest
 import pytest_asyncio
 from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import AsyncSession

@@ -11,7 +11,6 @@ from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.database import get_db
-from src.core.dependencies import get_current_user
 from src.services import agent_function as af
 
 router = APIRouter(prefix="/agents", tags=["agents"])

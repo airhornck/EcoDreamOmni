@@ -6,7 +6,7 @@ Aligned with PRD V3.1 architecture / TASK_V2.7.1 FUNC-ARCH.
 
 import ast
 import pathlib
-from typing import List, Set
+from typing import List
 
 import pytest
 
@@ -106,14 +106,13 @@ def _scan_file_for_forbidden(path: pathlib.Path) -> List[str]:
     except SyntaxError:
         return violations
 
-    has_async_session_import = False
     for node in ast.walk(tree):
         if isinstance(node, ast.ImportFrom):
             module = node.module or ""
             if "asyncio" in module or "database" in module:
                 for alias in node.names:
                     if alias.name == "AsyncSession":
-                        has_async_session_import = True
+                        pass
         if isinstance(node, (ast.Call, ast.Attribute)):
             # Check for session.execute / session.query patterns
             name = ast.unparse(node) if hasattr(ast, "unparse") else ""

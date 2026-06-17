@@ -109,7 +109,7 @@ def _write_compliance_audit(
 def _check_l1(text: str, segments: List[str]) -> List[Dict]:
     """Check L1 hard redlines."""
     violations = []
-    text_lower = text.lower()
+    text.lower()
 
     # Prescription drug keywords
     for kw in _L1_PRESCRIPTION_KEYWORDS:

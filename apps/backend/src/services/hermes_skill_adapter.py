@@ -7,7 +7,6 @@ References:
 - vendor/ai-frameworks/hermes-agent/agent/skill_utils.py::parse_frontmatter
 """
 
-import io
 import re
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -22,7 +21,8 @@ def _yaml_load(content: str):
         try:
             import yaml
             loader = getattr(yaml, "CSafeLoader", None) or yaml.SafeLoader
-            _yaml_load_fn = lambda value: yaml.load(value, Loader=loader)
+            def _yaml_load_fn(value):
+                return yaml.load(value, Loader=loader)
         except ImportError:
             # Fallback to simple key:value parsing
             def _simple_parse(value: str) -> Dict[str, Any]:

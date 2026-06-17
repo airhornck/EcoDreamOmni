@@ -32,7 +32,7 @@ async def sample_story(db_session: AsyncSession):
 async def test_create_and_list_nodes(db_session: AsyncSession, sample_story):
     """🔴 创建节点并列表查询."""
     sid = str(sample_story.id)
-    n1 = await pss.create_node(
+    await pss.create_node(
         db=db_session,
         story_id=sid,
         sequence_index=0,
@@ -42,7 +42,7 @@ async def test_create_and_list_nodes(db_session: AsyncSession, sample_story):
         prev_recap=None,
         next_teaser="明天带它做体检",
     )
-    n2 = await pss.create_node(
+    await pss.create_node(
         db=db_session,
         story_id=sid,
         sequence_index=1,

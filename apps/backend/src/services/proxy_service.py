@@ -147,7 +147,6 @@ async def load_proxies_from_db(db) -> int:
     """Load all proxy entries from DB into memory cache. Returns count loaded."""
     from sqlalchemy import select
     from src.models.proxy_config_orm import ProxyConfigORM
-    from datetime import datetime
 
     result = await db.execute(select(ProxyConfigORM))
     rows = result.scalars().all()

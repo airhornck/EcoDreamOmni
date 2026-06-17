@@ -4,8 +4,7 @@ Parse content structure into hook / body / CTA segments.
 MVP: Rule-based segmentation, no LLM call.
 """
 
-import re
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 SKILL_ID = "content_structural_analysis"
 VERSION = "1.0.0"
@@ -37,7 +36,7 @@ def execute(context: Dict[str, Any]) -> Dict[str, Any]:
     content = context.get("content", "")
     platform = context.get("platform", "xhs")
 
-    lines = [l.strip() for l in content.split("\n") if l.strip()]
+    lines = [line.strip() for line in content.split("\n") if line.strip()]
     if not lines:
         return {"hook": "", "body": "", "cta": "", "structure_type": "empty"}
 

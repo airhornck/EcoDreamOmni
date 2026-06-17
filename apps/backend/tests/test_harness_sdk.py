@@ -7,7 +7,6 @@ import pytest
 from src.harness.sdk import (
     AgentSDK,
     AgentSDKConfig,
-    AuthConfig,
     CircuitBreakerConfig,
     CircuitBreakerWrapper,
     EventClient,

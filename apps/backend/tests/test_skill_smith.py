@@ -4,7 +4,6 @@ Tests for evolved skill auto-generation based on performance triggers.
 """
 
 from src.models.user import clear_users
-from src.services.auth_service import register_user
 from src.services.skill_smith import clear_skill_smith
 from src.services.skill_hub import clear_skills
 

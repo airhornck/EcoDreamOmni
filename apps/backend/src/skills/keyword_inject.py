@@ -43,7 +43,7 @@ _KEYWORD_POOLS: Dict[str, List[str]] = {
 
 
 def execute(context: Dict[str, Any]) -> Dict[str, Any]:
-    content = context.get("content", "")
+    context.get("content", "")
     topic = context.get("topic", "")
     platform_id = context.get("platform_id", "xhs")
 

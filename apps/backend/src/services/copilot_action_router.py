@@ -10,14 +10,14 @@ Architecture red line: Router delegates to services, never touches DB directly.
 
 import logging
 import uuid
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timezone, timedelta
 from typing import Any, Dict, List, Optional
 
 from fastapi import HTTPException, status
 
 from src.core.rbac import is_admin, can_review_task, can_modify_task
-from src.harness.meta_orchestrator import MetaOrchestrator, IntentType
+from src.harness.meta_orchestrator import MetaOrchestrator
 from src.services import skill_hub
 from src.services import agent_orchestra
 from src.services import human_in_loop as hil_service

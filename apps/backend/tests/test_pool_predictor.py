@@ -5,7 +5,6 @@ Tests for interval prediction structure, feature engineering, and model metrics.
 
 import numpy as np
 from src.models.user import clear_users
-from src.services.auth_service import register_user
 
 
 

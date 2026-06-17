@@ -1,7 +1,7 @@
 """Publish task models and in-memory store."""
 
 import secrets
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Dict, List, Optional
 

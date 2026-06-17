@@ -18,8 +18,8 @@ import secrets
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Set
+from packaging.version import Version, InvalidVersion
 
-from src.services.skill_hub_orm import load_skills_from_orm, save_skill_to_orm
 
 
 @dataclass
@@ -538,11 +538,10 @@ def execute_skill(skill_id: str, context: Dict) -> Dict:
         return {"success": False, "error": str(e), "result": None}
 
 
+
 # ═══════════════════════════════════════════════════════
 # P3-1: Skill Hub Registration & Validation v4.0
 # ═══════════════════════════════════════════════════════
-
-from packaging.version import Version, InvalidVersion
 
 # ─── Skill Definition (JSON Schema) ───
 

@@ -4,7 +4,6 @@ Tests for AIPL stage templates and content evaluation.
 """
 
 from src.models.user import clear_users
-from src.services.auth_service import register_user
 from src.services.methodology_service import clear_methodologies
 
 

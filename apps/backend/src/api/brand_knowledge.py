@@ -3,8 +3,6 @@
 Wraps src/services/brand_knowledge_function.py.
 """
 
-import csv
-import io
 from pathlib import Path
 from typing import List, Optional
 

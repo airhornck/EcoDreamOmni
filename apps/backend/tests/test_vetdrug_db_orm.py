@@ -75,7 +75,7 @@ async def test_create_drug_licensed_format(db_session: AsyncSession):
 
 async def test_verify_claims_valid(db_session: AsyncSession):
     """🔴 宣称与批文一致性校验 — 通过."""
-    drug = await vdf.create_drug(
+    await vdf.create_drug(
         db=db_session,
         approval_number="兽药字220125002",
         product_name="驱虫药B",
@@ -93,7 +93,7 @@ async def test_verify_claims_valid(db_session: AsyncSession):
 
 async def test_verify_claims_invalid(db_session: AsyncSession):
     """🔴 宣称与批文一致性校验 — 拦截超范围宣称."""
-    drug = await vdf.create_drug(
+    await vdf.create_drug(
         db=db_session,
         approval_number="兽药字220125003",
         product_name="驱虫药C",
@@ -123,7 +123,7 @@ async def test_verify_claims_not_found(db_session: AsyncSession):
 
 async def test_verify_claims_expired_status(db_session: AsyncSession):
     """🔴 过期批文拦截."""
-    drug = await vdf.create_drug(
+    await vdf.create_drug(
         db=db_session,
         approval_number="兽药字220125004",
         product_name="过期药",

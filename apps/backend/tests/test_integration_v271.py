@@ -17,10 +17,8 @@ W18 E2E-1: V2.7.1-V3.1 全链路集成测试。
 """
 
 from src.models.user import clear_users
-from src.services.auth_service import register_user
 from src.services import (
     compliance_engine,
-    content_forge_service,
     comment_hub,
     content_series,
     image_forge,

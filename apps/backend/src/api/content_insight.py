@@ -10,7 +10,7 @@ Routes:
 
 from typing import Any, Dict, List
 from fastapi import APIRouter
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from src.services import content_insight as ci
 

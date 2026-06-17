@@ -912,7 +912,7 @@ class ViralAnalyzerService:
             "element_type": "emotion_curve",
             "element_subtype": "爆款情感曲线",
             "name": f"情感曲线：{report.structureType}",
-            "description": f"从笔记情绪分析提取的情感波动策略",
+            "description": "从笔记情绪分析提取的情感波动策略",
             "content": {
                 "curve": curve_data,
                 "rationale": f"情感曲线来自 viral_score={report.viralScore} 的爆款笔记",

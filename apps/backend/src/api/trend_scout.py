@@ -4,6 +4,7 @@ V2.7.1增强: PDF生成、5A匹配度、人群契合度、批量报告
 """
 
 from typing import List, Optional, Literal
+import secrets
 from fastapi import APIRouter, Depends, Query, HTTPException, Body
 from pydantic import BaseModel, ConfigDict
 
@@ -299,8 +300,6 @@ def batch_create_reports(
 
 # ─── Topic Library & Stats Endpoints ───
 
-from datetime import datetime, timedelta
-import secrets
 
 
 _topic_db: dict = {}

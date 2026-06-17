@@ -83,7 +83,7 @@ async def test_rollback_to_version(db_session: AsyncSession):
     )
     v1_id = str(entry.id)
 
-    v2 = await bkf.update_entry(
+    await bkf.update_entry(
         db=db_session,
         entry_id=v1_id,
         updated_by="operator_b",
@@ -120,7 +120,7 @@ async def test_search_by_content(db_session: AsyncSession):
 
 async def test_get_prohibited_claims_for_product(db_session: AsyncSession):
     """🔴 RAG结果含prohibited_claims 100%拦截."""
-    entry = await bkf.create_entry(
+    await bkf.create_entry(
         db=db_session,
         entry_type="product_sku",
         name="产品A",

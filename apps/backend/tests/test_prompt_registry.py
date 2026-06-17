@@ -15,7 +15,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from src.services import prompt_registry as pr
-from src.services.prompt_registry import PromptStatus, ApprovalStatus, VariableType
+from src.services.prompt_registry import PromptStatus, VariableType
 
 
 @pytest.fixture(autouse=True)
@@ -220,8 +220,8 @@ def test_injection_detection():
 
 def test_list_templates_filter():
     pr.register_variable("topic", "Content topic")
-    t1 = pr.create_template("T1", "agent-a", "{{ topic }}", ["topic"], "alice", env="prod")
-    t2 = pr.create_template("T2", "agent-b", "{{ topic }}", ["topic"], "bob", env="dev")
+    pr.create_template("T1", "agent-a", "{{ topic }}", ["topic"], "alice", env="prod")
+    pr.create_template("T2", "agent-b", "{{ topic }}", ["topic"], "bob", env="dev")
     prod = pr.list_templates(env="prod")
     assert len(prod) == 1
     assert prod[0].name == "T1"

@@ -2,7 +2,6 @@
 XHS publisher tests: per-account config resolution, fallback, error handling.
 """
 
-import os
 import pytest
 from unittest.mock import MagicMock, patch
 

@@ -3,7 +3,6 @@
 Red-Green TDD — W13 DataAnalyst 24h data recovery.
 """
 
-import pytest
 
 from src.services.xhs_note_data_extraction import (
     _extract_user_id,

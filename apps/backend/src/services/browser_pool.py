@@ -1,7 +1,7 @@
 """Browser pool for Playwright context isolation with rebrowser-patches support."""
 
 import os
-from typing import Dict, List, Optional
+from typing import Dict, Optional
 
 # Set rebrowser-patches environment defaults before any Playwright import
 os.environ.setdefault("REBROWSER_PATCHES_RUNTIME_FIX_MODE", "addBinding")

@@ -94,10 +94,10 @@ async def test_clone_story(db_session: AsyncSession):
     sid = str(story.id)
 
     # 添加节点
-    n1 = await pss.create_node(
+    await pss.create_node(
         db_session, sid, 0, "第一集", "low", "接到猫咪", content_draft_id="cd_01"
     )
-    n2 = await pss.create_node(
+    await pss.create_node(
         db_session, sid, 1, "第二集", "medium", "第一次驱虫", content_draft_id="cd_02"
     )
 

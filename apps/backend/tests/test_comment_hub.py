@@ -10,7 +10,6 @@ W16-1 CommentHub 合规版 Red-Green 测试。
 """
 
 from src.models.user import clear_users
-from src.services.auth_service import register_user
 from src.services.comment_hub import clear_comment_hub
 
 

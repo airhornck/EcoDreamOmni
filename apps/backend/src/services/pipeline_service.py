@@ -5,7 +5,7 @@ Production: Migrate to Celery + Redis by swapping _task_executor.
 """
 
 import secrets
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any, Callable, Dict, List, Optional
 

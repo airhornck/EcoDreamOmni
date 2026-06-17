@@ -8,7 +8,7 @@ Aligned with detailed design §5.1:
 
 from typing import Dict, List, Optional
 
-from src.services.prediction_engine import predict_engagement, train_baseline_model, get_model_metrics, clear_model
+from src.services.prediction_engine import predict_engagement, train_baseline_model, get_model_metrics
 
 # In-memory prediction log (MVP)
 _prediction_db: Dict[str, Dict] = {}

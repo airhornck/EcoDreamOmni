@@ -7,12 +7,6 @@ and will be removed in a future cleanup.
 
 from typing import Optional
 
-from src.services.auth_function import (
-    create_user,
-    get_user_by_email,
-    get_user_by_id,
-    update_user_mfa,
-)
 
 
 class User:

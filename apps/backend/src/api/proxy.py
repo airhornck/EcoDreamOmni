@@ -257,7 +257,7 @@ async def test_proxy_entry(
             proxies=proxies,
             timeout=15,
         )
-        elapsed = time.time() - start
+        time.time() - start
         resp.raise_for_status()
         success = True
     except Exception as exc:

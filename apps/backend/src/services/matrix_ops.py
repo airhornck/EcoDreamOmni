@@ -7,7 +7,7 @@ Features:
   - Group health overview
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 import uuid
 

@@ -3,11 +3,10 @@
 Aligned with detailed design §5.12 / PRD V2.4 §7.3.
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timezone, timedelta
 from enum import Enum
 from typing import Any, Dict, List, Optional
-import secrets
 import uuid
 
 

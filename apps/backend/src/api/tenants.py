@@ -12,9 +12,9 @@ Routes:
 
 from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, HTTPException, Request
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
-from src.core.tenant_middleware import get_current_tenant_id, require_tenant
+from src.core.tenant_middleware import get_current_tenant_id
 from src.services import tenant_service
 
 router = APIRouter(prefix="/tenants", tags=["tenants"])

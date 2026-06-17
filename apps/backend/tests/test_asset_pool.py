@@ -3,9 +3,7 @@ AssetPool 三源混合素材库 Red-Green 测试。
 V2.7.1新增需求: 三源上传、版权校验、AI标识、匹配推荐
 """
 
-import pytest
 from src.models.user import clear_users
-from src.services.auth_service import register_user
 from tests.conftest import sync_clear_asset_pool
 
 

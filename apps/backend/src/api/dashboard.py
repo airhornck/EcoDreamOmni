@@ -1,6 +1,6 @@
 """Dashboard API routes: operations homepage data."""
 
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, Query

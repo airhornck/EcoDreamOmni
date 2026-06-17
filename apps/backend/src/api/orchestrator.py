@@ -7,9 +7,9 @@ Routes:
   GET  /orchestrator/groups/{gid}/health    — Group health check
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Optional
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from src.services import orchestrator as orch
 

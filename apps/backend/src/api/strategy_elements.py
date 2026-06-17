@@ -14,15 +14,12 @@ from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
-from sqlalchemy import desc, func, select
+from sqlalchemy import desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.database import get_db
 from src.core.dependencies import get_current_user
 from src.models.strategy_element import (
-    ElementSource,
-    ElementStatus,
-    ElementType,
     StrategyElementORM,
 )
 

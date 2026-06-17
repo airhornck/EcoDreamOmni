@@ -14,7 +14,7 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from src.services import pool_predictor_service, content_forge_service, compliance_service
+from src.services import compliance_service
 from src.services.prediction_engine import predict_engagement
 from src.services.content_insight import analyze_content_performance
 

@@ -8,7 +8,7 @@ import uuid
 from datetime import datetime, timezone
 
 from sqlalchemy import (
-    Column, String, Text, Integer, DateTime, ForeignKey, Index, JSON
+    Column, String, Text, Integer, DateTime, Index, JSON
 )
 from sqlalchemy.dialects.postgresql import UUID
 

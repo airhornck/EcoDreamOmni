@@ -274,7 +274,6 @@ async def reorder_nodes(
     
     使用逐节点临时索引避免 (story_id, sequence_index) 唯一约束冲突.
     """
-    from sqlalchemy import text
 
     nodes = await list_nodes(db, story_id)
     node_map = {str(n.id): n for n in nodes}
@@ -362,7 +361,7 @@ async def get_story_context(
 
     # Emotional arc description
     template = story.emotion_curve_template
-    position_ratio = current_idx_in_sorted / max(len(sorted_nodes) - 1, 1)
+    current_idx_in_sorted / max(len(sorted_nodes) - 1, 1)
     if template == "gradual_growth":
         arc_desc = f"渐进上升曲线 — 第 {current_idx_in_sorted + 1}/{len(sorted_nodes)} 节点（情感逐步累积）"
     elif template == "wave":

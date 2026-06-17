@@ -5,7 +5,6 @@ Tests for async task submission, status polling, and cancellation.
 
 import time
 from src.models.user import clear_users
-from src.services.auth_service import register_user
 from src.services.pipeline_service import clear_pipeline
 
 

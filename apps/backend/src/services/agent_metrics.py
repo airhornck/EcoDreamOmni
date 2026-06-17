@@ -3,7 +3,7 @@
 Aligned with detailed design §5.13 / PRD V2.4 §7.4.
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timezone, timedelta
 from enum import Enum
 from typing import Any, Dict, List, Optional

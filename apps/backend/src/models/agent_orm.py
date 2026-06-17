@@ -4,13 +4,11 @@ Persistent storage for platform+format specific content generation agents.
 Previously stored in-memory in agent_hub.py; v4.0 migrates to PostgreSQL.
 """
 
-import uuid
 from datetime import datetime, timezone
 
 from sqlalchemy import (
-    Column, String, Text, Integer, Float, DateTime, Index, JSON, func
+    Column, String, Text, Integer, Float, DateTime, Index, JSON
 )
-from sqlalchemy.dialects.postgresql import UUID
 
 from src.core.database import Base
 

@@ -4,10 +4,8 @@ Tests for WebSocket alert pushing and alert generator.
 """
 
 import pytest
-import asyncio
 from src.models.user import clear_users
-from src.services.auth_service import register_user
-from src.services.alert_stream import get_manager, generate_alert, clear_alerts, broadcast_alert
+from src.services.alert_stream import get_manager, generate_alert, clear_alerts
 
 
 
@@ -45,7 +43,7 @@ async def test_websocket_connect_and_receive_alert(client):
 
 
 @pytest.mark.asyncio
-async def test_websocket_requires_auth():
+async def test_websocket_requires_auth(client):
     """Red: Should reject unauthenticated WebSocket connections."""
     with pytest.raises(Exception):
         with client.websocket_connect("/ws/alerts") as websocket:

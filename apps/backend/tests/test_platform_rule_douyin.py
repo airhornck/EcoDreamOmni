@@ -12,8 +12,6 @@ import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.models.user import clear_users
-from src.services.auth_service import register_user
-import src.services.platform_rule_function as prf
 
 pytestmark = pytest.mark.asyncio(loop_scope="function")
 
@@ -127,7 +125,7 @@ async def test_douyin_specific_rules_different_from_xiaohongshu(client, db: Asyn
     )
 
     douyin_data = douyin_resp.json()
-    xhs_data = xhs_resp.json()
+    xhs_resp.json()
 
     # 抖音应有引流相关违规，小红书可能没有（或不同）
     douyin_diversion = [v for v in douyin_data["violations"] if "引流" in v.get("category", "")]

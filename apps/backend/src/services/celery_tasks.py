@@ -271,7 +271,6 @@ def regenerate_content(
       4. Push content.generation.completed with generated content
     """
     import asyncio
-    from datetime import datetime, timezone
     from src.api.copilot import push_copilot_event
 
     async def _run():
@@ -506,6 +505,7 @@ def generate_cover(self, job_id: str, task_id: str, prompt: str, style_preset: s
     except Exception as exc:
         logger.exception("Cover generation failed for job %s", job_id)
         # Update job to failed
+        _exc = exc
         async def _mark_failed():
             async with AsyncSessionLocal() as db:
                 from sqlalchemy import select
@@ -513,7 +513,7 @@ def generate_cover(self, job_id: str, task_id: str, prompt: str, style_preset: s
                 job = result.scalar_one_or_none()
                 if job:
                     job.status = "failed"
-                    job.error_message = str(exc)
+                    job.error_message = str(_exc)
                     await db.commit()
         asyncio.run(_mark_failed())
         raise self.retry(exc=exc, countdown=30)

@@ -4,7 +4,6 @@ Knowledge base with versioning + pgvector RAG support.
 Aligned with PRD V3.1 §BrandKnowledge / TASK_V2.7.1 FUNC-2.
 """
 
-import uuid
 from datetime import datetime, timezone
 from typing import Dict, List, Optional, Any
 
@@ -108,7 +107,7 @@ async def get_entry_by_product(
     result = await db.execute(
         select(BrandKnowledgeEntryORM)
         .where(BrandKnowledgeEntryORM.product_id == product_id)
-        .where(BrandKnowledgeEntryORM.is_latest == True)
+        .where(BrandKnowledgeEntryORM.is_latest)
         .order_by(desc(BrandKnowledgeEntryORM.version))
         .limit(1)
     )
@@ -214,7 +213,7 @@ async def rollback_entry(
     result = await db.execute(
         select(BrandKnowledgeEntryORM)
         .where(BrandKnowledgeEntryORM.product_id == target.product_id)
-        .where(BrandKnowledgeEntryORM.is_latest == True)
+        .where(BrandKnowledgeEntryORM.is_latest)
         .order_by(desc(BrandKnowledgeEntryORM.version))
         .limit(1)
     )
@@ -326,7 +325,7 @@ async def search_by_content(
         sql = sql.where(BrandKnowledgeEntryORM.entry_type == entry_type)
     if tenant_id:
         sql = sql.where(BrandKnowledgeEntryORM.tenant_id == tenant_id)
-    sql = sql.where(BrandKnowledgeEntryORM.is_latest == True).limit(limit)
+    sql = sql.where(BrandKnowledgeEntryORM.is_latest).limit(limit)
     result = await db.execute(sql)
     return list(result.scalars().all())
 

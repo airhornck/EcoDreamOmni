@@ -37,7 +37,6 @@ async def clear_db(db: AsyncSession):
 def get_auth_token(client):
     import uuid
     from src.models.user import clear_users
-    from src.services.auth_service import register_user
     clear_users()
     email = f"rpc_{uuid.uuid4().hex[:8]}@ecodream.com"
     response = client.post("/auth/register", json={

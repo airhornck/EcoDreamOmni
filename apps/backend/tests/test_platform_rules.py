@@ -4,7 +4,6 @@ Tests for L3/L4 dynamic rules, CRUD, violation attribution, and version history.
 """
 
 from src.models.user import clear_users
-from src.services.auth_service import register_user
 from tests.conftest import sync_clear_platform_rules
 
 

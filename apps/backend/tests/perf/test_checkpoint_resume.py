@@ -10,7 +10,6 @@ import pytest
 
 from src.core.checkpoint import CheckpointManager
 from src.services.workflow_engine import (
-    start_execution,
     resume_execution,
     WorkflowStatus,
     WorkflowExecution,

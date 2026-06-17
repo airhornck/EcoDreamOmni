@@ -8,7 +8,6 @@ Red-Green TDD for:
 """
 
 import pytest
-import pytest_asyncio
 import sys
 from pathlib import Path
 

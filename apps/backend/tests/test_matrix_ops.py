@@ -94,7 +94,7 @@ def test_assign_brief_missing_group():
 
 def test_list_assignments():
     g = matrix_ops.create_group("G", {}, ["a1"])
-    a = matrix_ops.assign_brief_to_group("b1", g.group_id)
+    matrix_ops.assign_brief_to_group("b1", g.group_id)
     items = matrix_ops.list_assignments()
     assert len(items) == 1
 

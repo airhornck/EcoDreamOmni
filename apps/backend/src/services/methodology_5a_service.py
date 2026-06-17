@@ -4,7 +4,7 @@ Manages 5A stage templates (Aware, Appeal, Ask, Act, Advocate),
 AIPL→5A mapping, and audience segment recommendations.
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Dict, List, Optional, Tuple
 
 

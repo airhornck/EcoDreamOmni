@@ -4,7 +4,6 @@ Tests for L1/L2/L3 rule engine, jieba segmentation, evidence chain, and audit lo
 """
 
 from src.models.user import clear_users
-from src.services.auth_service import register_user
 
 
 

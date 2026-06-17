@@ -8,12 +8,12 @@ Routes:
   POST /pool-predictor/explore/feedback     — Record actual vs predicted feedback
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
 from src.services import exploration_engine as ee
-from src.services.prediction_engine import build_feature_vector, predict_engagement
+from src.services.prediction_engine import build_feature_vector
 
 router = APIRouter(prefix="/pool-predictor/explore", tags=["pool-predictor-explore"])
 

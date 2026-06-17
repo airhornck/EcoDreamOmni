@@ -8,7 +8,6 @@ Routes:
   POST /agent-cockpit/agents/{id}/health-check  # Manual health check
 """
 
-from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, HTTPException
 
 from src.services import agent_cockpit as cockpit

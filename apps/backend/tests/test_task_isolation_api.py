@@ -5,10 +5,8 @@
 
 import uuid
 
-import pytest
 
 from src.services import task_hub as th
-from src.services import human_in_loop as hil
 
 
 def _register_user(client, role: str = "operator") -> str:
