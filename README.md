@@ -5,7 +5,7 @@
 [![Stack](https://img.shields.io/badge/Frontend-React%2019%20%2B%20Vite%206%20%2B%20Tailwind%20v4-blue)](./apps/frontend)
 [![Stack](https://img.shields.io/badge/Backend-FastAPI%20%2B%20SQLAlchemy%202.0%20%2B%20Celery-green)](./apps/backend)
 [![Stack](https://img.shields.io/badge/Infra-Docker%20%2B%20PostgreSQL%2016%20%2B%20Redis%207-orange)](./docker)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+[![License](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](./LICENSE)
 
 ---
 
